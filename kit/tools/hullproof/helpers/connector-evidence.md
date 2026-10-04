@@ -1,6 +1,6 @@
 # Coding agent connector evidence
 
-A hosted connector (an MCP server or integration that a coding agent reaches through the developer's own account) holds its credential at the provider, not in a file or an environment variable. A search of the repository and of the agent settings finds nothing, and the provider's audit log shows every call as the account owner. This page says what the owner exports for each kind of provider, and how to compare the exports with the agent side inventory using counts only. It backs SEC-AGENT-002 (MCP and connector inventory), SEC-AGENT-011 (production credentials reachable by an agent) and SEC-AGENT-014 (agents and production changes).
+A hosted connector (an MCP server or integration that a coding agent reaches through the developer's own account) holds its credential at the provider, not in a file or an environment variable. A search of the repository and of the agent settings finds nothing, and the provider's audit log shows every call as the account owner. This page says what the owner exports for each kind of provider, and how to compare the exports with the agent side inventory using counts only. It backs a Pro edition requirement (MCP and connector inventory), SEC-AGENT-011 (production credentials reachable by an agent) and SEC-AGENT-014 (agents and production changes).
 
 Everything here is run by the owner, in the owner's own session or terminal. The skills and agents cannot do it: the grants live behind the owner's login, and the read only hook allows no network command except a permitted live check. The result is an owner export, which settles a row only under the freshness rule in the standard (names the date, no more than 30 days old, taken after the newest migration).
 
@@ -21,7 +21,7 @@ Take one export per provider account that a coding agent can act through. Do thi
 | Cloud account (AWS, Google Cloud, Azure) | The identity and access list of users, roles, service accounts, access keys and federated trusts | Principal, attached permissions, last used, key age |
 | The coding agent itself | The list of connectors and MCP servers the agent loads at account, project and user scope (the connectors page of the agent account, the MCP list command in a session, and the editor's MCP settings file) | Name, endpoint host, authorization type, account it acts as, enabled or not |
 
-Menu names change between releases. Search the provider's current documentation for "authorized applications", "connected apps", "access tokens" or "OAuth grants". If a provider has no such list, record "no list offered" and treat every connector to that provider as unverified (SEC-AGENT-002).
+Menu names change between releases. Search the provider's current documentation for "authorized applications", "connected apps", "access tokens" or "OAuth grants". If a provider has no such list, record "no list offered" and treat every connector to that provider as unverified (a Pro edition requirement).
 
 ## 2. Build the two lists
 
@@ -48,7 +48,7 @@ How to read the numbers:
 
 | Count | Meaning | Next step |
 |-------|---------|-----------|
-| Authorized at a provider, not in the inventory | A connector exists that nobody listed. An agent may already use it. | List the names (`comm -13 a.sorted p.sorted`). Add each to the inventory with its scope, or revoke it. SEC-AGENT-002 stays open until the count is 0. |
+| Authorized at a provider, not in the inventory | A connector exists that nobody listed. An agent may already use it. | List the names (`comm -13 a.sorted p.sorted`). Add each to the inventory with its scope, or revoke it. a Pro edition requirement stays open until the count is 0. |
 | In the inventory, not authorized at a provider | The inventory is stale, or the connector uses a different account than the one you exported. | Find which account it acts as. Remove the line or add the missing export. |
 | Grants with write or admin scope | Each one lets an agent change the provider's data. | For every one on a production resource, record the reason, or reduce the scope to read only (SEC-AGENT-011, SEC-AGENT-014). Production write access reached through a connector is treated as an agent credential. |
 

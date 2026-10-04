@@ -20,6 +20,6 @@ rules:
       - pattern-not-inside: |
           class $K { ... }
     metadata:
-      sec_ids: [SEC-AUTH-026]
+      sec_ids: [PRO-EDITION]
       severity_hint: HIGH
       confidence: HIGH

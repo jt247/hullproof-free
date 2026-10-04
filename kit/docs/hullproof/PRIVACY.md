@@ -6,13 +6,13 @@
 | Topics covered | Privacy governance and consent, Personal data, Data Retention, Deletion |
 | Part of | Hullproof Security Standard, see STANDARD.md |
 
-Privacy governance (lawful basis, notices, DPIA, registration), personal data handling, retention, deletion, and consent. Law driven requirements name the market they apply to. Requirement IDs keep their SEC-GOV and SEC-DATA codes. Cryptography, TLS and storage are later in this document; breach notification is in INCIDENT-RESPONSE.md.
+Privacy governance (lawful basis, notices, DPIA, registration), personal data handling, retention, deletion, and consent. Law driven requirements name the market they apply to. A requirement that names a market applies from LAUNCH where that law applies and from GROWTH otherwise, as the security standard sets out under Stages, unless its own Applies To or Exceptions field says it is market only (for example a Pro edition requirement). A No answer to a market gate marks NOT APPLICABLE only the requirements that depend on that market alone. Requirement IDs keep their SEC-GOV and SEC-DATA codes. Cryptography, TLS and storage are later in this document; breach notification is in INCIDENT-RESPONSE.md.
 
 > Research based engineering guidance, not legal advice.
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 3 of the 53 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 3 of the 53 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 50. Pro covers the privacy duties behind personal data, including notices, consent, deletion, retention, vendor agreements and regulator filings.
 
 ## Requirement index
 
@@ -34,29 +34,11 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| Applicable law per market | None | None | SEC-GOV-024 |
-| Lawful basis per processing purpose | None | None | SEC-GOV-049, SEC-DATA-051 |
-| Privacy notices (web, and pre install for mobile) | MOBILE-SECURITY.md | None | SEC-GOV-026, SEC-GOV-027 |
-| Consent and its withdrawal (cookies and trackers, email tracking, marketing) | MOBILE-SECURITY.md | None | SEC-DATA-046, SEC-DATA-056, SEC-DATA-057, SEC-DATA-052 |
-| Data inventory and classification | AI-SECURITY.md | None | SEC-GOV-025 |
-| Data minimisation | OBSERVABILITY.md, AI-SECURITY.md | None | SEC-DATA-025, SEC-DATA-027, SEC-DATA-047, SEC-DATA-035 |
-| Purpose limitation | MOBILE-SECURITY.md | None | SEC-DATA-049 |
-| Children's data | None | None | SEC-DATA-050 |
-| Sensitive data categories | DATA-PROTECTION.md | None | SEC-DATA-026 |
-| Data subject rights (access, correction, deletion, portability, objection) with deadlines per market | None | None | SEC-DATA-038, SEC-DATA-039, SEC-DATA-040, SEC-DATA-041, SEC-DATA-044, SEC-DATA-053, SEC-DATA-054, SEC-DATA-055 |
-| Retention schedules and sector overrides | DATABASE-SECURITY.md, AI-SECURITY.md | None | SEC-DATA-031, SEC-DATA-032, SEC-DATA-033, SEC-DATA-034, SEC-DATA-037 |
-| Deletion across all stores, including backups and processors | DATABASE-SECURITY.md, AI-SECURITY.md, AUTH.md | None | SEC-DATA-042, SEC-DATA-043, SEC-DATA-045 |
-| Processors and vendor agreements | AI-SECURITY.md, INCIDENT-RESPONSE.md | None | SEC-GOV-048, SEC-DATA-036 |
-| Cross border transfers per market | AI-SECURITY.md | None | SEC-GOV-030 |
-| DPIA triggers and filing | None | None | SEC-GOV-028, SEC-GOV-029, SEC-GOV-036 |
-| Regulator registration (NG NDPC tiers) and DPO | INCIDENT-RESPONSE.md | NG subject count | SEC-GOV-031, SEC-GOV-032, SEC-GOV-033, SEC-GOV-037 |
-| Automated decision making and AI disclosures | AI-SECURITY.md | None | SEC-GOV-034, SEC-GOV-035 |
-| EU AI Act role, prohibited practices and AI literacy | AI-SECURITY.md | None | SEC-GOV-050, SEC-GOV-051, SEC-GOV-052 |
-| Privacy by design and by default | None | None | SEC-DATA-024, SEC-DATA-030, SEC-DATA-048 |
-| Access logging for personal data | OBSERVABILITY.md | None | SEC-DATA-028 |
+| Data subject rights (access, correction, deletion, portability, objection) with deadlines per market | None | None | SEC-DATA-040 (more in Pro edition) |
+| EU AI Act role, prohibited practices and AI literacy | AI-SECURITY.md | None | SEC-GOV-051 (more in Pro edition) |
+| Privacy by design and by default | None | None | SEC-DATA-024 (more in Pro edition) |
 | Breach notification | INCIDENT-RESPONSE.md | None | None in this document |
 | Encryption of personal data | DATA-PROTECTION.md, DATABASE-SECURITY.md | None | None in this document |
-| EU representative (GDPR Article 27) | None | None | SEC-GOV-054 |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -66,14 +48,10 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Check that no app.json, eas.json, ios or android folder, or expo or react-native dependency exists in any workspace, and that no store listing or TestFlight build exists. Record what was checked, or record the owner's written answer. A mobile scaffold counts as No only if it is not deployed and not reachable by real users at the audited commit; a release scope that leaves a live app out does not make the answer No. | SEC-GOV-027, SEC-DATA-039 |
-| GATE-MARKET-NG | Does the product process personal data of people in Nigeria? | STAGE.md Markets served and Markets excluded name the market, and a check of signup country, billing country or analytics geography shows no Nigerian data subjects, or the owner's written answer says so. A market is excluded only by a technical control that blocks it (a country block at signup and billing) or by a recorded count of zero data subjects from the user table by country. Where the product collects no country, Global applies. | SEC-GOV-027, SEC-GOV-029, SEC-GOV-031, SEC-GOV-036, SEC-GOV-037, SEC-DATA-032 |
-| GATE-MARKET-EU | Does the product process personal data of people in the EU, or place an AI feature on the EU market? | STAGE.md Markets served and Markets excluded name the market, and a check of signup country, billing country or analytics geography shows no EU data subjects, or the owner's written answer says so. A market is excluded only by a technical control that blocks it (a country block at signup and billing) or by a recorded count of zero data subjects from the user table by country. Where the product collects no country, Global applies. | SEC-GOV-050, SEC-GOV-051, SEC-GOV-054, SEC-DATA-056 |
-| GATE-MARKET-KE | Does the product process personal data of people in Kenya? | STAGE.md Markets served and Markets excluded name the market, and a check of signup country, billing country or analytics geography shows no Kenyan data subjects, or the owner's written answer says so. A market is excluded only by a technical control that blocks it (a country block at signup and billing) or by a recorded count of zero data subjects from the user table by country. Where the product collects no country, Global applies. | SEC-GOV-029 |
-| GATE-MARKET-UK | Does the product process personal data of people in the United Kingdom? | STAGE.md Markets served and Markets excluded name the market, and a check of signup country, billing country or analytics geography shows no United Kingdom data subjects, or the owner's written answer says so. A market is excluded only by a technical control that blocks it (a country block at signup and billing) or by a recorded count of zero data subjects from the user table by country. Where the product collects no country, Global applies. | SEC-GOV-054 |
+| GATE-MARKET-EU | Does the product process personal data of people in the EU, or place an AI feature on the EU market? | STAGE.md Markets served and Markets excluded name the market, and a check of signup country, billing country or analytics geography shows no EU data subjects, or the owner's written answer says so. A market is excluded only by a technical control that blocks it (a country block at signup and billing) or by a recorded count of zero data subjects from the user table by country. Where the product collects no country, Global applies. | SEC-GOV-051 (more in Pro edition) |
 <!-- hullproof:gates:end -->
 
-Scope: SEC-DATA-032 covers Nigeria only, and sector retention minimums elsewhere are not covered. EU member state laws implementing the ePrivacy Directive are not covered; the controls follow the directive, EU case law and EDPB positions. EU AI Act high risk duties (Annex III systems from 2 December 2027) are not covered.
+Scope: a Pro edition requirement covers Nigeria only, and sector retention minimums elsewhere are not covered. EU member state laws implementing the ePrivacy Directive are not covered; the controls follow the directive, EU case law and EDPB positions. EU AI Act high risk duties (Annex III systems from 2 December 2027) are not covered.
 
 ---
 
@@ -94,14 +72,14 @@ Scope: SEC-DATA-032 covers Nigeria only, and sector retention minimums elsewhere
 **Why.** These practices have been banned in the EU since 2 February 2025. Small SaaS products drift into them through ordinary features: an HR tool that scores staff mood from video calls, an edtech feature that reads student emotions, or a growth feature that targets financially vulnerable users with pressure tactics.
 
 **Implementation.**
-- Keep the screen as a short checklist in the threat model entry (SEC-AI-001), one line per Article 5(1) point with "not applicable" and the reason, and link it from the SEC-GOV-050 record.
+- Keep the screen as a short checklist in the threat model entry (a Pro edition requirement), one line per Article 5(1) point with "not applicable" and the reason, and link it from the a Pro edition requirement record.
 - Rerun the screen when a feature gains a new purpose, a new user group (employees, students, children) or a new input type (camera, microphone, biometric data).
 - Image, video and audio generation features are also screened against the points added by the Digital Omnibus that apply from 2 December 2026; the technical safeguards are SEC-AI-060.
 - If any point is uncertain, treat the feature as blocked for the EU until legal review is recorded.
 
 **Verify.**
 1. Open the threat model entry of every AI feature reaching EU users and confirm the Article 5(1) screen is complete, dated and signed by the owner.
-2. Search the code and prompts for emotion, sentiment of staff or students, biometric attributes and vulnerability targeting (for example `rg -i "emotion|mood|biometric|vulnerab" src prompts`), and confirm each hit is covered by the screen.
+2. Search the code and prompts for emotion, sentiment of staff or students, biometric attributes and vulnerability targeting (for example `grep -rniE "emotion|mood|biometric|vulnerab" src prompts`), and confirm each hit is covered by the screen.
 
 **Evidence.** Completed screen per feature; search output with dispositions.
 
@@ -141,7 +119,7 @@ Scope: SEC-DATA-032 covers Nigeria only, and sector retention minimums elsewhere
 
 **Evidence.** Dynamic test report listing every endpoint called and the result, plus advisor output.
 
-**Exceptions.** Personal data that a user chose to make public (for example a profile set to public) may be returned to anonymous callers when the exposed fields are listed in the data inventory (SEC-GOV-025 in PRIVACY.md, or a list in the repository) and the query honours the stored choice. A public flag counts only when an affirmative user action sets it and it defaults to private.
+**Exceptions.** Personal data that a user chose to make public (for example a profile set to public) may be returned to anonymous callers when the exposed fields are listed in the data inventory (a Pro edition requirement in PRIVACY.md, or a list in the repository) and the query honours the stored choice. A public flag counts only when an affirmative user action sets it and it defaults to private.
 
 **References.** Law driven for NG, EU, ZA and KE: GDPR Art 25(2), Art 32(4) [SRC-103]; Kenya DPA 2019 s41(3)(d) [SRC-106]; POPIA s19(1) [SRC-104]; NDPA 2023 s39(1) (Derived) [SRC-100]. OWASP ASVS 5.0.0 v5.0.0-8.2.2 (L1) [SRC-010]; Supabase Advisors lints 0002, 0013, 0023 [SRC-076]; Escape, The State of Security of Vibe Coded Apps (evidence) [SRC-007].
 
@@ -172,7 +150,7 @@ Scope: SEC-DATA-032 covers Nigeria only, and sector retention minimums elsewhere
 **Verify.**
 1. Automated test: user B calls delete, export and correction with user A's identifier in the body, query and path, and every call is refused or acts only on user B.
 2. Test the same endpoints with no session and expect 401.
-3. Search the route, server action and RPC definitions for account deletion, export and correction handlers. Where the product holds personal data and one of them is missing, the result is FAIL (see SEC-DATA-038), not PASS.
+3. Search the route, server action and RPC definitions for account deletion, export and correction handlers. Where the product holds personal data and one of them is missing, the result is FAIL (see a Pro edition requirement), not PASS.
 
 **Evidence.** Passing negative tests.
 

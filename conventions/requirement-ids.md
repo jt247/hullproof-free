@@ -4,7 +4,7 @@
 
 `SEC-[DOMAIN]-[NUMBER]`
 
-For example: `SEC-AUTH-001`, `SEC-API-014`, `SEC-DB-008`, `SEC-AI-022`.
+For example: `SEC-AUTH-001`, `SEC-API-020`, `SEC-DB-008`, `SEC-AI-015`.
 
 ## Domain codes
 

@@ -1,8 +1,8 @@
 # Breach Runbook Template
 
-Covers SEC-LOG-024 (CRITICAL) and the register in SEC-LOG-023, plus SEC-LOG-025, 026 and 064, in `docs/hullproof/INCIDENT-RESPONSE.md`. Save as `docs/security/BREACH-RUNBOOK.md` (or the private location in `STAGE.md`). Read the deadline table and notice content tables in `INCIDENT-RESPONSE.md` for each law; do not rely on this sheet for legal content. This is a working aid, not legal advice. Delete this note.
+Covers SEC-LOG-024 (CRITICAL) and the register in a Pro edition requirement, plus a Pro edition requirement, 026 and 064, in `docs/hullproof/INCIDENT-RESPONSE.md`. Save as `docs/security/BREACH-RUNBOOK.md` (or the private location in `STAGE.md`). Read the deadline table and notice content tables in `INCIDENT-RESPONSE.md` for each law; do not rely on this sheet for legal content. This is a working aid, not legal advice. Delete this note.
 
-Requirement IDs in this template that have no entry in your `docs/hullproof` folder (SEC-LOG-023 for example) are Hullproof Pro requirements; cite them by ID as written.
+Requirement IDs in this template that have no entry in your `docs/hullproof` folder (a Pro edition requirement for example) are Hullproof Pro requirements; cite them by ID as written.
 
 ## First hour
 
@@ -33,6 +33,32 @@ Fill one row per market named in `STAGE.md`. Take the regulator, deadline and re
 | | | | | | |
 
 Reasons for delay if a deadline is passed: [field to fill]. South Africa: the organisation and Information Officer are registered on the regulator portal before any incident: yes or no, date.
+
+## Nigeria: computer system incident report to ngCERT (SEC-LOG-024)
+
+This is separate from the NDPC breach notice. It goes to a different body on its own clock. The notice rule, trigger and deadline are in `INCIDENT-RESPONSE.md`; read them there. Look up the current ngCERT reporting route before an incident and write it here: [route, checked on YYYY-MM-DD].
+
+Decision step. Ask: is the event an attack, intrusion or other disruption liable to hinder the functioning of another computer system or network?
+
+| Question | Answer |
+|----------|--------|
+| Detected at (the clock starts here) | [date and time] |
+| Is it an attack, intrusion or disruption liable to hinder another computer system or network | Yes, no, or counsel needed. Write the reasoning either way. |
+| Report sent to ngCERT, directly or through the sectoral CERT | [date and time, or "not required" with the reason] |
+
+Report outline. Fill in one report per event.
+
+| Section | Content |
+|---------|---------|
+| Reporter | Organisation, contact name, email, phone |
+| What happened | Short plain description |
+| When it was detected | Date and time, time zone |
+| Systems affected | Names, hosting, what they do, other organisations they connect to |
+| Effect so far | Services down, data affected, other systems at risk |
+| Steps taken | Containment, evidence kept, fixes started |
+| Next update | When you will send a follow up |
+
+Also file the NDPC breach notice in the market table above if personal data is involved.
 
 ## Notices
 

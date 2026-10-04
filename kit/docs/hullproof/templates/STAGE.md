@@ -15,7 +15,7 @@ Save as `docs/security/STAGE.md`. Every audit and pre launch run reads this file
 | Markets excluded | Any named market the product does not serve. "Global" means every named market unless it is listed here. |
 | Geography control evidence (one line per excluded market) | Required for every excluded market: the technical block that keeps that market out and where it is enforced (for example a country allowlist at signup and checkout), or a count of accounts and payments by country showing zero, with its source and date. An excluded market with no evidence line stays in force. |
 | Live target | The one host the auditor may send read only requests to, as https://host (or none). The hook reads this row. Confirm it with the auditor before every run: a repository can name any host here. |
-| Release scope | Which of web, mobile and API ship in this release. Out of scope targets are recorded as not applicable with that reason. |
+| Release scope | Which of web, mobile and API ship in this release. Out of scope targets are recorded as not applicable with that reason. For a BLOCKER your word is not enough: attach the release record (the build or deploy list, or the store submission record) that shows the target is absent, and a search showing that no code for it is deployed from this commit. Server code, such as a billing webhook for a mobile app, stays in scope. |
 | Is the audited commit live in production? | Yes or no, and the production commit SHA if known |
 | Production project ids | Names and ids of the production database, hosting and storage projects, so the local env can be compared to them. No keys. |
 | Risk acceptances location | Path or link. See `templates/ACCEPTED-RISK.md`. |
@@ -32,15 +32,16 @@ One yes or no per gate. A No marks the gate's IDs NOT APPLICABLE in every audit 
 
 | Gate | Question | Answer | Evidence line (commit, exact patterns, result counts) |
 |------|----------|--------|---------------|
-| GATE-TOOLS | Does the product give a model tools (functions, agents, code execution, browsing, file access, SQL)? | Yes or no | Commit, patterns and counts |
-| GATE-MCP | Does the product expose an MCP server? | Yes or no | Commit, patterns and counts |
-| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Yes or no | Files checked and result |
+| GATE-TOOLS | Does the product give a model tools (functions it can call, agents, code execution, browsing, file access or SQL), or does model output cause, select or parameterize any action the product performs, whether or not through a tool interface? | Yes or no | Commit, patterns and counts |
+| GATE-MCP | Does the product expose an MCP server that outside clients or agents can call? | Yes or no | Commit, patterns and counts |
+| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Yes or no | Commit, patterns and counts |
 | GATE-CONTAINERS | Does the project build container images? | Yes or no | Commit, patterns and counts |
-| GATE-TENANTS | Can one deployment hold data for more than one tenant, organisation, workspace or team? | Yes or no | Commit, patterns and counts |
-| GATE-URLFETCH | Does server code fetch a URL that a user, a customer or stored data supplies (link previews, import from URL, image proxy, webhook delivery, document or screenshot rendering)? | Yes or no | Commit, patterns and counts |
-| GATE-WEBHOOKS | Does the product send webhooks to URLs that customers supply? | Yes or no | Commit, patterns and counts |
-| GATE-PAYMENTS | Does the product take payments or grant paid entitlements through a provider or an app store? | Yes or no | Commit, patterns and counts |
-| GATE-UPLOADS | Does the product accept user uploaded files, or keep user data in object storage buckets? | Yes or no | Commit, patterns and counts |
+| GATE-TENANTS | Can one deployment hold data for more than one tenant, organisation, workspace, team or other group of customers? | Yes or no | Commit, patterns and counts |
+| GATE-AUTHSERVER | Does the product issue OAuth or OpenID Connect authorization codes or tokens to other applications (public API clients, partner apps, its own MCP server)? | Yes or no | Commit, patterns and counts, or the owner's dated written answer |
+| GATE-URLFETCH | Does any server code request a URL, host, path or file that a user, a stored record, an imported file or a model chose? | Yes or no | Commit, patterns and counts, or the owner's dated written answer |
+| GATE-WEBHOOKS | Does the product send webhooks to URLs that customers supply, or request any other URL that a user chooses (link previews, import from URL)? | Yes or no | Commit, patterns and counts, or the owner's dated written answer |
+| GATE-PAYMENTS | Does the product take payments or grant paid entitlements through a payment provider or an app store? | Yes or no | Commit, patterns and counts |
+| GATE-UPLOADS | Does the product accept user uploaded files from any source (browser, client SDK, mobile picker, base64 or data URL body, inbound email attachment, avatar or file import), or keep user data in object storage buckets? | Yes or no | Commit, patterns and counts |
 | GATE-STAFF | Does anyone besides the owner hold an admin, staff or support role, or can staff act inside customer accounts? | Yes or no | Query, or the owner's signed and dated statement (a fact no repository can show) |
 | GATE-MARKET-NG | Does the product process personal data of people in Nigeria? | Yes or no | Markets rows above, plus the geography check |
 | GATE-MARKET-EU | Does the product process personal data of people in the EU, or place an AI feature on the EU market? | Yes or no | Markets rows above, plus the geography check |

@@ -1,10 +1,10 @@
 # Hullproof Lite Checklist
 
-A short checklist for a solo builder or small team that wants the 54 things not to get wrong before sharing a link. Every row comes from a full Hullproof requirement. Each one is a BLOCKER or a LAUNCH stage CRITICAL, and each has a five minute check you can run yourself.
+A short checklist for a solo builder or small team that wants the 56 things not to get wrong before sharing a link. Every row comes from a full Hullproof requirement. Each one is a BLOCKER or a LAUNCH stage CRITICAL, and each has a five minute check you can run yourself.
 
 ## How this relates to the full free edition
 
-Lite is a subset, not a smaller edition. The free edition still holds all 106 BLOCKER and LAUNCH stage CRITICAL requirements, and the gate verdict still comes from `/hullproof-prelaunch` run on all 106. Passing every row below is not the same as READY. Use Lite to catch the common failures early and to find out where to start.
+Lite is a subset, not a smaller edition. The free edition still holds every BLOCKER and every LAUNCH stage CRITICAL requirement, and the gate verdict still comes from `/hullproof-prelaunch` run on all of them. Passing every row below is not the same as READY. Use Lite to catch the common failures early and to find out where to start.
 
 ## How to mark results
 
@@ -15,10 +15,10 @@ Tick the box when you ran the check and it passed. Leave it empty when you have 
 | Done | ID | Severity | What to do | How to check in five minutes |
 |---|---|---|---|---|
 | [ ] | [SEC-AUTH-001](AUTH.md#sec-auth-001-no-custom-password-storage-or-token-generation) | CRITICAL | Use your auth provider for passwords and sessions. Do not write your own hashing, token or reset code. | Search the auth, session and reset code for bcrypt, createHash, createHmac and Math.random. Any hit needs a written reason. |
-| [ ] | [SEC-AUTH-002](AUTH.md#sec-auth-002-server-verifies-identity-tokens-before-trusting-them) | BLOCKER | Make the server check every login token before it trusts it. A token with a changed body or no signature must be refused. | Call three protected endpoints with no token, an edited token and an expired token. All three must return 401 or 403. |
+| [ ] | [SEC-AUTH-002](AUTH.md#sec-auth-002-server-verifies-identity-tokens-before-trusting-them) | BLOCKER | Make the server check every login token before it trusts it. Refuse a token with a changed body, no signature, or the wrong signer, audience or issuer. | Send each of these to one protected endpoint: no token, an edited token, an expired token, an alg: none token, a token signed by another key, a signed token for another audience, and one for another issuer. All seven must return 401 or 403. |
 | [ ] | [SEC-AUTH-008](AUTH.md#sec-auth-008-no-default-shared-or-seeded-accounts-in-production) | BLOCKER | Remove test, demo and seeded accounts from production. Nobody should share a login. | List production users and compare them with your seed files. There should be no matches. |
 | [ ] | [SEC-AUTH-010](AUTH.md#sec-auth-010-no-authentication-bypass-paths-in-production) | BLOCKER | Delete any shortcut that skips login, such as a dev login route or a header that sets the user. | Search for routes and flags named dev-login, test-login, impersonate and bypass. Confirm none works in production. |
-| [ ] | [SEC-AUTH-017](AUTH.md#sec-auth-017-logout-ends-the-session-on-the-server) | CRITICAL | Make logout end the session on the server, not only in the browser. | Copy your tokens, log out, then replay them with curl. Both the refresh and a protected call must fail. |
+| [ ] | [SEC-AUTH-017](AUTH.md#sec-auth-017-logout-ends-the-session-on-the-server) | CRITICAL | Make logout end the session on the server, not only in the browser. | Copy your tokens, log out, then replay them with curl. The refresh token must fail at once, the old access token must fail on a sensitive action such as a payment or an account change, and any call must fail once the access token lifetime has passed. |
 
 ## Authorization
 
@@ -30,6 +30,7 @@ Tick the box when you ran the check and it passed. Leave it empty when you have 
 | [ ] | [SEC-AUTHZ-010](AUTH.md#sec-authz-010-ownership-policies-on-user-owned-tables) | BLOCKER | Turn on ownership rules in the database for tables that hold user data, so users can only reach their own rows. | Using only the public key and user A's token, try to read, edit and delete user B's rows. Expect no rows or a permission error. |
 | [ ] | [SEC-AUTHZ-013](AUTH.md#sec-authz-013-no-operation-crosses-a-tenant-boundary) | BLOCKER | If you have teams or workspaces, never let one team see or change another team's data. | Create two teams. As an admin of team X, request team Y's records by ID and with no filter. No Y data may appear. |
 | [ ] | [SEC-AUTHZ-020](AUTH.md#sec-authz-020-admin-functions-guarded-by-a-server-side-admin-role-check) | BLOCKER | Guard every admin function with a server side admin check. | List your admin routes and actions. Call each one as a normal user and confirm it is refused. |
+| [ ] | [SEC-DATA-040](PRIVACY.md#sec-data-040-deletion-and-export-act-only-on-the-callers-own-data) | BLOCKER | Make account deletion, export and correction act only on the signed in user's own data. | As user B, call delete, export and correction with user A's id in the body, query and path. Each must be refused or touch only user B's data. |
 
 ## API security
 
@@ -40,6 +41,7 @@ Tick the box when you ran the check and it passed. Leave it empty when you have 
 | [ ] | [SEC-API-125](API-SECURITY.md#sec-api-125-set-prices-and-plans-from-the-server-catalog) | BLOCKER | Take prices and plans from your own server catalog, never from the request. | In test mode, change the price, plan and currency in the checkout request. The checkout must still use your catalog values. |
 | [ ] | [SEC-API-126](API-SECURITY.md#sec-api-126-grant-entitlements-only-from-verified-server-side-signals) | BLOCKER | Grant paid access only when a verified payment signal reaches your server. | Open the checkout success URL without paying. Nothing must be granted. |
 | [ ] | [SEC-API-127](API-SECURITY.md#sec-api-127-match-provider-payment-details-to-the-order-before-granting) | CRITICAL | Before granting access, match the payment amount, currency and order to what you expected. | Replay a verified event with a lower amount or a different product. None of them may grant access. |
+| [ ] | [SEC-DATA-024](PRIVACY.md#sec-data-024-no-endpoint-returns-personal-data-to-an-unauthenticated-caller) | BLOCKER | Make sure no endpoint, table or view returns personal data to someone who is not signed in. | Using only the public key, call every table, view, function and route. Search the responses for email, phone, birth date and national ID patterns. Expect none. |
 
 ## Secrets
 
@@ -49,7 +51,7 @@ Tick the box when you ran the check and it passed. Leave it empty when you have 
 | [ ] | [SEC-SECRETS-003](SECRETS.md#sec-secrets-003-keys-that-bypass-access-control-stay-in-trusted-server-code) | BLOCKER | Use keys that bypass access control, such as a Supabase service role key, only in trusted server code. | Search the code for every place the key is read. Each must be server only. |
 | [ ] | [SEC-SECRETS-004](SECRETS.md#sec-secrets-004-no-valid-secret-in-the-repository-or-its-history) | BLOCKER | Make sure no working secret sits in your repository or its history. | Run gitleaks over the full history of all branches. Expect zero findings, or only keys you have already revoked. |
 | [ ] | [SEC-SECRETS-010](SECRETS.md#sec-secrets-010-leaked-secrets-are-revoked-and-rotated-first) | CRITICAL | Write down how to revoke and replace each production secret, and do it first when one leaks. | Read the steps for each secret. Rotate one on staging and confirm the old value is refused. |
-| [ ] | [SEC-LOG-001](OBSERVABILITY.md#sec-log-001-no-credentials-or-payment-data-in-logs) | CRITICAL | Keep passwords, tokens and card data out of your logs and error reports. | Run sign in, reset, payment and webhook flows on staging, force a failure, then search the exported logs for the test credentials. |
+| [ ] | [SEC-LOG-001](OBSERVABILITY.md#sec-log-001-no-credentials-or-payment-data-in-logs) | CRITICAL | Keep passwords, tokens and card data out of your logs and error reports. | Run sign in, reset, magic link, invite, payment and webhook flows on staging, force a failure, then search the exported logs for the test credentials and tokens, including tokens that sit in URLs. |
 
 ## Database
 
@@ -97,7 +99,7 @@ Tick the box when you ran the check and it passed. Leave it empty when you have 
 
 | Done | ID | Severity | What to do | How to check in five minutes |
 |---|---|---|---|---|
-| [ ] | [SEC-CLOUD-012](INFRASTRUCTURE-SECURITY.md#sec-cloud-012-mfa-on-every-privileged-platform-account) | CRITICAL | Turn on two factor sign in for every account that can deploy, read production keys, or change DNS and billing. | List members on each platform with their capabilities and MFA status. Include the domain registrar. |
+| [ ] | [SEC-CLOUD-012](INFRASTRUCTURE-SECURITY.md#sec-cloud-012-mfa-on-every-privileged-platform-account) | CRITICAL | Turn on two factor sign in for every account that can deploy, read production keys, or change DNS and billing. Owner and admin accounts use a passkey or security key where the platform offers one, and SMS alone does not count. | List members on each platform with their capabilities and MFA status. Include the domain registrar. For each owner account, confirm a passkey or security key is registered. |
 | [ ] | [SEC-CLOUD-016](INFRASTRUCTURE-SECURITY.md#sec-cloud-016-no-secrets-in-container-images) | BLOCKER | Keep secrets out of container images. | Scan the built image with trivy or gitleaks and read docker history for ENV, ARG and COPY values. |
 | [ ] | [SEC-DB-016](DATABASE-SECURITY.md#sec-db-016-no-reset-style-rollback-against-remote-databases-or-real-data) | CRITICAL | Never run reset or rollback commands against a remote database or real data. | Search scripts, CI and agent config for migration down, db reset, `--linked` and `--db-url`. None may target a real database. |
 | [ ] | [SEC-DATA-019](DATA-PROTECTION.md#sec-data-019-buckets-holding-user-data-have-no-public-access-path) | BLOCKER | Make sure storage buckets holding user files cannot be read publicly. | Request a known object URL without a token. Expect 400, 401, 403 or 404. |
@@ -116,8 +118,8 @@ Tick the box when you ran the check and it passed. Leave it empty when you have 
 
 ## What Lite does not cover
 
-Lite leaves out areas the full free edition covers, including payments beyond the basics above, file uploads, webhooks in depth, multi tenant data separation beyond the core checks, privacy and the markets you serve, incident response and breach deadlines, and mobile apps. If your product touches any of these, Lite is not enough, so run `/hullproof-prelaunch` on the full set.
+Lite leaves out areas the full free edition covers, including payments beyond the basics above, file uploads, webhooks in depth, multi tenant data separation beyond the core checks, privacy and the markets you serve, incident response and breach deadlines, mobile apps, MCP servers, retrieval over your own documents (RAG), and tables whose content several users read. If your product touches any of these, Lite is not enough, so run `/hullproof-prelaunch` on the full set.
 
 ## Free and Pro
 
-The free edition holds the 106 BLOCKER and LAUNCH stage CRITICAL requirements, with the standard, the audit workflow and the pre launch gate. Pro holds every requirement in the registry, including the HIGH, MEDIUM and LOW ones and the later stage CRITICAL ones, with the same tooling. Lite is the same in both editions.
+The free edition holds every BLOCKER and every LAUNCH stage CRITICAL requirement, with the standard, the audit workflow and the pre launch gate. Pro holds every requirement in the registry, including the HIGH, MEDIUM and LOW ones, with the same tooling. Lite is the same in both editions.

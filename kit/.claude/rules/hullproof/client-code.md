@@ -11,7 +11,7 @@ paths:
 ---
 # Client code rules
 
-Read `docs/hullproof/SECRETS.md` and `docs/hullproof/FRONTEND-SECURITY.md` when handling secrets or rendering untrusted content.
+Before editing these files, open the Coverage map in `docs/hullproof/SECRETS.md` and `docs/hullproof/FRONTEND-SECURITY.md`, find the rows for your change, then read only those requirement blocks (list them with `grep -n '^### SEC-' docs/hullproof/SECRETS.md`, then Read with an offset). Do not load a whole document.
 
 1. Client code ships to the user. Nothing here is secret and nothing here enforces access.
 2. Only values safe for public exposure may use public prefixes such as `NEXT_PUBLIC_` or `EXPO_PUBLIC_`. Service role keys and API secrets never do.

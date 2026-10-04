@@ -12,7 +12,7 @@ Government guidance advises using agents only for low risk tasks at first (CISA 
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 5 of the 29 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 5 of the 32 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 27. Pro goes further on how far you trust your coding agents: what each one may run and reach, how its tools and servers are vetted, and how its changes are reviewed.
 
 ## Requirement index
 
@@ -36,39 +36,15 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| MCP server credentials and token scope | DEPENDENCIES.md | None | SEC-AGENT-001 |
-| Approved MCP server, plugin and connector inventory | None | None | SEC-AGENT-002 |
-| MCP servers from the official publisher at a pinned version | AI-SECURITY.md | None | SEC-AGENT-003 |
-| MCP tool auto approval and untrusted tool output | None | None | SEC-AGENT-004 |
-| MCP tool definitions reviewed on install and on change | AI-SECURITY.md | None | SEC-AGENT-005 |
-| Policy hooks cover MCP calls and fail closed | None | None | SEC-AGENT-006 |
 | Authentication on MCP servers the product exposes | None | None | SEC-AGENT-007 |
 | Per call authorization on product MCP tools | AI-SECURITY.md | MCP server authorization | SEC-AGENT-008 |
 | No token passthrough to upstream APIs | None | None | SEC-AGENT-009 |
-| HTTP MCP transport: Origin check and localhost binding | None | None | SEC-AGENT-010 |
 | MCP servers and third party tools the product consumes | AI-SECURITY.md | None | None in this document |
 | Production secrets kept out of agent context | SECRETS.md | None | SEC-AGENT-011 |
-| Agent deny rules for secret files | None | None | SEC-AGENT-012 |
-| Rotation of secrets exposed in an agent session | SECRETS.md, INCIDENT-RESPONSE.md | None | SEC-AGENT-013 |
 | No direct agent path to production: push, migrate, deploy | DEPENDENCIES.md | None | SEC-AGENT-014 |
-| Agent authored code passes the same merge gates as human code | DEPENDENCIES.md, SECRETS.md | None | SEC-AGENT-016 |
-| Human explanation of security sensitive changes | GOVERNANCE.md | None | SEC-AGENT-017 |
-| Approval gate and command allowlist for agent commands | None | None | SEC-AGENT-018 |
-| Unattended, headless and scheduled agent runs | None | None | SEC-AGENT-019 |
-| Untrusted repositories opened without their agent configuration | None | None | SEC-AGENT-020 |
-| CI and event triggered agents | DEPENDENCIES.md | None | SEC-AGENT-021 |
 | Package hallucination and slopsquatting in agent suggested dependencies | DEPENDENCIES.md | None | None in this document |
-| Agent instruction, rules, memory and MCP configuration files | None | None | SEC-AGENT-023 |
-| Agents cannot widen their own permissions | None | None | SEC-AGENT-024 |
-| Subagent tool scope and third party subagent definitions | None | None | SEC-AGENT-027 |
-| Subagent reports treated as data and no secrets in task messages | None | None | SEC-AGENT-028 |
-| Built in agent sandbox on and failing closed | None | None | SEC-AGENT-025 |
-| Dev container or VM isolation with network allowlist | None | None | SEC-AGENT-026 |
 | Which security tasks an agent may perform and which need a human | GOVERNANCE.md | None | None in this document |
 | Agent threats in the threat model | GOVERNANCE.md | None | None in this document |
-| Workaround after a refused tool | None | Workaround after refused tool | SEC-AGENT-029 |
-| Committed agent configuration content scan | None | Committed agent config content | SEC-AGENT-030 |
-| Agent settings outside the repository | None | Agent settings outside repo | SEC-AGENT-031 |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -105,6 +81,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Validate expiry and audience on every request; the 2026-07-28 protocol is stateless, so never treat a state handle passed as a tool argument as proof of identity.
 - Default stack: when Supabase Auth issues the tokens, verify the JWT signature, `exp` and `aud` server side before any tool runs.
 - Owned by SEC-AGENT-008 in AGENTIC-DEV-SECURITY.md for this root cause (MCP server authorization); report one finding.
+- Scope: this requirement covers a product MCP server as a resource server. A product that must issue OAuth tokens to MCP clients itself should delegate that to a managed authorization server and, in its dashboard, confirm that authorization codes are single use and short lived and that client registration and redirect URIs are exact matches (ASVS V10.4). Record the choice in the architecture record (a Pro edition requirement).
 - Supabase documents the `aud` claim of its access tokens as `authenticated` or `anon`, a role value and not a per server audience, so a stock token cannot show that it was meant for the MCP server (Supabase JWT claims reference, checked 2026-10-03 [SRC-356]). Because of that, issue the MCP server its own short lived token with its own audience, or run the check on a custom audience claim, and verify it as in Verify steps 1 and 2. Supabase Auth documents the `aud` claim and a custom access token hook that sets claims.
 
 **Verify.**
@@ -217,13 +194,13 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Before each session, check the shell environment and any credential files for production values; log out of production CLI sessions on agent machines.
 - Default stack: local `.env.local` holds development Supabase, Stripe test mode, Paystack test and similar keys only; production values live in Vercel and Render environment settings; the Supabase service role key for production is never on a laptop.
 - From GROWTH, use a separate Supabase organization for production so development roles cannot read the production service role key.
-- Owned by SEC-SECRETS-009 in SECRETS.md for this root cause (Environment credential separation); report one finding.
-- Agent settings, instruction and MCP files are places where keys end up (an approved command can leave a key in a local settings file). SEC-AGENT-031 owns the scan of those locations and reports counts and line numbers only; a production value found there is reported here.
+- Owned by a Pro edition requirement in SECRETS.md for this root cause (Environment credential separation); report one finding.
+- Agent settings, instruction and MCP files are places where keys end up (an approved command can leave a key in a local settings file). a Pro edition requirement owns the scan of those locations and reports counts and line numbers only; a production value found there is reported here.
 - Solo builder separation recipe (one machine, one linked project): (1) create a staging project and keep only its keys in local `.env.local`; (2) keep production keys only in the host environment store (Vercel, Render) and the password manager; (3) link every CLI on the machine, including the Supabase CLI, to the staging project, and unlink production before an agent session if it was linked for a task; (4) run production migrations from CI after merge. Record the staging and production project identifiers in `docs/security/STAGE.md`.
 
 **Verify.**
-1. Run Gitleaks or TruffleHog over the working directory including untracked files, and over `~/.config`, shell profiles and any `.env*` files, using the Gitleaks `--redact` flag so findings print without the secret; compare found keys against production key prefixes or values from the platform dashboard.
-2. Run `env | cut -d= -f1` in the agent's shell to list variable names only, and confirm no production variable name appears; where a name is also in production, compare `shasum` of the two values without printing either.
+1. Run Gitleaks or TruffleHog over the working directory including untracked files, and over `~/.config`, shell profiles and any `.env*` files, using the Gitleaks `--redact` flag so findings print without the secret; compare found keys against the key labels and last characters that the provider console shows for production keys (not the shared prefix, which every key from one provider has), never against production values.
+2. Run `env | cut -d= -f1` in the agent's shell to list variable names only, and confirm no production variable name appears; where a name is also used in production, ask the owner to check in the provider dashboard which project each local key is bound to, and confirm it is a development project. Never pull production values onto the machine to compare them (for example with `vercel env pull`), because that puts a production secret on the agent machine.
 3. Check Supabase, Vercel, AWS, Stripe and similar CLI logins on the machine and confirm none point at production.
 4. Confirm every MCP server token in the inventory targets development resources. List every connector the coding agent can load at account, project and user scope and record the organization or project each is authorized to; any grant that includes a production project fails. Ask the agent to list production projects through each connector and expect none.
 5. Release environment check: compare the project identifiers in local environment files and CLI link metadata with the production identifiers in `docs/security/STAGE.md`, comparing identifiers and fingerprints, never printing key values. Any match fails.
@@ -234,7 +211,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **References.** NIST SSDF 1.1 PO.5.1 [SRC-050]; NIST SP 800-218A PO.5.1.R2 and PO.5.1.R6 [SRC-051]; OWASP Top 10 for Agentic Applications 2026 ASI03 [SRC-023]; CISA and partners Careful Adoption of Agentic AI Services 2026 Introduction and Operate: Privileges and authentication [SRC-068]; Claude Code docs Permissions: Read and Edit, Sandboxing: default reads and env, Data usage [SRC-147]; Cursor docs Ignore file [SRC-148].
 
-**AI Agent Instruction.** Never ask for, read, print, copy or use a production credential. If you find one in the workspace, environment or configuration, stop work, report its location (not its value) as a BLOCKER, and tell the developer to remove it and rotate it under SEC-AGENT-013. If a task appears to need production access, stop and hand it to a human.
+**AI Agent Instruction.** Never ask for, read, print, copy or use a production credential. If you find one in the workspace, environment or configuration, stop work, report its location (not its value) as a BLOCKER, and tell the developer to remove it and rotate it under a Pro edition requirement. If a task appears to need production access, stop and hand it to a human.
 
 ---
 
@@ -257,14 +234,14 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Give agent GitHub Apps and tokens the minimum permissions; they may open pull requests but not merge to the production branch.
 - Keep production deploy hooks and tokens out of agent reach (SEC-AGENT-011); deploy from the platform's Git integration after merge.
 - Default stack: Vercel and Render deploy production from the protected branch only; Supabase production migrations run from CI after merge, not from a local agent session.
-- Changes made through provider APIs and CLIs (environment settings, database changes, payment or hosting configuration) count as paths to production. Owned by SEC-AGENT-029 for the case where such a change follows a refused tool path; report one finding there and rate the changed production state here.
+- Changes made through provider APIs and CLIs (environment settings, database changes, payment or hosting configuration) count as paths to production. Owned by a Pro edition requirement for the case where such a change follows a refused tool path; report one finding there and rate the changed production state here.
 
 **Verify.**
 1. Export the production branch ruleset and confirm pull request required, no force push, and no agent identity on the bypass list.
 2. Using the agent's token, attempt a direct push to the production branch in a test and confirm it is rejected.
 3. Review the agent's GitHub App permissions and confirm it cannot merge to or administer the production branch.
 4. Confirm no production deploy token or hook URL exists on agent machines.
-5. Read the audit logs of each production provider (hosting, database, payments, source control) for the period agent sessions ran, and confirm no change was made by an agent identity or from an agent machine, and treat any change made from a connector session during the period agent sessions ran as an agent change, matched by time window. Any hit is a finding here, and a hit that follows a refusal is also reported under SEC-AGENT-029.
+5. Read the audit logs of each production provider (hosting, database, payments, source control) for the period agent sessions ran, and confirm no change was made by an agent identity or from an agent machine, and treat any change made from a connector session during the period agent sessions ran as an agent change, matched by time window. Any hit is a finding here, and a hit that follows a refusal is also reported under a Pro edition requirement.
 
 **Evidence.** Ruleset export, rejected push output, app permission screenshot, and the provider audit log check.
 

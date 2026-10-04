@@ -6,13 +6,17 @@
 | Topics covered | Authentication, session management, OAuth and OpenID Connect; authorization, per user data isolation, multi-tenancy, admin systems and support tools (appended below) |
 | Part of | Hullproof Security Standard, see STANDARD.md |
 
-This document covers how users prove who they are (login, passwords, MFA, recovery, identity tokens), how sessions are created, stored, cached, timed out and ended, how the product uses OAuth and OpenID Connect as a client, and how business customers sign in through enterprise single sign on. Authorization requirements (SEC-AUTHZ) follow the authentication requirements in this same file. General cookie rules, CSP and XSS live in FRONTEND-SECURITY.md; per source rate limits live in API-SECURITY.md; token storage on the device lives in MOBILE-SECURITY.md; password hashing parameters and random value generation live in DATA-PROTECTION.md; admin and staff MFA lives in the authorization part of this file.
+This document covers how users prove who they are (login, passwords, MFA, recovery, identity tokens), how sessions are created, stored, cached, timed out and ended, how the product uses OAuth and OpenID Connect as a client, the rules for a product that issues OAuth or OpenID Connect tokens itself, and how business customers sign in through enterprise single sign on. Authorization requirements (SEC-AUTHZ) follow the authentication requirements in this same file. General cookie rules, CSP and XSS live in FRONTEND-SECURITY.md; per source rate limits live in API-SECURITY.md; token storage on the device lives in MOBILE-SECURITY.md; password hashing parameters and random value generation live in DATA-PROTECTION.md; admin and staff MFA lives in the authorization part of this file.
 
 NIST SP 800-63B-4 is the normative baseline for authentication. Where it is stricter than OWASP ASVS 5.0.0, Hullproof follows it and says so in the References field.
 
+The requirements in this file paraphrase and cite OWASP ASVS, OWASP cheat sheets and OWASP Top 10 lists by identifier and link. They do not copy the text of those sources.
+
+On the default stack the identity provider's endpoints (Supabase Auth) and the Data API are public and answer to the publishable key. A control that runs only in the product's own server code does not stop a caller who goes straight to those endpoints. Where a requirement below says it must hold at the provider boundary, its Verify steps send the attack straight to the provider endpoint or the Data API, without passing through the product's server code. Where the provider or plan cannot enforce the rule, the requirement says what to record.
+
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 22 of the 82 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 22 of the 88 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 66. Pro covers the parts around sign in that attackers go for next, including sessions, account recovery, OAuth settings, tenant switching and admin and support tools.
 
 ## Requirement index
 
@@ -53,35 +57,19 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| Password authentication | FRONTEND-SECURITY.md | None | SEC-AUTH-003, SEC-AUTH-008, SEC-AUTH-009 |
+| Password authentication | FRONTEND-SECURITY.md | None | SEC-AUTH-008 (more in Pro edition) |
 | Password storage | DATA-PROTECTION.md | None | SEC-AUTH-001 |
-| MFA | INFRASTRUCTURE-SECURITY.md, MOBILE-SECURITY.md | None | SEC-AUTH-014, SEC-AUTH-015, SEC-AUTHZ-021, SEC-AUTHZ-026 |
-| Password reset | API-SECURITY.md | None | SEC-AUTH-012, SEC-AUTHZ-034 |
-| Email verification | API-SECURITY.md | None | SEC-AUTH-040, SEC-AUTH-027 |
-| OAuth | PRIVACY.md | Redirect sinks | SEC-AUTH-030, SEC-AUTH-031, SEC-AUTH-033, SEC-AUTH-036, SEC-AUTH-039 |
+| MFA | INFRASTRUCTURE-SECURITY.md, MOBILE-SECURITY.md | None | SEC-AUTHZ-021 (more in Pro edition) |
+| OAuth | PRIVACY.md | Redirect sinks | SEC-AUTH-030 (more in Pro edition) |
 | OIDC | None | None | SEC-AUTH-034 |
-| SSO (enterprise) | None | None | SEC-AUTH-043, SEC-AUTH-044, SEC-AUTH-045, SEC-AUTH-046 |
-| Session creation | DATA-PROTECTION.md, FRONTEND-SECURITY.md | None | SEC-AUTH-010, SEC-AUTH-026 |
-| Session rotation | None | None | SEC-AUTH-019, SEC-AUTH-032 |
-| Session expiration | None | None | SEC-AUTH-023, SEC-AUTHZ-027 |
-| Token handling | FRONTEND-SECURITY.md, MOBILE-SECURITY.md, OBSERVABILITY.md | None | SEC-AUTH-022, SEC-AUTH-025, SEC-AUTH-037 |
-| JWT validation | None | None | SEC-AUTH-002, SEC-AUTH-035, SEC-AUTH-038 |
-| Refresh tokens | MOBILE-SECURITY.md | Account suspension | SEC-AUTH-017, SEC-AUTH-018, SEC-AUTH-024 |
-| Cookies | FRONTEND-SECURITY.md | Session cookie flags | SEC-AUTH-020, SEC-AUTH-021 |
-| Account enumeration | None | None | SEC-AUTH-013 |
-| Brute force protection | API-SECURITY.md, OBSERVABILITY.md | None | SEC-AUTH-007, SEC-AUTH-011 |
-| Credential stuffing | API-SECURITY.md, OBSERVABILITY.md | None | SEC-AUTH-004 |
-| Reauthentication | None | None | SEC-AUTH-006, SEC-AUTH-042 |
-| Privileged actions | OBSERVABILITY.md | None | SEC-AUTHZ-007, SEC-AUTHZ-020, SEC-AUTHZ-032 |
-| Account recovery | None | None | SEC-AUTH-005 |
-| Logout | None | None | SEC-AUTH-029, SEC-AUTH-048 |
-| Device and session management | None | None | SEC-AUTH-028, SEC-AUTH-041, SEC-AUTH-047, SEC-AUTHZ-025 |
-| Authentication inventory | None | None | SEC-AUTH-016 |
-| Role and permission model | None | None | SEC-AUTHZ-001, SEC-AUTHZ-002, SEC-AUTHZ-005, SEC-AUTHZ-006, SEC-AUTHZ-009 |
-| Object and field level authorization | None | Object lookup before model call | SEC-AUTHZ-003, SEC-AUTHZ-004, SEC-AUTHZ-008, SEC-AUTHZ-010 |
-| Tenancy and tenant isolation | None | Tenant membership insert | SEC-AUTHZ-012, SEC-AUTHZ-013, SEC-AUTHZ-014, SEC-AUTHZ-015, SEC-AUTHZ-016, SEC-AUTHZ-017, SEC-AUTHZ-018, SEC-AUTHZ-019 |
-| Admin surfaces | None | None | SEC-AUTHZ-022, SEC-AUTHZ-023, SEC-AUTHZ-028 |
-| Support access and impersonation | None | None | SEC-AUTHZ-029, SEC-AUTHZ-030, SEC-AUTHZ-031, SEC-AUTHZ-033, SEC-AUTHZ-035 |
+| Session creation | DATA-PROTECTION.md, FRONTEND-SECURITY.md | None | SEC-AUTH-010 (more in Pro edition) |
+| JWT validation | None | None | SEC-AUTH-002 (more in Pro edition) |
+| Refresh tokens | MOBILE-SECURITY.md | Account suspension | SEC-AUTH-017 (more in Pro edition) |
+| Privileged actions | OBSERVABILITY.md | None | SEC-AUTHZ-007, SEC-AUTHZ-020 (more in Pro edition) |
+| Role and permission model | None | None | SEC-AUTHZ-002, SEC-AUTHZ-005, SEC-AUTHZ-006 (more in Pro edition) |
+| Object and field level authorization | None | Object lookup before model call | SEC-AUTHZ-003, SEC-AUTHZ-004, SEC-AUTHZ-010 (more in Pro edition) |
+| Tenancy and tenant isolation | None | Tenant membership insert | SEC-AUTHZ-012, SEC-AUTHZ-013, SEC-AUTHZ-014, SEC-AUTHZ-015 (more in Pro edition) |
+| Support access and impersonation | None | None | SEC-AUTHZ-031 (more in Pro edition) |
 | Realtime channel authorization | None | Realtime channel authorization | SEC-AUTHZ-036 |
 <!-- hullproof:coverage-map:end -->
 
@@ -92,9 +80,8 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Check that no app.json, eas.json, ios or android folder, or expo or react-native dependency exists in any workspace, and that no store listing or TestFlight build exists. Record what was checked, or record the owner's written answer. A mobile scaffold counts as No only if it is not deployed and not reachable by real users at the audited commit; a release scope that leaves a live app out does not make the answer No. | SEC-AUTH-033 |
-| GATE-TENANTS | Can one deployment hold data for more than one tenant, organisation, workspace, team or other group of customers? | Answer from the data model, not from a word list. Run a structural query on the schema: every table with a foreign key to a table other than the users table is a sharing boundary, and so is any table with a membership style name (memberships, members, team_members, org_users or similar). Then search the schema, migrations and source for tenant_id, org_id, organization_id, workspace_id, team_id and the product's own name for the unit that groups customers; these terms are hints. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer that every customer has a separate deployment, cross checked against the schema. | SEC-AUTH-043, SEC-AUTH-044, SEC-AUTH-045, SEC-AUTH-046, SEC-AUTHZ-013 (BLOCKER), SEC-AUTHZ-014 (BLOCKER), SEC-AUTHZ-015, SEC-AUTHZ-016, SEC-AUTHZ-017, SEC-AUTHZ-018, SEC-AUTHZ-019 |
-| GATE-STAFF | Does anyone besides the owner hold an admin, staff or support role, or can staff act inside customer accounts? | Check the role column, role table or admin list and confirm only the owner's account holds a role above user, and that no support or impersonation feature exists. Record the query or search, or record the owner's written answer. This gate does not cover the admin route guard or admin MFA, which apply whenever an admin surface exists. | SEC-AUTHZ-022, SEC-AUTHZ-029, SEC-AUTHZ-030, SEC-AUTHZ-031, SEC-AUTHZ-032, SEC-AUTHZ-033, SEC-AUTHZ-034, SEC-AUTHZ-035 |
+| GATE-TENANTS | Can one deployment hold data for more than one tenant, organisation, workspace, team or other group of customers? | Answer from the data model, not from a word list. A sharing boundary is a table that groups users or customers (an organisation, team, workspace or account) and that other tables reference to decide who may see their rows. Look for such a table in the schema. A foreign key from one ordinary table to another (orders to products, comments to posts) is not a sharing boundary on its own. A table with a membership style name (memberships, members, team_members, org_users or similar) points to one. A query that lists foreign keys to tables other than the users table is a helper for finding candidates, not the test. Then search the schema, migrations and source for tenant_id, org_id, organization_id, workspace_id, team_id and the product's own name for the unit that groups customers; these terms are hints. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer that every customer has a separate deployment, cross checked against the schema. | SEC-AUTHZ-013, SEC-AUTHZ-014, SEC-AUTHZ-015 (more in Pro edition) |
+| GATE-STAFF | Does anyone besides the owner hold an admin, staff or support role, or can staff act inside customer accounts? | Check the role column, role table or admin list and confirm only the owner's account holds a role above user, and that no support or impersonation feature exists. Record the query or search, or record the owner's written answer. This gate does not cover the admin route guard or admin MFA, which apply whenever an admin surface exists. | SEC-AUTHZ-031 (more in Pro edition) |
 <!-- hullproof:gates:end -->
 
 ---
@@ -130,7 +117,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Exceptions.** A product that must run its own authentication records the reason, the library used, and the password hashing parameters. The exception needs a named owner, a compensating control and an expiry date. Failure modes for custom tokens: algorithm confusion, no expiry, timing leaks in comparison and no audience. A custom signed token built on a maintained library that pins the algorithm, sets expiry and audience, and compares in constant time is a hygiene finding rated LOW. Custom token logic with any failure mode keeps the CRITICAL rating.
 
-**References.** NIST SP 800-218 SSDF 1.1 PW.1.3 [SRC-050]; OWASP ASVS 5.0.0 v5.0.0-11.4.2 (L2, promoted to LAUNCH), v5.0.0-11.5.1 (L2, promoted to LAUNCH) [SRC-010]; NIST SP 800-63B-4 §3.1.1.2 (storage), §3.2.12 [SRC-060]; OWASP Password Storage Cheat Sheet [SRC-032]; Next.js Authentication guide [SRC-080].
+**References.** NIST SP 800-218 SSDF 1.1 PW.1.3 [SRC-050]; OWASP ASVS 5.0.0 v5.0.0-11.4.2 (L2, promoted to LAUNCH), v5.0.0-11.5.1 (L2, promoted to LAUNCH) [SRC-010]; NIST SP 800-63B-4 §3.1.1.2 (storage), §3.2.12 [SRC-060]; OWASP Password Storage Cheat Sheet [SRC-032]; Next.js Authentication guide [SRC-080]; OWASP Top 10:2025 A07:2025 [SRC-020].
 
 **AI Agent Instruction.** Use the project's identity provider for every sign up, sign in, reset and session operation. Never write password hashing, password comparison, or token generation code. If a feature seems to need custom auth logic, stop and report the need instead of writing it.
 
@@ -146,28 +133,30 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | AUTOMATED TEST, STATIC ANALYSIS |
 
-**Requirement.** Server code MUST verify an identity or access token's signature with an allowlisted algorithm, a key from a preconfigured trusted source for that issuer, and its `exp` and `nbf` validity window before reading any claim from it, and MUST reject the request with 401 when any check fails.
+**Requirement.** Server code MUST verify an identity or access token's signature with an allowlisted algorithm, a key from a preconfigured trusted source for that issuer, its `exp` and `nbf` validity window, its issuer (`iss`), its audience (`aud`) for this service, and its token type before reading any claim from it, and MUST reject the request with 401 when any check fails. An ID token MUST NOT be accepted where an access token is expected. Where a decision uses a scope or authentication level claim (`scope`, `aal`, `acr`), the server MUST read the claim only after these checks and MUST enforce it.
 
-**Why.** A token that is decoded but not verified lets anyone forge a user ID or role. Accepting `alg: none`, an attacker supplied key, or an expired token gives the same result.
+**Why.** A token that is decoded but not verified lets anyone forge a user ID or role. Accepting `alg: none`, an attacker supplied key, or an expired token gives the same result. A token that is correctly signed but was issued for another application or another API of the same issuer passes a signature check alone, so the issuer, audience and type checks are part of verification.
 
 **Implementation.**
 - Verify tokens with the provider SDK or a maintained JWT library configured with a fixed algorithm list and a fixed key set or JWKS URL. Never trust `jku`, `x5u` or `jwk` headers.
 - Treat a decode call without verification as a defect anywhere in server code.
+- Set the expected issuer and audience in configuration. Read the library documentation to see which of `iss`, `aud` and token type it checks for you, and check the rest in code. Do not accept the project's publishable (anon) key token or a service role token as a signed in user's token.
 - Default stack: in Next.js server code use Supabase `getClaims()` (verifies the signature) or `getUser()`. Never use `getSession()` in server code to decide who the caller is, because it reads the cookie without revalidating it.
 - Proxy (formerly Middleware) checks are optimistic. The verified check must also happen in the Route Handler, Server Action or data access layer.
 
 **Verify.**
-1. Write an automated test that calls three protected endpoints chosen by the reviewer with: no token, a token with a changed payload and the original signature, an `alg: none` token, an expired token, and a token signed by a different key. Send each bad token in every channel the endpoint accepts (header, cookie and any other). Each must return 401, and a valid token in the same channel must succeed (positive control).
-2. Run Semgrep for `jwt.decode(`, `jose.decodeJwt(`, and `supabase.auth.getSession(` in server files; each hit must be justified or removed.
-3. Review the verification configuration for a fixed algorithm list and a fixed key source. In a scratch branch replace the verifier with a decode only call and confirm the test fails.
+1. Send seven bad tokens to three protected endpoints and expect 401 each time: none, a changed payload, `alg: none`, expired, another signer, wrong audience, wrong issuer.
+2. Make it an automated test, with the endpoints chosen by the reviewer. Sign the wrong audience token (for example a token issued for another application) and the wrong issuer token with a test key that is trusted only in the test environment. Send each bad token in every channel the endpoint accepts (header, cookie and any other), and confirm a valid token in the same channel succeeds (positive control).
+3. Run Semgrep for `jwt.decode(`, `jose.decodeJwt(`, and `supabase.auth.getSession(` in server files; each hit must be justified or removed.
+4. Review the verification configuration for a fixed algorithm list and a fixed key source. In a scratch branch replace the verifier with a decode only call and confirm the test fails.
 
-**Evidence.** Passing test file with the five negative cases, and the Semgrep report.
+**Evidence.** Passing test file with the seven negative cases, and the Semgrep report.
 
 **Exceptions.** None.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-9.1.1, v5.0.0-9.1.2, v5.0.0-9.1.3, v5.0.0-9.2.1, v5.0.0-7.2.1 [SRC-010]; OWASP Cheat Sheet Series: JSON Web Token [SRC-030]; Supabase Auth session docs (`getClaims()` guidance) [SRC-121]; Next.js Authentication guide (optimistic versus secure checks) [SRC-080].
+**References.** OWASP ASVS 5.0.0 v5.0.0-9.1.1, v5.0.0-9.1.2, v5.0.0-9.1.3, v5.0.0-9.2.1, v5.0.0-9.2.2, v5.0.0-9.2.3, v5.0.0-7.2.1 [SRC-010]; OWASP Top 10:2025 A07:2025 [SRC-020]; OWASP Cheat Sheet Series: JSON Web Token [SRC-030]; Supabase Auth session docs (`getClaims()` guidance) [SRC-121]; Next.js Authentication guide (optimistic versus secure checks) [SRC-080].
 
-**AI Agent Instruction.** Before using any user ID, role or claim from a token in server code, call the provider's verifying function (`getClaims()` or `getUser()` on Supabase). Never use a decode only function or `getSession()` for an access decision. Add the five negative token tests when you add a protected endpoint.
+**AI Agent Instruction.** Before using any user ID, role or claim from a token in server code, call the provider's verifying function (`getClaims()` or `getUser()` on Supabase). Never use a decode only function or `getSession()` for an access decision. Verify issuer, audience and token type as well as the signature. Add the seven negative token tests when you add a protected endpoint.
 
 ---
 
@@ -217,7 +206,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | STATIC ANALYSIS, CODE REVIEW, DYNAMIC TEST |
 
-**Requirement.** A production build MUST NOT contain any route, flag, header, query parameter, or environment switch that creates a session or acts as a user without completing a documented authentication pathway. Every function that creates a session for, or acts as, a user other than through a sign in pathway MUST have an entry in the sign in pathway inventory (SEC-AUTH-016 in AUTH.md, or a list in the security decisions log) with its guard; a staff feature that signs in as a user is documented only when it has that entry.
+**Requirement.** A production build MUST NOT contain any route, flag, header, query parameter, or environment switch that creates a session or acts as a user without completing a documented authentication pathway. Every function that creates a session for, or acts as, a user other than through a sign in pathway MUST have an entry in the sign in pathway inventory (a Pro edition requirement in AUTH.md, or a list in the security decisions log) with its guard; a staff feature that signs in as a user is documented only when it has that entry.
 
 **Why.** Dev login routes, test bypass flags and "act as user" headers left in production let anyone sign in as any user with no credentials.
 
@@ -232,6 +221,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 1. Search for routes or handlers named like `dev-login`, `test-login`, `impersonate`, `bypass`, `as-user`, and for headers or query parameters that set a user ID.
 2. List every environment variable read inside session creation and the authentication middleware, and explain each one; search for environment checks such as `NODE_ENV !== 'production'` around session creation. Search every function that creates or returns a session, whatever its name, and match each to the inventory.
 3. Against the staging URL (never production), call any candidate route found; it must return 404 or 401.
+4. A switch that is true only in production, such as a `NODE_ENV` branch, can differ between staging and production. Diff the environment variable names and the build flags of staging against production, and explain each difference, or run a production build in an isolated environment and repeat step 3 there.
 
 **Evidence.** Search results and the dynamic test output.
 
@@ -255,7 +245,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | DYNAMIC TEST, CODE REVIEW |
 
-**Requirement.** After logout, the server MUST refuse the logged out session's refresh token at once, and MUST refuse its access token at once on sensitive actions (payments, account and credential changes, data export, and admin functions) and on every request after a recorded maximum access token lifetime of no more than 1 hour.
+**Requirement.** After logout, the server MUST refuse the logged out session's refresh token at once, and MUST refuse its access token at once on sensitive actions (payments, account and credential changes, data export, and admin functions) and on every request after a recorded maximum access token lifetime of no more than 1 hour. A sensitive action that a client can reach by calling the Data API or another provider endpoint directly with its access token MUST be covered by the same check at that boundary, or be moved behind server code that makes the check.
 
 **Why.** Logout that only clears the browser leaves a copied token working. Self contained JWTs keep verifying until they expire unless the server checks for revocation.
 
@@ -263,19 +253,23 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Call the provider's sign out on the server side of logout, not just a client state reset.
 - For sensitive actions (payments, account changes, data export, admin), check the token's session against the provider's session store.
 - Keep access token lifetime at 1 hour or less.
+- Record the list of sensitive actions the product has, by category (payments, account and credential changes, data export, admin), in the session policy (a Pro edition requirement).
+- A check in the product's server code does not see a call that goes straight to the Data API. For sensitive tables, either route the access through server code that makes the check, or add a database policy that calls a function in a schema clients cannot reach, which confirms the session row for the token's `session_id` still exists. Follow the security definer rules of SEC-DB-008 in DATABASE-SECURITY.md for that function.
 - Default stack: Supabase `signOut()` deletes the session row, but an issued access JWT still verifies until `exp`. On sensitive actions, check the JWT `session_id` against `auth.sessions` or call `getUser()`. Keep the JWT expiry at the 1 hour default or lower.
-- Default stack: pass the sign out `scope` explicitly and record the choice in the session policy (SEC-AUTH-047). The JavaScript client used by Next.js and Expo defaults to `global`, so a plain logout on a phone also ends the user's web sessions; the Dart and Kotlin clients default to `local`. Use `local` for an ordinary logout that should end only this device.
+- Default stack: pass the sign out `scope` explicitly and record the choice in the session policy (a Pro edition requirement). The JavaScript client used by Next.js and Expo defaults to `global`, so a plain logout on a phone also ends the user's web sessions; the Dart and Kotlin clients default to `local`. Use `local` for an ordinary logout that should end only this device.
 - Default stack (checked 2026-10-03): Supabase documents that `signOut()` removes the affected sessions and destroys their refresh tokens, that access tokens of revoked sessions stay valid until their `exp` claim, that the JavaScript client defaults to the `global` scope, and that checking the JWT `session_id` claim against `auth.sessions` shows whether the user signed out. Test the access token replay step with these facts in mind.
-- A product with no server side logout at all is a finding under this requirement. SEC-AUTH-048 covers only whether an existing logout can be reached.
+- A product with no server side logout at all is a finding under this requirement. a Pro edition requirement covers only whether an existing logout can be reached.
 
 **Verify.**
-1. Capture an access token and refresh token, log out, then replay both with curl directly against the API (WSTG-v42-SESS-06 method). The refresh must fail; a sensitive action must fail.
-2. Replay the access token on an ordinary endpoint after the recorded lifetime; it must fail.
-3. A browser URL reload after logout is not valid evidence.
+1. Capture an access token and refresh token, log out, then replay both with curl directly against the API (WSTG-v42-SESS-06 method); the refresh must fail.
+2. Replay the access token on one sensitive action for every category in the recorded list, not one chosen by the tester; each must fail.
+3. Replay the access token on an ordinary endpoint after the recorded lifetime; it must fail.
+4. Provider boundary: replay the captured access token straight against the Data API (a read and a write on a table that holds sensitive data) with the publishable key, without passing through the app server. Both must fail, or the table must be reachable only through server code.
+5. A browser URL reload after logout is not valid evidence.
 
-**Evidence.** curl transcripts of the replay, and the configured JWT expiry.
+**Evidence.** curl transcripts of the replay for each category, the direct Data API transcript, and the configured JWT expiry.
 
-**Exceptions.** Any waiver needs a named owner, a compensating control and an expiry date.
+**Exceptions.** Any waiver needs a named owner, an approver, a compensating control and an expiry date.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-7.4.1 [SRC-010]; NIST SP 800-63B-4 §5.1 [SRC-060]; OWASP WSTG 4.2 WSTG-v42-SESS-06 [SRC-186]; OWASP Session Management Cheat Sheet [SRC-033]; Supabase Auth session docs [SRC-121]; Supabase Signing out (Sign out and scopes) [SRC-271].
 
@@ -295,27 +289,28 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | CONFIG REVIEW, DYNAMIC TEST |
 
-**Requirement.** The production identity provider and every OAuth provider console MUST list redirect URLs as exact HTTPS values with no wildcard or glob characters and no `http` or localhost entries, and the production Site URL MUST be the production origin. An exact reverse domain custom scheme URL used for a mobile callback under SEC-AUTH-033 is also allowed.
+**Requirement.** The production identity provider and every OAuth provider console MUST list redirect URLs as exact HTTPS values with no wildcard or glob characters and no `http` or localhost entries, and the production Site URL MUST be the production origin. An exact reverse domain custom scheme URL used for a mobile callback under a Pro edition requirement is also allowed.
 
 **Why.** A wildcard or stray development URL lets an attacker receive authorization codes or tokens at a host they control and take over the account.
 
 **Implementation.**
 - Register each production callback as a full exact URL.
-- A mobile app that uses a custom scheme under SEC-AUTH-033 registers the full exact callback (for example `com.example.app://auth/callback`), never a scheme or path pattern.
+- This requirement covers the lists held in the provider consoles. A redirect in the product's own code that sends a user to an attacker chosen address is a finding under a Pro edition requirement, which owns that failure.
+- A mobile app that uses a custom scheme under a Pro edition requirement registers the full exact callback (for example `com.example.app://auth/callback`), never a scheme or path pattern.
 - Keep localhost, preview and Expo Go (`exp://`) redirect values in a separate non production project only (see SECRETS.md for environment separation).
 - Default stack: Supabase Redirect URLs accept `*` and `**` globs, and the Site URL ships as `http://localhost:3000`. The production project must contain neither. Never add the suggested Vercel preview pattern (`https://*-<slug>.vercel.app/**`) to the production project.
 
 **Verify.**
-1. Export the production Supabase Auth URL configuration and each provider console's redirect list; confirm no `*`, no `**`, no `http://` and no localhost values, that every non HTTPS entry is an exact reverse domain custom scheme URL used under SEC-AUTH-033, and that the Site URL equals the production origin.
+1. Export the production Supabase Auth URL configuration and each provider console's redirect list; confirm no `*`, no `**`, no `http://` and no localhost values, that every non HTTPS entry is an exact reverse domain custom scheme URL used under a Pro edition requirement, and that the Site URL equals the production origin.
 2. Start a sign in and change `redirect_to` or `redirect_uri` to another host; the flow must fail.
 
 **Evidence.** Configuration exports and the tamper test result.
 
-**Exceptions.** Any waiver needs a named owner, a compensating control and an expiry date.
+**Exceptions.** Any waiver needs a named owner, an approver, a compensating control and an expiry date.
 
 **References.** IETF RFC 9700 §2.1, §4.1.3, §2.6 [SRC-180]; OWASP ASVS 5.0.0 v5.0.0-10.4.1 [SRC-010]; OWASP Cheat Sheet Series: OAuth2 [SRC-030]; Supabase Auth redirect URLs [SRC-181]; Expo AuthSession (`makeRedirectUri`) [SRC-182].
 
-**AI Agent Instruction.** Never add a wildcard, `http` or localhost redirect URL to production auth settings, and never pass a `redirectTo` built from user input. Add a custom scheme URL only as an exact value for a mobile callback under SEC-AUTH-033. If a flow fails because a URL is missing from the allowlist, add the exact URL to the right environment or stop and report; do not widen the pattern.
+**AI Agent Instruction.** Never add a wildcard, `http` or localhost redirect URL to production auth settings, and never pass a `redirectTo` built from user input. Add a custom scheme URL only as an exact value for a mobile callback under a Pro edition requirement. If a flow fails because a URL is missing from the allowlist, add the exact URL to the right environment or stop and report; do not widen the pattern.
 
 ---
 
@@ -329,28 +324,30 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | MANUAL TEST, CODE REVIEW |
 
-**Requirement.** Where the product offers sign in with an external identity provider or account linking, an external identity MUST be matched to an account only by its issuer plus subject (`iss` and `sub`), and a new external identity MUST be linked to an existing account only by an explicit action taken while signed in to that account; a matching email alone MUST NOT link identities or sign the user in.
+**Requirement.** Where the product offers sign in with an external identity provider or account linking, an external identity MUST be matched to an account only by its issuer plus subject (`iss` and `sub`). A new external identity MUST be linked to an existing account only when the user takes an explicit action while signed in to that account, or when both of these hold: the external provider asserts that the email address is verified, and the existing account's email address is confirmed (a Pro edition requirement). An email match against an address that is not verified at the provider, or not confirmed on the existing account, MUST NOT link identities or sign the user in.
 
-**Why.** Linking on email lets an attacker who controls an email at one provider take over an account created elsewhere with the same address.
+**Why.** Linking on email lets an attacker who controls an email at one provider take over an account created elsewhere with the same address. The reverse also works: an attacker who registers a victim's address first, without confirming it, can wait for the victim to sign in with a social provider and share the account.
 
 **Implementation.**
 - Store provider identities keyed on issuer and subject.
-- Offer "connect Google" or similar only from account settings while signed in.
-- Default stack: review and record how your identity provider links identities with the same email, and confirm it matches this rule.
-- Default stack (checked 2026-10-03): Supabase documents that it links a new OAuth identity to an existing user with the same email address automatically, that it removes other unconfirmed identities on that user when it does, and that manual linking through `linkIdentity()` needs manual linking enabled in the project. Automatic linking by email does not meet the Requirement as written. Record the behaviour and your decision in the security decisions log, and confirm the enabled providers return a verified email and that email confirmation is on (SEC-AUTH-040).
+- Offer "connect Google" or similar from account settings while signed in.
+- Turn on email confirmation for every enabled provider (a Pro edition requirement), and enable only providers that return a verified email.
+- Default stack (checked 2026-10-03): Supabase links a new OAuth identity to an existing user with the same email address automatically, and when it does it removes the other identities on that user that are not confirmed. The vendor guide describes this as the defence against pre account takeover and gives no setting that turns automatic linking off. Manual linking through `linkIdentity()` is a separate setting. So on Supabase the rule is met by these settings, all recorded in the security decisions log: email confirmation on, only providers that assert verified emails enabled, and the provider list reviewed whenever one is added.
+- If the identity provider links on any email match, including an address the provider did not verify, this requirement is not met and cannot be accepted.
 
 **Verify.**
-1. Create an account with password on email X. Sign in with a social provider whose account uses email X. Confirm the user is not silently signed in to the existing account.
+1. Create an account with password on email X and confirm it. Sign in with a social provider whose account uses email X. Confirm the result is the owner of the account for email X, with the identity attached, and that no other person's session is created.
 2. Review code that creates or links identities for email based matching, including any user lookup by email next to an OAuth callback.
-3. Create an account with an email and password, then register a second account at an external provider with the same unconfirmed email claim; confirm the visitor is not signed in to the first account.
+3. Pre account takeover case: sign up with password on a victim's email X and do not confirm it. Then sign in with a social provider whose verified email is X. The password set at the first sign up must not work afterwards, and the first sign up must not hold a session on the merged account.
+4. For each enabled provider, read its documentation or test whether it can return an email it has not verified. Disable any that can.
 
-**Evidence.** Manual test record and code review notes.
+**Evidence.** Manual test record for steps 1 and 3, the provider list review, and code review notes.
 
-**Exceptions.** Does not apply to a product with no external identity provider and no account linking. No acceptance is available for any other case: a finding here is in the authentication class under Protected classes in STANDARD.md. The fix is email confirmation on for every enabled provider and for the existing account.
+**Exceptions.** Does not apply to a product with no external identity provider and no account linking. No acceptance is available for any other case: a finding here is in the authentication class under Protected classes in STANDARD.md. The fix is email confirmation on, a provider list limited to verified emails, and a link rule that meets the Requirement.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-6.8.1, v5.0.0-10.3.3, v5.0.0-10.5.2 [SRC-010].
+**References.** OWASP ASVS 5.0.0 v5.0.0-6.8.1, v5.0.0-10.3.3, v5.0.0-10.5.2 [SRC-010]; Supabase Auth identity linking guide [SRC-181]; OWASP Top 10:2025 A07:2025 [SRC-020].
 
-**AI Agent Instruction.** Key external identities on issuer and subject. Never write code that links or signs in a user because an email matches.
+**AI Agent Instruction.** Key external identities on issuer and subject. Never write code that links or signs in a user because an email matches unless the provider asserts it as verified and the existing account's email is confirmed.
 
 ---
 
@@ -366,7 +363,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | STATIC ANALYSIS, AUTOMATED TEST, DYNAMIC TEST, CODE REVIEW |
 
-**Requirement.** Every server function that reads non public data or changes state, including every Server Action, Route Handler, API route and Edge Function, MUST check inside the handler that the caller's role permits that function, and MUST deny the request when the role is missing, unknown or not explicitly allowed. Client side checks, hidden UI elements and edge middleware MUST NOT be the only authorization check for any function. A handler that checks only that a session exists is not a role check: its function MUST be listed as any signed in user, with a reason, in the list of functions and the roles allowed to call each (the access matrix of SEC-AUTHZ-001 in AUTH.md, or an equivalent table in the repository). A handler missing from that list fails this requirement.
+**Requirement.** Every server function that reads non public data or changes state, including every Server Action, Route Handler, API route and Edge Function, MUST check inside the handler that the caller's role permits that function, and MUST deny the request when the role is missing, unknown or not explicitly allowed. Client side checks, hidden UI elements and edge middleware MUST NOT be the only authorization check for any function. A handler that checks only that a session exists is not a role check: its function MUST be listed as any signed in user, with a reason, in the list of functions and the roles allowed to call each (the access matrix of a Pro edition requirement in AUTH.md, or an equivalent table in the repository). A handler missing from that list fails this requirement.
 
 **Why.** Server Actions and Route Handlers are public endpoints that anyone can call directly. Broken function level authorization lets a normal or anonymous user run privileged operations. Middleware and UI checks are bypassed by calling the endpoint directly.
 
@@ -381,6 +378,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 1. Run a Semgrep rule that flags exported Server Actions, Route Handlers and API routes with no call to the project's authorization helper. A call whose name merely contains auth or session is not a role check; read the helper. Search from the workspace root, not one folder, and count per exported method.
 2. Generate the list of functions under test from the framework route table or file tree and from every exported Server Action, not from the access matrix. Diff it against the function list. For each function, call it with no session, with a session of a role marked deny, and with a valid allowed role; the first two MUST return 401 or 403 and change nothing, and the allowed role MUST succeed (positive control). Call every function with a valid session of the lowest role; every function that returns a 2xx response must be listed as any signed in user.
 3. Replay captured requests for every state changing endpoint without a token and confirm denial (WSTG-v42-ATHZ-02 method).
+4. For each function listed as any signed in user, read the reason and the function's purpose in the PRD or user stories. A function that changes other users' data, roles, plans or entitlements, or reads other people's data, and is listed as any signed in user, fails.
 
 **Evidence.** Semgrep report with zero unguarded handlers, and a passing test run covering each function with denied and allowed roles.
 
@@ -458,7 +456,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Evidence.** Semgrep report with no direct body writes, and passing tests showing privilege fields cannot be set by the client.
 
-**Exceptions.** An internal admin function MAY accept a role field when it passes SEC-AUTHZ-020 and logs the change under SEC-LOG-004. Record the function in the function list (the access matrix of SEC-AUTHZ-001 in AUTH.md, or an equivalent table in the repository).
+**Exceptions.** An internal admin function MAY accept a role field when it passes SEC-AUTHZ-020 and logs the change under a Pro edition requirement. Record the function in the function list (the access matrix of a Pro edition requirement in AUTH.md, or an equivalent table in the repository).
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-15.3.3 (L2, promoted to LAUNCH) [SRC-010]; OWASP WSTG 4.2 WSTG-v42-ATHZ-03 [SRC-186]; OWASP API Security Top 10 2023 API3:2023 [SRC-021]; OWASP Mass Assignment Cheat Sheet (General Solutions) [SRC-030].
 
@@ -530,7 +528,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Evidence.** Passing failure injection tests for the authorization helper, and code review notes for its call sites.
 
-**Exceptions.** Only a written risk acceptance with a named owner, a compensating control and an expiry date.
+**Exceptions.** Only a written risk acceptance with a named owner, an approver, a compensating control and an expiry date.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-8.2.1 (deny unless explicitly permitted, L1), v5.0.0-16.5.3 (L2) [SRC-010]; OWASP Authorization Cheat Sheet (Exit Safely when Authorization Checks Fail) [SRC-034]. Related: SEC-LOG-019. Stage LAUNCH because failing open breaks the explicit permission rule of v5.0.0-8.2.1 (L1); v5.0.0-16.5.3 is cited for the principle and is not promoted.
 
@@ -556,7 +554,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Create a per request database client from the caller's session for all user scoped reads and writes.
 - Limit privileged clients to a small server only module used for jobs with no user context (webhooks, cron, migrations) or for named admin functions guarded by SEC-AUTHZ-020.
 - Default stack: create the Supabase server client inside each request handler with the user's session. A secret key request that also carries the user's access token runs under that user's policies.
-- Default stack: never import the secret key module into Server Actions or Route Handlers that serve normal users unless the handler has an explicit check recorded in the function list (the access matrix of SEC-AUTHZ-001 in AUTH.md, or an equivalent table in the repository).
+- Default stack: never import the secret key module into Server Actions or Route Handlers that serve normal users unless the handler has an explicit check recorded in the function list (the access matrix of a Pro edition requirement in AUTH.md, or an equivalent table in the repository).
 
 **Verify.**
 1. Search for every use of the service role or secret key (`SUPABASE_SERVICE_ROLE_KEY`, `sb_secret_`, admin client factories) and list the handlers that import it.
@@ -702,14 +700,14 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Implementation.**
 - Add `tenant_id uuid not null references tenants(id)` and an index on it to every tenant owned table.
-- Write policies such as `using (tenant_id in (select tenant_id from private.memberships where user_id = (select auth.uid())))`, with the matching `WITH CHECK` for insert and update.
+- Write policies such as `using ((select private.is_member(tenant_id)))`, with the matching `WITH CHECK` for insert and update, where `private.is_member` is the helper described below. A policy that reads the membership table directly needs `usage` on its schema and `select` on the table for `authenticated`, plus RLS on that table, so the helper is the better shape.
 - Keep the membership table in a schema clients cannot write, or with policies that let only tenant admins change it through a guarded server function.
-- If a helper function is used, follow the security definer rules in DATABASE-SECURITY.md (outside exposed schemas, pinned `search_path`). Do not copy vendor examples that place it in `public`.
+- If a helper function is used, follow the policy helper pattern in SEC-DB-008 in DATABASE-SECURITY.md: a security definer function in a schema that is not exposed through the Data API, `usage` on that schema and `execute` on the function granted to `authenticated` only, `search_path` pinned, the caller read from `auth.uid()`, and the tenant id as its only parameter (for example `private.is_member(tenant uuid)`). Do not copy vendor examples that place it in `public`.
 - Default stack (checked 2026-10-03): Supabase's own RLS examples show a membership join (`tenant_id in (select ... from memberships where user_id = (select auth.uid()))`) and a JWT claim pattern. This requirement asks for the membership join.
 
 **Verify.**
 1. List all tables with a tenant relationship and confirm each has a non null `tenant_id`, an index, and policies that reference the membership table.
-2. Run the two tenant Data API test from SEC-AUTHZ-013 against each table, including the child in your own tenant that names another tenant's parent id.
+2. Run the two tenant Data API test from SEC-AUTHZ-013 against each table, including the child in your own tenant that names another tenant's parent id. If a helper function is used, confirm it cannot be called through `/rest/v1/rpc`.
 3. As a member, try to insert a membership row for yourself in another tenant; expect rejection.
 4. As a tenant owner, try to insert an existing user who belongs to another tenant, or any user without an invitation they accept, into your tenant; expect rejection.
 5. Set the membership row of a member to each non active state (removed, invited, expired), and as that user read and write through the API and the Data API; every request must be denied. Remove a member, replay an access token issued before the removal, and expect denial.
@@ -803,12 +801,12 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | AUTOMATED TEST, CONFIG REVIEW |
 
-**Requirement.** Every account holding an admin or support role in the product MUST complete multi factor authentication before any admin or support function is allowed, and admin functions MUST deny sessions that did not complete MFA.
+**Requirement.** Every account holding an admin or support role in the product MUST complete multi factor authentication before any admin or support function is allowed, and admin functions MUST deny sessions that did not complete MFA. A code sent by SMS or email MUST NOT be the only second factor of an admin or support account. Recovery of an admin or support account MUST NOT remove or replace its MFA factor with an emailed link alone (a Pro edition requirement applies to these accounts from LAUNCH).
 
 **Why.** A phished or reused password on an admin account gives the attacker every customer's data. MFA blocks most of these takeovers at low cost.
 
 **Implementation.**
-- Require MFA enrollment when a user is granted an admin or support role.
+- Require MFA enrollment when a user is granted an admin or support role. Use an authenticator app code at the least, and a passkey or security key where the provider has one (a Pro edition requirement). Do not accept SMS or email codes as the second factor.
 - In the admin guard, check the session's assurance level as well as the role.
 - Default stack: with Supabase Auth, check the session's authenticator assurance level in the admin guard and in admin RLS policies. Supabase documents an `aal` claim in the JWT that becomes `aal2` after the second factor, and an `amr` claim listing the methods used.
 - MFA for vendor consoles (Supabase, Vercel, GitHub, payment dashboards) is covered in INFRASTRUCTURE-SECURITY.md.
@@ -817,13 +815,15 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 1. Sign in as an admin with password only and call an admin function; expect denial.
 2. Complete MFA and repeat; expect success.
 3. Export the list of admin and support accounts and confirm each has an enrolled second factor.
-4. Enrolment trust on first use: check that the second factor is bound by a step that proves the account owner, such as a signed in session that already passed another factor, so that whoever signs in first cannot bind a factor to someone else's admin account.
+4. Start recovery for an admin test account with MFA enrolled, using the emailed link only. The link must not remove or replace the MFA factor, and the next sign in must still ask for it.
+5. Enrolment trust on first use: check that the second factor is bound by a step that proves the account owner, such as a signed in session that already passed another factor, so that whoever signs in first cannot bind a factor to someone else's admin account.
+6. Enrol an admin test account with only a phone factor (SMS) and call an admin function; expect denial.
 
 **Evidence.** Passing MFA gate tests, and the account export.
 
-**Exceptions.** A CRITICAL exception needs a named owner, a compensating control and an expiry date per the Severity section of STANDARD.md.
+**Exceptions.** A CRITICAL exception needs a named owner, an approver, a compensating control and an expiry date per the Severity section of STANDARD.md.
 
-**References.** NIST SP 800-63B-4 and the Hullproof AAL to stage mapping (admins: any MFA at LAUNCH) [SRC-060]; NIST SP 800-53 Rev 5 IA-2(1) [SRC-062]; CISA Secure by Design (Mandate MFA for privileged users) [SRC-063]; OWASP Multifactor Authentication Cheat Sheet [SRC-030].
+**References.** NIST SP 800-63B-4 and the Hullproof AAL to stage mapping (admins: any MFA at LAUNCH) [SRC-060]; NIST SP 800-53 Rev 5 IA-2(1) [SRC-062]; CISA Secure by Design (Mandate MFA for privileged users) [SRC-063]; OWASP Multifactor Authentication Cheat Sheet [SRC-030]; OWASP ASVS 5.0.0 v5.0.0-6.4.4 [SRC-010]; OWASP Top 10:2025 A07:2025 [SRC-020].
 
 **AI Agent Instruction.** Make the admin guard check both the admin role and a completed MFA level. Never add a bypass for admins without MFA, including for testing in production.
 
@@ -856,7 +856,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Evidence.** Code search results and the passing cross tenant support test.
 
-**Exceptions.** A CRITICAL exception needs a named owner, a compensating control and an expiry date per the Severity section of STANDARD.md. For a small staff team, a written risk acceptance is acceptable when these compensating controls are in place and recorded: aal2 (second factor) for every support account, an audit record with a stated reason for each customer data view, and minimal support roles.
+**Exceptions.** A CRITICAL exception needs a named owner, an approver, a compensating control and an expiry date per the Severity section of STANDARD.md. For a small staff team, a written risk acceptance is acceptable when these compensating controls are in place and recorded: aal2 (second factor) for every support account, an audit record with a stated reason for each customer data view, and minimal support roles.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-8.4.1 (L2, promoted to LAUNCH) [SRC-010]; Supabase API keys (Secret key bypasses RLS) [SRC-071]; PostgreSQL 18 Row Security Policies (BYPASSRLS) [SRC-077]; NIST SP 800-53 Rev 5 AC-6 [SRC-062].
 

@@ -1,6 +1,6 @@
 # References
 
-Every source cited by the Hullproof domain standards. Requirements cite sources as `[SRC-xxx]` with the source's own control ID. Hullproof does not reproduce source text. OWASP material is CC BY-SA 4.0 and is referenced, not copied. The License column shows the license or terms recorded for each source. Check the source's own page for current terms. Credits and notices are in NOTICE.md.
+Every source cited by the Hullproof domain standards. Requirements cite sources as `[SRC-xxx]` with the source's own control ID. Hullproof does not copy source text. Where a requirement draws on OWASP or another source shared under a share alike license, it restates the point in Hullproof's own words and cites the source by ID and link. The License column shows the license or terms recorded for each source. Check the source's own page for current terms. Credits and notices are in NOTICE.md.
 
 | ID | Title | Publisher | Version | License | Link |
 |----|-------|-----------|---------|---------|------|
@@ -101,17 +101,13 @@ Every source cited by the Hullproof domain standards. Requirements cite sources 
 | SRC-175 | app-store-server-library-node | Apple | v3.1.0 | MIT | https://github.com/apple/app-store-server-library-node |
 | SRC-176 | Real-time developer notifications reference | Google | Updated 2026-09-01 | CC BY 4.0 / Apache 2.0 | https://developer.android.com/google/play/billing/rtdn-reference |
 | SRC-177 | Fight fraud and abuse (Play Billing) | Google | Updated 2026-09-01 | CC BY 4.0 / Apache 2.0 | https://developer.android.com/google/play/billing/security |
+| SRC-178 | Authentication for push subscriptions | Google Cloud | Updated 2026-09-30 | CC BY 4.0 / Apache 2.0 | https://cloud.google.com/pubsub/docs/authenticate-push-subscriptions |
 | SRC-179 | PCI SSC FAQ 1588 (SAQ A script criterion), with FAQ 1604 | PCI Security Standards Council | SAQ A r1 (PCI DSS v4.0.1) | PCI SSC terms | https://www.pcisecuritystandards.org/faqs/1588/ |
 | SRC-180 | Best Current Practice for OAuth 2.0 Security (RFC 9700, BCP 240) | IETF | January 2025 | IETF Trust | https://www.rfc-editor.org/rfc/rfc9700 |
 | SRC-181 | Supabase Auth docs: redirect URLs, PKCE and implicit flows, mobile deep linking, signing keys | Supabase | Living docs | Apache-2.0 repo | https://supabase.com/docs/guides/auth/redirect-urls |
 | SRC-182 | Expo AuthSession | Expo | SDK ~57.0.13 | MIT repo | https://docs.expo.dev/versions/latest/sdk/auth-session/ |
 | SRC-186 | OWASP Web Security Testing Guide | OWASP Foundation | 4.2 (stable); cite as WSTG-v42-XXXX-NN | CC BY-SA 4.0 | https://owasp.org/www-project-web-security-testing-guide/v42/ |
-| SRC-187 | HTTP Strict Transport Security (RFC 6797) | IETF | RFC 6797 | IETF Trust | https://www.rfc-editor.org/rfc/rfc6797 |
 | SRC-189 | HTTP Caching (RFC 9111) | IETF | RFC 9111 | IETF Trust | https://www.rfc-editor.org/rfc/rfc9111 |
-| SRC-190 | Incident management (guidance collection: processes, technical response capabilities, building and maintaining capability) | UK National Cyber Security Centre | Version 1.0, published and reviewed 2019-09-19 | Open Government Licence v3.0 | https://www.ncsc.gov.uk/collection/incident-management |
-| SRC-200 | SAC044: A Registrant's Guide to Protecting Domain Name Registration Accounts | ICANN Security and Stability Advisory Committee | 2010-11-05 | Not stated | https://www.icann.org/en/system/files/files/sac-044-en.pdf |
-| SRC-201 | Managing public domain names | UK National Cyber Security Centre | Version 1.0, published and reviewed 2019-09-25 | Open Government Licence v3.0 | https://www.ncsc.gov.uk/guidance/managing-public-domain-names |
-| SRC-202 | Emergency Directive 19-01: Mitigate DNS Infrastructure Tampering (Closed) | CISA | 2019-01-22, sunset (Closed) | No explicit license | https://www.cisa.gov/news-events/directives/ed-19-01-mitigate-dns-infrastructure-tampering |
 | SRC-214 | Regulation (EU) 2024/1689 (Artificial Intelligence Act) | European Parliament and Council (EUR-Lex) | OJ L 12.7.2024; amended by Regulation (EU) 2026/1744 (in force 2026-07-27) | CC BY 4.0 | https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng |
 | SRC-215 | Regulation (EU) 2026/1744 (Digital Omnibus on AI) | European Parliament and Council (EUR-Lex) | OJ L 24.7.2026, in force 2026-07-27 | CC BY 4.0 | https://eur-lex.europa.eu/eli/reg/2026/1744/oj/eng |
 | SRC-216 | AI Act Service Desk, AI Act Explorer | European Commission | Live site, shows Omnibus amendments; summaries not binding | Not stated | https://ai-act-service-desk.ec.europa.eu/en/ai-act-explorer |
@@ -119,8 +115,6 @@ Every source cited by the Hullproof domain standards. Requirements cite sources 
 | SRC-222 | Keeping your GitHub Actions and workflows secure, Parts 1 to 4 | GitHub Security Lab | Parts 1 to 3 2021-08-03 to 2021-08-05; Part 4 2025-01-16 | All rights reserved | https://securitylab.github.com/resources/github-actions-new-patterns-and-mitigations/ |
 | SRC-224 | OpenSSF Scorecard checks documentation | OpenSSF | Scorecard v5.5.0 (2026-04-23) | Apache-2.0 | https://github.com/ossf/scorecard/blob/main/docs/checks.md |
 | SRC-227 | Standard Webhooks specification | Standard Webhooks | 1.0.0 (repo tag v1.0.2) | Apache-2.0 | https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md |
-| SRC-250 | Best practices for event logging and threat detection | ASD's ACSC with CISA, NSA, FBI, NCSC-UK and international partners | 2024-08-21 | Not stated | https://www.cyber.gov.au/sites/default/files/2024-08/best-practices-for-event-logging-and-threat-detection.pdf |
-| SRC-251 | Introduction to logging for security purposes | UK National Cyber Security Centre | Version 1.0, published and reviewed 2018-07-08 | Open Government Licence v3.0 | https://www.ncsc.gov.uk/guidance/introduction-logging-security-purposes |
 | SRC-257 | Queues: Quickstart; API | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/queues/quickstart |
 | SRC-259 | Cron Jobs; Background Workers | Render | Living docs | Not stated | https://render.com/docs/cronjobs |
 | SRC-260 | Signing Keys; Retries | Inngest | Living docs | Not stated | https://www.inngest.com/docs/platform/signing-keys |
@@ -145,17 +139,22 @@ Every source cited by the Hullproof domain standards. Requirements cite sources 
 | SRC-328 | Florida Statutes 501.171, Security of confidential personal information | Florida Senate | 2024 Florida Statutes (including 2025C) | Not stated | https://www.flsenate.gov/Laws/Statutes/2024/501.171 |
 | SRC-329 | Texas Business and Commerce Code 521.053, Notification required following breach of security of computerized data | Texas Legislature | Includes Acts 2023 S.B. 768 (eff. 2023-09-01). Official page renders by script, so the text was read from the mirror https://texas.public.law/statutes/tex._bus._and_com._code_section_521.053 | Not stated | https://statutes.capitol.texas.gov/Docs/BC/htm/BC.521.htm |
 | SRC-330 | Colorado's Consumer Data Protection Laws: FAQs for Businesses and Government Agencies | Colorado Attorney General | Page modified 2026-08-06 | Not stated | https://coag.gov/resources/data-protection-laws/ |
-| SRC-342 | Yarn configuration: .yarnrc.yml (npmMinimalAgeGate, npmPreapprovedPackages) | Yarn | Living docs; Yarn 4.18.1 is latest on npm | BSD 2 Clause | https://yarnpkg.com/configuration/yarnrc |
-| SRC-344 | Dependabot options reference: cooldown (default-days, semver-*-days, include, exclude) | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference |
 | SRC-356 | Supabase JWT claims reference (aud values) | Supabase | Living docs, page text read 2026-10-03 | Apache-2.0 repo | https://supabase.com/docs/guides/auth/jwt-fields |
 | SRC-362 | Privileges (default object privileges, TRUNCATE and REFERENCES privileges); ALTER DEFAULT PRIVILEGES | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License | https://www.postgresql.org/docs/current/ddl-priv.html |
-| SRC-364 | Tables and Views: horizontal filtering, logical operators (or, and, not), reserved characters in values | PostgREST | Stable docs (PostgREST 16 header), read 2026-10-04 | MIT | https://docs.postgrest.org/en/stable/references/api/tables_views.html |
+| SRC-364 | Tables and Views: horizontal filtering, logical operators (or, and, not), reserved characters in values | PostgREST | Stable docs (PostgREST 16 header), read 2026-10-04 | MIT repo | https://docs.postgrest.org/en/stable/references/api/tables_views.html |
 | SRC-365 | iframe element: sandbox and srcdoc attributes | MDN (Mozilla) | Living docs (modified 2026-10-01) | CC BY-SA 2.5, CC0 | https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe |
 | SRC-366 | HTMLIFrameElement: srcdoc property (security considerations) | MDN (Mozilla) | Living docs, read 2026-10-04 | CC BY-SA 2.5, CC0 | https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement/srcdoc |
 | SRC-367 | HTML Standard, 4.8.5 The iframe element (srcdoc, sandbox) | WHATWG | Living Standard, last updated 2026-10-03 | CC BY 4.0 | https://html.spec.whatwg.org/multipage/iframe-embed-object.html |
 | SRC-368 | Content-Security-Policy: sandbox directive | MDN (Mozilla) | Living docs (modified 2025-11-30) | CC BY-SA 2.5, CC0 | https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/sandbox |
 | SRC-369 | URL Standard (authority state, userinfo percent-encode set, path parsing) | WHATWG | Living Standard, last updated 2026-09-10 | CC BY 4.0 | https://url.spec.whatwg.org/ |
-| SRC-370 | Node.js crypto: crypto.createHmac(algorithm, key[, options]) | OpenJS Foundation (Node.js) | Node.js v26.10.0 docs; behaviour also run on Node.js v22.23.2 | MIT and Node.js docs terms | https://nodejs.org/api/crypto.html |
+| SRC-370 | Node.js crypto: crypto.createHmac(algorithm, key[, options]) | OpenJS Foundation (Node.js) | Node.js v26.10.0 docs; behaviour also run on Node.js v22.23.2 | MIT | https://nodejs.org/api/crypto.html |
 | SRC-371 | Realtime Authorization (private channels, RLS policies on realtime.messages, policy cache) | Supabase | Living docs, page text read 2026-10-04 | Apache-2.0 repo | https://supabase.com/docs/guides/realtime/authorization |
 | SRC-372 | Socket.IO 4.x: Rooms; Middlewares | Socket.IO | 4.x docs, read 2026-10-04 | MIT | https://socket.io/docs/v4/rooms/ |
 | SRC-373 | Managing environments for deployment; Using secrets in GitHub Actions (repository, environment and organization secrets) | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments |
+| SRC-422 | IANA IPv4 Special-Purpose Address Registry | IANA | Living registry | IANA terms | https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml |
+| SRC-423 | IANA IPv6 Special-Purpose Address Registry | IANA | Last updated 2025-10-09 | IANA terms | https://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xhtml |
+| SRC-445 | Implementing Phishing-Resistant MFA (fact sheet) | CISA | October 2022 | US Government work | https://www.cisa.gov/sites/default/files/publications/fact-sheet-implementing-phishing-resistant-mfa-508c.pdf |
+| SRC-481 | Cybercrimes (Prohibition, Prevention, Etc.) (Amendment) Act, 2024 | National Assembly of Nigeria (copy hosted by PLAC) | Amends Act No. 17, 2015; section 3 amends section 21 | Not stated | https://placng.org/i/wp-content/uploads/2024/05/Cybercrimes-Prohibition-Prevention-etc-Amendment-Act-2024.pdf |
+| SRC-482 | Cybercrimes (Prohibition, Prevention, Etc.) Act, 2015 (Act No. 17, 2015) | National Assembly of Nigeria (copy hosted by WIPO Lex) | As enacted 2015; section 21 as amended in 2024 | Not stated | https://www.wipo.int/wipolex/en/legislation/details/22696 |
+| SRC-483 | Guidelines 9/2022 on personal data breach notification under GDPR | European Data Protection Board | Version 2.0 | Not stated | https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-92022-personal-data-breach-notification-under_en |
+| SRC-484 | Directive (EU) 2022/2555 (NIS2), Article 23 reporting obligations | European Parliament and Council of the EU | OJ L 333, 27.12.2022 | Not stated | https://eur-lex.europa.eu/eli/dir/2022/2555/oj |

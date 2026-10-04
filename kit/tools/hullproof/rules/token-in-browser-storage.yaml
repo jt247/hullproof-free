@@ -16,7 +16,7 @@ rules:
           metavariable: $K
           regex: (?i).*(token|jwt|session|auth|secret|refresh|bearer).*
     metadata:
-      sec_ids: [SEC-AUTH-022, SEC-WEB-013, SEC-MOBILE-002]
+      sec_ids: [SEC-MOBILE-002]
       severity_hint: HIGH
       confidence: MEDIUM
   - id: hullproof-token-value-in-browser-storage
@@ -35,6 +35,6 @@ rules:
           metavariable: $V
           regex: (?i).*(token|jwt|accessToken|refreshToken|secret).*
     metadata:
-      sec_ids: [SEC-AUTH-022, SEC-WEB-013, SEC-MOBILE-002]
+      sec_ids: [SEC-MOBILE-002]
       severity_hint: HIGH
       confidence: MEDIUM

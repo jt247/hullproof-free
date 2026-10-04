@@ -12,7 +12,7 @@ rules:
       - pattern-regex: '\{\{\{\s*[^}\s][^}]*\}\}\}'
       - pattern-regex: '\{\{\s*&\s*[^}\s][^}]*\}\}'
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-031]
+      sec_ids: [SEC-WEB-031]
       severity_hint: HIGH
       confidence: MEDIUM
   - id: hullproof-jinja-unescaped
@@ -29,7 +29,7 @@ rules:
       - pattern-regex: '\{\{[^}]*\|\s*raw\b[^}]*\}\}'
       - pattern-regex: '\{%-?\s*autoescape\s+(?:false|off)\b'
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-031]
+      sec_ids: [SEC-WEB-031]
       severity_hint: HIGH
       confidence: MEDIUM
   - id: hullproof-ejs-pug-unescaped
@@ -45,7 +45,7 @@ rules:
       - pattern-regex: '(?m)^\s*[\w.#-]*(?:\([^)\n]*\))?\s*!=\s*\S'
       - pattern-regex: '!\{[^}]+\}'
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-031]
+      sec_ids: [SEC-WEB-031]
       severity_hint: HIGH
       confidence: MEDIUM
   - id: hullproof-template-engine-escape-off
@@ -70,7 +70,7 @@ rules:
           - pattern: '$E.configure($P, {..., autoescape: false, ...})'
           - pattern: '$E.configure({..., autoescape: false, ...})'
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-031]
+      sec_ids: [SEC-WEB-031]
       severity_hint: HIGH
       confidence: LOW
   - id: hullproof-python-safe-markup
@@ -95,6 +95,6 @@ rules:
             - pattern: $Z
             - pattern-not: '"..."'
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-031, SEC-API-021]
+      sec_ids: [SEC-WEB-031, SEC-API-021]
       severity_hint: HIGH
       confidence: LOW

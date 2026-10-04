@@ -10,7 +10,7 @@ Security logging, monitoring, alerting, and error handling. Requirement IDs keep
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 3 of the 29 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 3 of the 29 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 26. Pro covers what you log, who can read it, how long you keep it and which events wake someone up.
 
 ## Requirement index
 
@@ -32,30 +32,10 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| Authentication events logged | None | None | SEC-LOG-074 |
-| Authorization failures logged | AUTH.md | Security event logging | SEC-LOG-003 |
-| Admin and support actions logged | AUTH.md | Personal data access audit | SEC-LOG-004 |
-| Configuration changes logged (in app settings and platform settings) | INFRASTRUCTURE-SECURITY.md | None | SEC-LOG-032 |
+| Authentication and authorization events logged | AUTH.md | Security event logging | SEC-LOG-003 |
 | No secrets or payment data in logs | MOBILE-SECURITY.md, AI-SECURITY.md | None | SEC-LOG-001 |
-| Minimal personal data in logs | PRIVACY.md, MOBILE-SECURITY.md | None | SEC-LOG-002 |
 | Encoding of logged data (log injection) | FRONTEND-SECURITY.md | None | None in this document |
-| Audit trail format | None | None | SEC-LOG-005 |
-| Audit trail immutability | AI-SECURITY.md | None | SEC-LOG-006 |
-| Log retention (Hullproof default 365 days for security and audit logs) | PRIVACY.md | None | SEC-LOG-008, SEC-LOG-031 |
-| Log access control | AI-SECURITY.md, INFRASTRUCTURE-SECURITY.md | None | SEC-LOG-007 |
-| Time synchronisation | None | None | SEC-LOG-030 |
-| Centralised error tracking | None | None | SEC-LOG-009 |
-| Availability and health monitoring | None | None | SEC-LOG-010, SEC-LOG-033 |
-| Security alerting with named recipients and tested alerts | INCIDENT-RESPONSE.md | None | SEC-LOG-011 |
-| Anomaly detection: failed sign ins and privilege changes | None | None | SEC-LOG-012 |
-| Anomaly detection: bulk reads and exports | None | None | SEC-LOG-014, SEC-LOG-015 |
-| Anomaly detection: spend | AI-SECURITY.md | None | SEC-LOG-013 |
-| Error handling and fail closed behaviour | AUTH.md, AI-SECURITY.md | None | SEC-LOG-019, SEC-LOG-020, SEC-LOG-021 |
-| Client facing error messages without internals | None | None | SEC-LOG-017, SEC-LOG-018 |
-| Monitoring of AI usage | AI-SECURITY.md | None | SEC-LOG-016 |
-| Platform and admin audit logs from providers (Supabase, Vercel, GitHub, Render, Cloudflare, model providers) | INFRASTRUCTURE-SECURITY.md | None | SEC-LOG-073 |
-| Log pipeline failure alerts | None | None | SEC-LOG-034 |
-| Audit and security log write failures | None | Audit write failures | SEC-LOG-075 |
+| Error handling and fail closed behaviour | AUTH.md, AI-SECURITY.md | None | SEC-LOG-019 (more in Pro edition) |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -65,7 +45,6 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-MARKET-NG | Does the product process personal data of people in Nigeria? | STAGE.md Markets served and Markets excluded name the market, and a check of signup country, billing country or analytics geography shows no Nigerian data subjects, or the owner's written answer says so. A market is excluded only by a technical control that blocks it (a country block at signup and billing) or by a recorded count of zero data subjects from the user table by country. Where the product collects no country, Global applies. | SEC-LOG-015 |
 <!-- hullproof:gates:end -->
 
 ---
@@ -82,23 +61,24 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | SECRET SCAN, STATIC ANALYSIS, CONFIG REVIEW |
 
-**Requirement.** Application logs, build logs, error responses, error tracker events and breadcrumbs, and analytics payloads MUST NOT contain passwords, session or refresh tokens, API keys, signing secrets, connection strings, full payment card or bank account numbers, or full webhook payloads. Payment and webhook code MAY log only event IDs, order references, status and amounts. Errors MUST be logged by a fixed allowlist of fields (name, message, status, code), never as the whole error object, because the error of a failed provider call carries the request headers or query parameters that were sent.
+**Requirement.** Application logs, build logs, error responses, error tracker events and breadcrumbs, and analytics payloads MUST NOT contain passwords, session tokens, refresh tokens, JWT access tokens, API keys, signing secrets, connection strings, password reset tokens, magic link tokens, invitation tokens, one time codes, OAuth authorization codes, signed or presigned storage URLs, full payment card or bank account numbers, or full webhook payloads. Payment and webhook code MAY log only event IDs, order references, status and amounts. Errors MUST be logged by a fixed allowlist of fields (name, message, status, code), never as the whole error object, because the error of a failed provider call carries the request headers or query parameters that were sent.
 
 **Why.** Anyone with access to a log sink, a shared error tracker project or an analytics dashboard can lift a credential from a log line and use it, and vendor retention keeps the value long after the code is fixed. Tokens in request logs and error tracker breadcrumbs are a common leak in AI built apps. Stage note: v5.0.0-16.2.5 is one of the Level 2 items promoted to LAUNCH.
 
 **Implementation.**
 - Log through one shared logger that redacts keys such as `password`, `token`, `secret`, `authorization`, `cookie`, `apiKey` and `card` before output.
 - Never log raw request bodies, full header sets, session objects or whole provider responses. Log the fields you need by name.
-- Keep credentials out of URLs and query strings so access logs and proxies never capture them.
+- Keep credentials out of URLs and query strings so access logs and proxies never capture them. Tokens that must travel in a link (reset, verification, magic link, invitation, OAuth code) are allowed in the URL only under the conditions in a Pro edition requirement (SECRETS.md), and the request path and query string of those routes are removed from every log, tracker event and breadcrumb.
+- Set the log, CDN and error tracker settings to drop query strings by default, and log the route pattern instead of the full URL. A signed or presigned storage URL is a credential until it expires, so log the object key and not the URL.
 - Keep the error tracker's server side scrubbing on and strip headers in the SDK hook that runs before an event is sent.
 - On payment and webhook routes, log a fixed allowlist of fields per event and scrub request bodies in the error tracker.
 - Never echo environment variables in build scripts, and never return a key or connection string in an error message.
-- Default stack: in the Sentry SDK keep `sendDefaultPii` off and remove `Authorization` and `Cookie` in `beforeSend`; in Next.js route handlers, Server Actions and Supabase Edge Functions never pass the request object to `console.log`.
+- Default stack: in the Sentry SDK keep `sendDefaultPii` off, remove `Authorization` and `Cookie` in `beforeSend`, and strip the query string from the request URL and from navigation and fetch breadcrumbs in `beforeSend` and `beforeBreadcrumb`; in Next.js route handlers, Server Actions and Supabase Edge Functions never pass the request object to `console.log`.
 - The MAY log only list for payment and webhook code is an allowlist: on those routes, any field outside the list is not logged.
 
 **Verify.**
-1. In staging, exercise sign in, password reset, payment, webhook and API key flows, then export the platform logs and a sample of error tracker events. For each outbound provider call, force a failure (a stubbed 500 and a timeout) with a test credential, export the resulting logs and error tracker events, and search the export for the test credential value the call carried.
-2. Run Gitleaks or TruffleHog over the export. Expect zero findings.
+1. In staging, exercise sign in, password reset, magic link or email code sign in, invitation, OAuth sign in, signed file download, payment, webhook and API key flows. Capture the value of each token the flows produce (the reset token, the magic link token, the invitation token, the one time code, the OAuth `code`, a signed storage URL and a JWT access token) and then export the platform logs, CDN or proxy access logs and a sample of error tracker events and breadcrumbs. Search the export for each captured value and for the URL query string of each link, and any hit fails. For each outbound provider call, force a failure (a stubbed 500 and a timeout) with a test credential, export the resulting logs and error tracker events, and search the export for the test credential value the call carried.
+2. Run Gitleaks or TruffleHog over the export. Expect zero findings. The scanner has no rule for a reset token or a one time code, so step 1 is the test for those and this step is an extra check.
 3. Run Semgrep rules that flag logger or console calls receiving `req.body`, `req.headers`, `request`, a session object, an error identifier or an object that holds one, or identifiers named like token, secret, password or key. A single line search misses calls that span lines; search the source for every `catch` block and every logger call that receives an error.
 4. Review the logger redaction list and the error tracker scrubbing settings.
 
@@ -130,7 +110,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Hosted auth providers record some of these events. Confirm which ones in the provider's logs and add application records for the rest.
 - Log authorization denials at the server side check that refuses the request, with actor ID, resource type, resource ID and reason.
 - Log account recovery requests whether or not the account exists, without revealing the result to the caller.
-- Use the record format in SEC-LOG-005 once at GROWTH; at LAUNCH a timestamp, actor ID, event type and outcome are the minimum.
+- Use the record format in a Pro edition requirement once at GROWTH; at LAUNCH a timestamp, actor ID, event type and outcome are the minimum.
 - Default stack: Supabase RLS filters rows silently, so authorization denials must be logged where server code checks ownership or tenancy and returns 403 or 404.
 
 **Verify.**
@@ -141,7 +121,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Evidence.** Passing test run with its test file, and the provider log configuration export.
 
-**Exceptions.** Events fully recorded by the hosted auth provider need no duplicate application record if the provider keeps them for at least the minimum in SEC-LOG-074 (30 days at LAUNCH, Hullproof policy). Record the provider and period. Any other gap needs a recorded owner and fix date.
+**Exceptions.** Events fully recorded by the hosted auth provider need no duplicate application record if the provider keeps them for at least the minimum in a Pro edition requirement (30 days at LAUNCH, Hullproof policy). Record the provider and period. Any other gap needs a recorded owner and fix date.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-16.3.1, v5.0.0-16.3.2 (L2, promoted to LAUNCH) [SRC-010]; GDPR Art 32(1)(b), (d), Art 33(1) [SRC-103]; Nigeria Data Protection Act 2023 s39(2)(c), s40(2) [SRC-100]; Kenya Data Protection Act 2019 s43(1) [SRC-106] (Derived); OWASP Logging Cheat Sheet (Which events to log) [SRC-044]; NIST SP 800-53 Rev. 5 AU-2 [SRC-062] (ADVISORY); OWASP Top 10:2025 A09:2025 [SRC-020].
 
@@ -168,7 +148,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 **Implementation.**
 - Structure checks as "allow only on explicit success"; the default path returns 401, 403 or 400.
 - Never wrap an auth or signature check in a `try` block whose `catch` continues to the protected action.
-- When the auth provider or key service is unreachable, deny and log the failure (SEC-LOG-009).
+- When the auth provider or key service is unreachable, deny and log the failure (a Pro edition requirement).
 
 **Verify.**
 1. Write automated tests that force the auth client, the input validator and the signature verifier to throw, then assert each protected route returns a denial and performs no write.
@@ -176,7 +156,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Evidence.** Passing test run with its test file, and Semgrep output.
 
-**Exceptions.** CRITICAL exception only: in writing, with a named owner, a compensating control and an expiry date. A deliberate fail open on an optional hardening check whose outage removes no access control, such as the breached password lookup owned by SEC-AUTH-004, is allowed when the choice is recorded in the security decisions log and every skipped check is logged (SEC-LOG-009). Authentication, signature and validation checks themselves never fail open.
+**Exceptions.** CRITICAL exception only: in writing, with a named owner, a compensating control and an expiry date. A deliberate fail open on an optional hardening check whose outage removes no access control, such as the breached password lookup owned by a Pro edition requirement, is allowed when the choice is recorded in the security decisions log and every skipped check is logged (a Pro edition requirement). Authentication, signature and validation checks themselves never fail open.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-16.5.3 (L2, promoted to LAUNCH) [SRC-010]; OWASP Top 10:2025 A10:2025 [SRC-020]. See also SEC-AUTHZ-006 for authorization errors.
 

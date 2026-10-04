@@ -1,11 +1,11 @@
-# Injection payload corpus for SEC-AI-050 and SEC-AI-016
+# Injection payload corpus for Pro edition requirements
 
 Two different test inputs are needed, and no single corpus supplies both.
 
 | Need | Requirement | Input | Source |
 |------|-------------|-------|--------|
-| Attack phrasing that a model may follow: instruction overrides, role play, encoded instructions, instructions hidden in a document | SEC-AI-050 (and SEC-AI-014 for agents) | A maintained, named corpus run through the real feature | NVIDIA garak probes, below |
-| Text that closes the feature's own delimiter and starts a new instruction | SEC-AI-016 | The prompt template's own delimiters, which no outside corpus can know | `tests/fixtures/injection-delimiters.txt`, shipped in this kit |
+| Attack phrasing that a model may follow: instruction overrides, role play, encoded instructions, instructions hidden in a document | a Pro edition requirement (and a Pro edition requirement for agents) | A maintained, named corpus run through the real feature | NVIDIA garak probes, below |
+| Text that closes the feature's own delimiter and starts a new instruction | a Pro edition requirement | The prompt template's own delimiters, which no outside corpus can know | `tests/fixtures/injection-delimiters.txt`, shipped in this kit |
 
 ## Decision: garak for the attack phrasing corpus
 
@@ -20,7 +20,7 @@ Basis, checked on 2026-10-04 against the repository's own metadata:
 | Probe modules exist | `garak/probes/promptinject.py`, `garak/probes/latentinjection.py` and `garak/probes/encoding.py` exist on the default branch. |
 | Reaches an application | Its README lists generators for the major hosted models and a REST generator, so it can be pointed at a staging endpoint of the feature, not only at a bare model. |
 
-Hullproof does not copy garak's payload text into the kit. The owner installs it and runs it, so the corpus stays current and its license notice stays with its source. A team that cannot run it keeps the evidence requirement of SEC-AI-050 by writing the same four kinds of case by hand, and records that the corpus was not a maintained one.
+Hullproof does not copy garak's payload text into the kit. The owner installs it and runs it, so the corpus stays current and its license notice stays with its source. A team that cannot run it keeps the evidence requirement of a Pro edition requirement by writing the same four kinds of case by hand, and records that the corpus was not a maintained one.
 
 ### How to run it (owner, in a terminal, against staging)
 
@@ -34,9 +34,9 @@ python3 -m garak --target_type rest --spec probes.promptinject      # configure 
 python3 -m garak --target_type rest --spec probes.latentinjection
 ```
 
-Keep, in the evidence folder: the garak version, the exact command, the probe names, the number of attempts per probe, the run date, the commit of the feature, and the report file garak writes. Add the report file to the Evidence hashes table of the audit report. The number of runs and the pass threshold come from SEC-AI-050, not from this page.
+Keep, in the evidence folder: the garak version, the exact command, the probe names, the number of attempts per probe, the run date, the commit of the feature, and the report file garak writes. Add the report file to the Evidence hashes table of the audit report. The number of runs and the pass threshold come from a Pro edition requirement, not from this page.
 
-Reading the result: a probe hit means the model followed an injected instruction at least once. For a feature with tools, also check the tool and outbound logs for the run window, because a hit that the text output hides can still have caused an action. The garak detector is a heuristic: read the hits, do not trust a zero as proof (SEC-AI-050 asks for repeated runs for this reason).
+Reading the result: a probe hit means the model followed an injected instruction at least once. For a feature with tools, also check the tool and outbound logs for the run window, because a hit that the text output hides can still have caused an action. The garak detector is a heuristic: read the hits, do not trust a zero as proof (a Pro edition requirement asks for repeated runs for this reason).
 
 ## Why not the others
 
@@ -54,6 +54,6 @@ Licenses above were read from the repositories' own metadata on the date given. 
 
 1. Replace `{{OPEN}}`, `{{CLOSE}}` and the other placeholders with your prompt template's real delimiters, then decode each payload (it is a JSON string).
 2. Assemble the request with the payload as the untrusted value, the way production code does. Check 1 needs no model: the payload must sit wholly inside the data block, which means your code escapes or removes the closing delimiter, or uses a delimiter the payload cannot contain (for example a per request random one). A template that wraps text in a fixed tag and does nothing else fails D01.
-3. Check 2 sends the assembled request to the model in staging, the number of times SEC-AI-050 sets, and looks for the canary in the output and for any tool call or write.
+3. Check 2 sends the assembled request to the model in staging, the number of times a Pro edition requirement sets, and looks for the canary in the output and for any tool call or write.
 
-A team that has no delimiter at all (it pastes the document into the prompt body) fails SEC-AI-016 without running anything.
+A team that has no delimiter at all (it pastes the document into the prompt body) fails a Pro edition requirement without running anything.

@@ -12,7 +12,7 @@ rules:
     # lowercases must not be on it.
     pattern-regex: '(?s)(?<![\w$])`(?=[^`]*<\/?(?:a|abbr|article|aside|audio|b|base|blockquote|body|br|button|caption|center|code|dd|div|dl|dt|em|embed|figure|font|footer|form|h[1-6]|head|header|hr|html|i|iframe|img|input|label|li|link|main|meta|nav|object|ol|option|p|pre|script|section|select|small|source|span|strong|style|sub|sup|svg|table|tbody|td|textarea|tfoot|th|thead|title|tr|u|ul|video)[\s>/])[^`]*?\$\{(?!\s*(?:escapeHtml|escapeHTML|htmlEscape|esc|he\.encode|he\.escape|encodeURIComponent|DOMPurify\.sanitize|sanitizeHtml)\()'
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-001, SEC-WEB-031]
+      sec_ids: [SEC-WEB-031]
       severity_hint: HIGH
       confidence: LOW
       note: >-

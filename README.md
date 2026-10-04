@@ -2,7 +2,7 @@
 
 A secure software development standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.1.1. The free edition contains 109 requirements: every BLOCKER (43) and every CRITICAL (63) requirement. All 66 CRITICAL requirements apply at the LAUNCH stage. It also holds the Production Security Gate and a release checklist of 109 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.1.2. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What Hullproof is
 
@@ -11,7 +11,7 @@ Hullproof is a kit you copy into your own project. It does two jobs.
 1. It tells your AI coding agent what the security rules are, so the agent follows them whenever it touches security sensitive code.
 2. It gives you a checklist and an auditor agent that test a release against those rules and write a report with evidence, so a person can decide whether to ship.
 
-Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check it, and the evidence to keep. Cited sources are listed in `kit/docs/hullproof/REFERENCES.md` (155 in this edition).
+Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check it, and the evidence to keep. Cited sources are listed in `kit/docs/hullproof/REFERENCES.md` (154 in this edition).
 
 ## What the free edition contains
 
@@ -19,8 +19,8 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 |------|------|--------------|
 | Agent instructions | `kit/docs/hullproof/HULLPROOF.md` | Security operating rules and the required development process |
 | Master standard | `kit/docs/hullproof/STANDARD.md` | Severity rules, stages, risk acceptance and the Production Security Gate |
-| Domain standards | `kit/docs/hullproof/*.md` | 109 requirements across the security domains, each with Verify steps and an Evidence line |
-| Release checklist | `kit/docs/hullproof/PRE-LAUNCH-AUDIT.md` | 109 items to check before you ship |
+| Domain standards | `kit/docs/hullproof/*.md` | 110 requirements across the security domains, each with Verify steps and an Evidence line |
+| Release checklist | `kit/docs/hullproof/PRE-LAUNCH-AUDIT.md` | 110 items to check before you ship |
 | Short checklist | `kit/docs/hullproof/LITE-CHECKLIST.md` | The checks a solo builder can run alone, each linked to its full requirement |
 | Skill | `kit/.claude/skills/hullproof-prelaunch/` | The `/hullproof-prelaunch` command, which runs the checklist and writes a results file |
 | Agent | `kit/.claude/agents/hullproof-pre-launch-auditor.md` | Checks the items in parallel, read only |
@@ -31,22 +31,22 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 
 ## What Hullproof Pro adds
 
-Hullproof Pro is the paid edition. It holds 632 requirements, of which 43 are BLOCKER, and uses the same requirement IDs. The free edition already holds every BLOCKER and every CRITICAL requirement. Pro adds:
+Hullproof Pro is the paid edition. It holds 655 requirements, of which 44 are BLOCKER, and uses the same requirement IDs for the free ones. The free edition already holds every BLOCKER and every CRITICAL requirement. The Pro requirements are not listed here. Each domain document in this edition says how many more requirements Pro holds for that domain and describes them in one sentence. Pro adds:
 
-1. The 523 HIGH, MEDIUM and LOW requirements.
+1. The HIGH, MEDIUM and LOW requirements.
 2. The `/hullproof-security-audit`, `/hullproof-api-review` and `/hullproof-threat-model` skills, with the security reviewer and threat modeler agents and the audit workflows.
 3. The machine readable `security-controls.json` and a CI gate example.
 4. Rule files for Cursor, Windsurf, Codex and GitHub Copilot, and an AI agent security prompt.
-5. The SaaS, API and AI checklists, and five more templates (incident response plan, provider contacts, data inventory, access matrix and secrets inventory).
+5. The SaaS, API and AI checklists, and further templates, including an incident response plan, provider contacts, a data inventory, an access matrix and a secrets inventory.
 
 ## What READY (FREE SCOPE) means
 
-The free scope is the 109 BLOCKER and CRITICAL requirements. The Production Security Gate has eight conditions, G-1 to G-8. In the free scope they mean this:
+The free scope is the BLOCKER and CRITICAL requirements. The Production Security Gate has eight conditions, G-1 to G-8. In the free scope they mean this:
 
 | Condition | In the free scope |
 |-----------|-------------------|
 | G-1 | The stage is declared and recorded in `docs/security/STAGE.md` with the file and its date. |
-| G-2 | An audit report in the `templates/AUDIT-REPORT.md` format that covers every BLOCKER and CRITICAL requirement. You can write it by hand or have a reviewer (a person, or an agent session independent of the code author) write it. The results table from `/hullproof-prelaunch` plus a filled AUDIT-REPORT template satisfies G-2. The Pro `/hullproof-security-audit` skill can also write the report, and it is optional. |
+| G-2 | An audit report in the `docs/hullproof/templates/AUDIT-REPORT.md` format that covers every BLOCKER and CRITICAL requirement. You can write it by hand or have a reviewer (a person, or an agent session independent of the code author) write it. `/hullproof-prelaunch` does not write this report. You fill in the template from its results table, and the two together satisfy G-2. The Pro `/hullproof-security-audit` skill can also write the report, and it is optional. |
 | G-3, G-4, G-5 | No BLOCKER is open. Every BLOCKER is PASS or NOT APPLICABLE. Every CRITICAL is settled, or accepted in writing where the standard allows it. |
 | G-6 | Outside the free scope. |
 | G-7 | Secret, static and dependency scans ran on this commit. `/hullproof-prelaunch` runs gitleaks with the kit configuration. You run Semgrep with the kit rules and OSV Scanner in your own terminal and attach the output files. |
@@ -54,39 +54,54 @@ The free scope is the 109 BLOCKER and CRITICAL requirements. The Production Secu
 
 A verdict of READY (FREE SCOPE) says nothing about HIGH, MEDIUM or LOW requirements or findings. The label states that, because those requirements are outside the free scope and are not evaluated.
 
-## Install
+## What READY needs from you
 
-Every kit file lives under a `hullproof` name, so installing never overwrites your existing files.
+A coding agent that reads your repository cannot reach READY (FREE SCOPE) alone. Most BLOCKER and CRITICAL requirements are settled by evidence that lives outside the code: an export from a provider dashboard, a test against a running or staging copy of the product, or the output of a build or scan. Expect to supply that evidence yourself, dated and recent, for most of the requirements before the first READY. The templates `PROVIDER-EXPORTS.md` and `STAGING-TEST-WINDOW.md` show how to record it. Until then those items stay NOT ASSESSED and the verdict stays NOT READY.
+
+## Install
 
 Requirements:
 
-1. Claude Code.
-2. Node, to run the hook.
-3. Optional scanners that the checklist uses when they are present: gitleaks, semgrep and osv-scanner. Without them the related items stay NOT ASSESSED and the report says so.
+1. Claude Code. Use a current release. The skill and the agent attach the hook through their own settings, and an older release may not load them. If you see `HOOK: INACTIVE` after you accept the trust prompt, update Claude Code first.
+2. Node, to run the hook. The hook and its self test were run on Node 22. Use a current long term support release.
+3. Git. The audit reads your history with read only git commands.
+4. Python 3, for the helper scripts in `tools/hullproof/helpers/`. They use the standard library only. They were run on Python 3.14, and any current Python 3 should work.
+5. Optional scanners that the checklist uses when they are present: gitleaks, semgrep and osv-scanner. Without them the related items stay NOT ASSESSED and the report says so.
+6. macOS or Linux. The commands below use `cp -R` and `shasum`. On Windows, use WSL, or Git Bash with `sha256sum -c` in place of `shasum -a 256 -c`.
 
 Steps:
 
-1. From the root of your project, copy the kit in:
+1. Get the kit. Clone this repository, or unzip `hullproof-free-0.1.2.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.1.2/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.1.2.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
+2. From the root of your project, copy the kit in. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
 
    ```bash
-   cp -R path/to/hullproof/kit/. .
+   cp -Rn path/to/hullproof-free-0.1.2/kit/. .
    ```
 
-2. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
+   Then copy the license files in. This step is required, because the license texts must travel with the files you copied:
+
+   ```bash
+   mkdir -p docs/hullproof/licence
+   cp path/to/hullproof-free-0.1.2/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
+   ```
+
+3. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
 
    ```
    @docs/hullproof/HULLPROOF.md
    ```
 
-3. Start Claude Code and run `/memory` to confirm Hullproof is loaded.
-4. Accept Claude Code's workspace trust prompt for the project. The hook runs only after you accept it. Without it the auditor is not limited, so see the safety model below.
-5. Run `/hullproof-prelaunch`. It asks for the stage, the markets you serve and what it may run, then writes `docs/security/reports/PRE-LAUNCH-RESULTS-<date>.md`. Keep that folder out of any public repository, because the report lists exploitable failures.
+4. Start Claude Code and run `/memory` to confirm Hullproof is loaded.
+5. Accept Claude Code's workspace trust prompt for the project. The hook runs only after you accept it. Without it the auditor is not limited, so see the safety model below.
+6. Run through `docs/hullproof/LITE-CHECKLIST.md`. It holds the checks a solo builder can run alone in a few minutes, each linked to its full requirement.
+7. Run `/hullproof-prelaunch`. It asks for the stage, the markets you serve and what it may run, then writes `docs/security/reports/PRE-LAUNCH-RESULTS-<date>.md`. Keep that folder out of any public repository, because the report lists exploitable failures.
+8. Fill in `docs/hullproof/templates/AUDIT-REPORT.md` from the results table. Without that report gate condition G-2 is not met and the verdict stays NOT READY.
 
-To update, copy the kit again. Files under `docs/hullproof/`, `.claude/rules/hullproof/`, `.claude/skills/hullproof-*`, `.claude/agents/hullproof-*`, `.claude/hooks/hullproof-*` and `tools/hullproof/` are replaced. Nothing else is touched.
+To update, copy the kit again without `-n`. Files under `docs/hullproof/`, `.claude/rules/hullproof/`, `.claude/skills/hullproof-*`, `.claude/agents/hullproof-*`, `.claude/hooks/hullproof-*` and `tools/hullproof/` are replaced, and any local edit to them is lost. Files that a newer release no longer ships are not deleted. Nothing else is touched.
 
 ## What to keep
 
-When you copy kit files into your own repository, keep `LICENSE`, `LICENSE-DOCS.md` and `NOTICE.md` in it. CC BY-SA 4.0 applies to the documentation you copy and adapt, and Apache-2.0 applies to the code. [LICENSING.md](LICENSING.md) says which license covers which path.
+When you copy kit files into your own repository, keep `LICENSE`, `LICENSE-DOCS.md`, `LICENSE-DOCS-CC-BY-SA-4.0.txt`, `LICENSING.md` and `NOTICE.md` in it. They sit outside `kit/`, so the install command does not copy them. Install step 2 puts them in `docs/hullproof/licence/`. CC BY-SA 4.0 applies to the documentation you copy and adapt, and Apache-2.0 applies to the code. [LICENSING.md](LICENSING.md) says which license covers which path.
 
 ## How to read the results
 
@@ -145,12 +160,16 @@ Every requirement has an ID in the format `SEC-[DOMAIN]-[NUMBER]` and the same f
 | [conventions/severity.md](conventions/severity.md) | BLOCKER, CRITICAL, HIGH, MEDIUM, LOW |
 | [conventions/sources.md](conventions/sources.md) | How every claim is traced to a source |
 
+## Support
+
+Ask questions and report problems with the kit as GitHub issues on this repository, https://github.com/jt247/hullproof-free/issues. Issues are public, so do not paste secrets or private project details. Hullproof Pro buyers use the same route and must not paste Pro files.
+
 ## Reporting a vulnerability in Hullproof
 
-If you find a way around the hook, a gap in a requirement, or a flaw in the agent instructions, see [SECURITY.md](SECURITY.md) for how to report it.
+If you find a way around the hook, a gap in a requirement, or a flaw in the agent instructions, see [SECURITY.md](SECURITY.md) for how to report it. Do not use a public issue for that.
 
 ## Licensing, notices and security
 
 Code is licensed under Apache License 2.0 ([LICENSE](LICENSE)). Documentation is licensed under CC BY-SA 4.0 ([LICENSE-DOCS.md](LICENSE-DOCS.md)). [LICENSING.md](LICENSING.md) says which license covers which path.
 
-[NOTICE.md](NOTICE.md) credits the sources whose licenses ask for attribution, and states that Hullproof is not affiliated with or endorsed by the organisations it cites. [SECURITY.md](SECURITY.md) explains how to report a vulnerability in Hullproof, using GitHub private vulnerability reporting.
+[NOTICE.md](NOTICE.md) credits the sources whose licenses ask for attribution, and states that Hullproof is not affiliated with or endorsed by the organisations it cites. [SECURITY.md](SECURITY.md) explains how to report a vulnerability in Hullproof, by email, or through GitHub private vulnerability reporting where the repository offers it. Hullproof and the READY labels describe the result of a defined set of checks on one commit. They are not a certification, and the names of other organisations and products belong to their owners.

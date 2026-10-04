@@ -8,11 +8,11 @@
 
 This document covers access control, privileges, schema change safety and connection security for the application database, plus taking, protecting and test restoring backups. PostgreSQL on Supabase is the primary stack. Query parameterization and other injection controls live in BACKEND-SECURITY.md, privileged key handling in SECRETS.md, Storage bucket policies in DATA-PROTECTION.md, pgvector and embedding store controls in AI-SECURITY.md, and recovery targets, runbooks and migration deploy pipelines in INFRASTRUCTURE-SECURITY.md.
 
-> Research based engineering guidance, not legal advice. Requirements that name a market (NG, EU, ZA, KE, GH) apply only to products serving that market.
+> Research based engineering guidance, not legal advice. A requirement that names a market applies from LAUNCH where that law applies and from GROWTH otherwise, unless its own Applies To or Exceptions field says it is market only.
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 11 of the 38 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 11 of the 38 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 27. Pro covers the database beyond the first exposure checks, including grants, functions, connections, backups, restore tests and how data leaves production.
 
 ## Requirement index
 
@@ -22,7 +22,7 @@ This document covers access control, privileges, schema change safety and connec
 | [SEC-DB-002](#sec-db-002-one-explicit-policy-per-allowed-operation-scoped-to-a-role) | One explicit policy per allowed operation, scoped to a role | CRITICAL | LAUNCH | Database, SaaS, Web, Mobile, API |
 | [SEC-DB-003](#sec-db-003-new-tables-and-functions-are-not-exposed-by-default-privileges) | New tables and functions are not exposed by default privileges | CRITICAL | LAUNCH | Database (Supabase) |
 | [SEC-DB-006](#sec-db-006-rls-policies-never-trust-user-editable-claims) | RLS policies never trust user editable claims | CRITICAL | LAUNCH | Database (Supabase), SaaS |
-| [SEC-DB-007](#sec-db-007-exposed-views-run-with-the-callers-permissions) | Exposed views run with the caller's permissions | CRITICAL | LAUNCH | Database (Supabase) |
+| [SEC-DB-007](#sec-db-007-views-materialized-views-and-foreign-tables-cannot-bypass-row-level-security) | Views, materialized views and foreign tables cannot bypass row level security | CRITICAL | LAUNCH | Database (Supabase) |
 | [SEC-DB-008](#sec-db-008-security-definer-functions-are-not-callable-by-clients) | Security definer functions are not callable by clients | CRITICAL | LAUNCH | Database (Supabase) |
 | [SEC-DB-033](#sec-db-033-client-roles-cannot-write-billing-entitlement-verification-role-or-credential-columns) | Client roles cannot write billing, entitlement, verification, role or credential columns | BLOCKER | LAUNCH | Database, SaaS, Web, Mobile, API |
 | [SEC-DB-034](#sec-db-034-credential-and-token-tables-have-no-client-grants-and-are-not-reachable-through-the-data-api) | Credential and token tables have no client grants and are not reachable through the Data API | BLOCKER | LAUNCH | Database, SaaS, API |
@@ -42,25 +42,16 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| Row level security on every exposed table | AI-SECURITY.md | None | SEC-DB-001, SEC-DB-010 |
-| Policy correctness and testing, including two user tests | AUTH.md | None | SEC-DB-002, SEC-DB-006, SEC-DB-011 |
-| Database roles and least privilege | INFRASTRUCTURE-SECURITY.md | None | SEC-DB-004 |
-| Privileged keys and service role usage | SECRETS.md, AUTH.md, AGENTIC-DEV-SECURITY.md | None | SEC-DB-012 |
-| Security definer functions and views | BACKEND-SECURITY.md | None | SEC-DB-007, SEC-DB-008, SEC-DB-009 |
-| Exposed schemas and the Data API surface | PRIVACY.md, API-SECURITY.md, BACKEND-SECURITY.md | None | SEC-DB-003, SEC-DB-005 |
+| Row level security on every exposed table | AI-SECURITY.md | None | SEC-DB-001 (more in Pro edition) |
+| Policy correctness and testing, including two user tests | AUTH.md | None | SEC-DB-002, SEC-DB-006 (more in Pro edition) |
+| Security definer functions and views | BACKEND-SECURITY.md | None | SEC-DB-007, SEC-DB-008 (more in Pro edition) |
+| Exposed schemas and the Data API surface | PRIVACY.md, API-SECURITY.md, BACKEND-SECURITY.md | None | SEC-DB-003 (more in Pro edition) |
 | Injection | BACKEND-SECURITY.md | None | None in this document |
-| Migrations and schema change safety | INFRASTRUCTURE-SECURITY.md, AGENTIC-DEV-SECURITY.md | Migration process | SEC-DB-015, SEC-DB-016 |
-| Connection security (TLS, pooling, network restrictions) | AUTH.md, DATA-PROTECTION.md | None | SEC-DB-013, SEC-DB-014 |
-| Encryption at rest | DATA-PROTECTION.md | None | SEC-DB-021, SEC-DB-029 |
-| Secrets used inside the database (Vault, pgsodium) | SECRETS.md, DATA-PROTECTION.md | None | SEC-DB-023, SEC-DB-031 |
-| Backups, PITR, restore testing, off provider copies | INFRASTRUCTURE-SECURITY.md, INCIDENT-RESPONSE.md | None | SEC-DB-017, SEC-DB-018, SEC-DB-019, SEC-DB-020, SEC-DB-022, SEC-DB-024, SEC-DB-025, SEC-DB-026 |
-| Database auditing, connection logging and logging of privileged access | OBSERVABILITY.md, AUTH.md | None | SEC-DB-027, SEC-DB-032 |
-| Extensions and their versions | AI-SECURITY.md, PRIVACY.md | None | SEC-DB-028 |
-| Production data in non production environments | INFRASTRUCTURE-SECURITY.md, SECRETS.md | None | SEC-DB-030 |
+| Migrations and schema change safety | INFRASTRUCTURE-SECURITY.md, AGENTIC-DEV-SECURITY.md | Migration process | SEC-DB-016 (more in Pro edition) |
+| Backups, PITR, restore testing, off provider copies | INFRASTRUCTURE-SECURITY.md, INCIDENT-RESPONSE.md | None | SEC-DB-017 (more in Pro edition) |
 | Client writable privileged columns | AUTH.md | Client writable privileged columns | SEC-DB-033 |
 | Credential and token tables | None | Credential tables writable through the data API | SEC-DB-034 |
 | Shared content integrity | AI-SECURITY.md | Shared content integrity | SEC-DB-035 |
-| Seed data, destructive data migrations and dump files | None | None | SEC-DB-036, SEC-DB-037, SEC-DB-038 |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -70,7 +61,6 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-UPLOADS | Does the product accept user uploaded files from any source (browser, client SDK, mobile picker, base64 or data URL body, inbound email attachment, avatar or file import), or keep user data in object storage buckets? | Search the source and storage configuration for multipart or formData file handling, signed upload URLs, upload libraries, client SDK uploads, base64 and data URL bodies, mobile pickers, inbound email attachments and avatar import. Cover stores other than S3 compatible ones (managed storage products, database large objects, file fields in a CMS), a storage bucket, putObject or getSignedUrl, and list the buckets on the storage provider. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer. | SEC-DB-019 |
 <!-- hullproof:gates:end -->
 
 ---
@@ -131,6 +121,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Filter rows on an owner or tenant column compared to `(select auth.uid())` or a tenant claim taken from `app_metadata` (see SEC-DB-006).
 - Index every column a policy filters on, so slow policies do not become a denial of service path.
 - Use restrictive policies as an extra tenant guard where several permissive policies exist, since permissive policies combine with OR.
+- Use random identifiers (for example `gen_random_uuid()`) instead of sequential integers as primary keys for rows whose ID appears in a URL or an API response. This is defense in depth only: the policies are the control, and an unguessable ID never replaces them.
 - Owned by SEC-DB-033 in DATABASE-SECURITY.md for this root cause (Client writable privileged columns); report one finding.
 - Owned by SEC-DB-035 in DATABASE-SECURITY.md for this root cause (Shared content integrity); report one finding. A client writable table of shared content is rated under that requirement.
 - Write `WITH CHECK` explicitly on every update policy, so a reviewer does not have to reason about the implied check. Hygiene findings under this requirement (an omitted `WITH CHECK` where `USING` already pins ownership) are rated LOW. A check that lets the owner or tenant column change is CRITICAL.
@@ -166,7 +157,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Implementation.**
 - Add a migration that runs `alter default privileges in schema public revoke all on tables from anon, authenticated;` and the same for sequences and functions, for the roles that create objects (for example `postgres`).
-- Grant access explicitly per table in the migration that creates it (SEC-DB-004).
+- Grant access explicitly per table in the migration that creates it (a Pro edition requirement).
 - Postgres also grants `execute` on new functions to `public` by default [SRC-362], so revoke that too: `alter default privileges for role postgres in schema public revoke execute on functions from public;` [SRC-072].
 - Default stack: Supabase documents that it is changing the platform default so that exposure becomes opt in, and its Row Level Security guide says not every project grants these automatically [SRC-072, SRC-070]. Neither page gives dates or says which projects are on the new default, so check `pg_default_acl` on the project rather than assuming.
 
@@ -177,7 +168,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Evidence.** `pg_default_acl` output and the test result from step 2, stored with the release record.
 
-**Exceptions.** Projects where the Data API is disabled (SEC-DB-005) may skip this. Record that the Data API is off.
+**Exceptions.** Projects where the Data API is disabled (a Pro edition requirement) may skip this. Record that the Data API is off.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-8.2.2 [SRC-010]; NIST SSDF 1.1 PW.9.1 [SRC-050]; NIST SP 800-53 Rev. 5 AC-6 (ADVISORY) [SRC-062]; Supabase Securing your API [SRC-072]; Supabase Row Level Security [SRC-070]; PostgreSQL 18 Privileges [SRC-362].
 
@@ -218,7 +209,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 ---
 
-### SEC-DB-007: Exposed views run with the caller's permissions
+### SEC-DB-007: Views, materialized views and foreign tables cannot bypass row level security
 
 | Field | Value |
 |-------|-------|
@@ -226,28 +217,32 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Stage | LAUNCH |
 | Applies To | Database (Supabase) |
 | Automation | FULL |
-| Verification method | CONFIG REVIEW |
+| Verification method | CONFIG REVIEW, DYNAMIC TEST |
 
-**Requirement.** Every view in an exposed schema MUST be created with `security_invoker = true`, and a view in an exposed schema MUST NOT expose `auth.users` or other auth schema tables.
+**Requirement.** Every view in an exposed schema MUST be created with `security_invoker = true`, a view in an exposed schema MUST NOT expose `auth.users` or other auth schema tables, and a materialized view or foreign table MUST NOT sit in an exposed schema or hold any privilege for `anon` or `authenticated`, because neither kind of object supports row level security.
 
-**Why.** Views created by the `postgres` role run as their owner and skip RLS on the tables they read, so one convenience view can publish every row of a protected table.
+**Why.** Views created by the `postgres` role run as their owner and skip RLS on the tables they read, so one convenience view can publish every row of a protected table. A materialized view stores a copy of the rows and is never subject to row level security, and the same holds for a foreign table. If either sits in an exposed schema and a client role can select from it, the Data API serves every row to anyone with the publishable key, even when the source tables are locked down.
 
 **Implementation.**
 - Create views with `create view ... with (security_invoker = true)` on Postgres 15 and later.
 - Keep views that must run as owner in a schema that is not exposed and reach them only from server code.
+- Create every materialized view and foreign table in a schema that is not exposed, and run `revoke all on <object> from anon, authenticated;`. Read it from server code with a server only role, and filter by the caller in that code.
+- If a client needs a slice of materialized data, serve it from an ordinary table with its own RLS policies (refresh the table from the materialized view in a server side job) or through server code.
 - Copy user profile fields into a `profiles` table with its own RLS instead of viewing `auth.users`.
 
 **Verify.**
-1. Run the security advisor and confirm zero findings for lints `0010_security_definer_view` and `0002_auth_users_exposed`.
+1. Run the security advisor and confirm zero findings for lints `0002_auth_users_exposed`, `0010_security_definer_view`, `0016` (materialized view in the API) and `0017` (foreign table in the API).
 2. Query `pg_class` for views in exposed schemas whose `reloptions` lack `security_invoker=true`.
+3. Run `select n.nspname, c.relname, c.relkind from pg_class c join pg_namespace n on n.oid = c.relnamespace where c.relkind in ('m', 'f') and n.nspname in (<exposed schemas>);` and expect no rows. Then run the same query without the schema filter, adding `and (has_table_privilege('anon', c.oid, 'select') or has_table_privilege('authenticated', c.oid, 'select'))`, and expect no rows other than objects recorded under Exceptions.
+4. For each materialized view and foreign table the product has, request it through the Data API (`GET /rest/v1/<name>?select=*`, with the `Accept-Profile` header set when it is not in `public`) with the publishable key and again with a signed in user's token. Expect a not found or permission error each time.
 
-**Evidence.** Advisor export and query output.
+**Evidence.** Advisor export, both query outputs, and the saved request results dated before release.
 
-**Exceptions.** None.
+**Exceptions.** A materialized view or foreign table that holds only data public to every visitor may stay readable by `anon` when it is recorded with its reason and a statement that it holds no private column. A view in an exposed schema has no exception.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-8.2.2 [SRC-010]; Supabase Row Level Security, views [SRC-070]; Supabase Advisors lints 0002 and 0010 [SRC-076].
+**References.** OWASP ASVS 5.0.0 v5.0.0-8.2.2 [SRC-010]; Supabase Row Level Security, views [SRC-070]; Supabase Advisors lints 0002, 0010, 0016 and 0017 [SRC-076]; PostgreSQL 18 Row Security Policies [SRC-077].
 
-**AI Agent Instruction.** Always add `with (security_invoker = true)` when creating a view in an exposed schema. Never create a view over `auth.users` in an exposed schema. Report any existing definer view as CRITICAL.
+**AI Agent Instruction.** Always add `with (security_invoker = true)` when creating a view in an exposed schema. Never create a materialized view or foreign table in an exposed schema, and revoke client role privileges on each one you create. Never create a view over `auth.users` in an exposed schema. Report any existing definer view, and any materialized view or foreign table in an exposed schema, as CRITICAL.
 
 ---
 
@@ -259,30 +254,32 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Stage | LAUNCH |
 | Applies To | Database (Supabase) |
 | Automation | FULL |
-| Verification method | CONFIG REVIEW, STATIC ANALYSIS |
+| Verification method | CONFIG REVIEW, STATIC ANALYSIS, DYNAMIC TEST |
 
-**Requirement.** A `security definer` function MUST NOT live in an exposed schema, and `anon` and `authenticated` MUST NOT hold `EXECUTE` on it, unless the function derives the caller's identity inside its own body from `auth.uid()` or the token claims and takes no user id, tenant id or role as a parameter. The exception relaxes both the exposed schema placement and the `EXECUTE` grant for that function only; the `search_path` rule in SEC-DB-009 still applies to it. A function that trusts an identity, tenant or role passed in by the caller stays CRITICAL.
+**Requirement.** A `security definer` function MUST NOT be reachable by a client through the Data API, and `anon` MUST NOT hold `EXECUTE` on it, except in two cases. First, a policy helper: it lives in a schema that is not exposed through the Data API, `authenticated` holds `USAGE` on that schema and `EXECUTE` on the function so that policies can call it, it derives the caller from `auth.uid()` inside its body, and any tenant or row identifier it takes as a parameter is used only to test what `auth.uid()` may do with it. Second, a client callable function that derives the caller's identity inside its own body from `auth.uid()` or the token claims and takes no user id, tenant id or role as a parameter. A function that trusts an identity, tenant or role passed in by the caller stays CRITICAL. The `search_path` rule in a Pro edition requirement applies to every function in both cases.
 
-**Why.** A security definer function runs with its owner's rights, usually bypassing RLS. Placed in `public`, it becomes an RPC endpoint any client can call. Supabase's own RBAC example puts such a function in `public`; do not copy that pattern.
+**Why.** A security definer function runs with its owner's rights, usually bypassing RLS. Placed in `public`, it becomes an RPC endpoint any client can call. The risk is reachability and trust in caller supplied identity. A membership helper that policies call must be executable by the querying role, so a rule that bans every grant would push builders to move the helper into `public`, which is worse. Supabase's own RBAC example puts such a function in `public`; do not copy that pattern.
 
 **Implementation.**
-- Create security definer functions in a private schema (for example `private`) that the Data API does not expose.
-- Run `revoke execute on function <fn> from public, anon, authenticated;` and grant back only where needed.
+- Create security definer functions in a private schema (for example `private`) that is not in the Data API exposed schema list.
+- Run `revoke execute on function <fn> from public, anon, authenticated;` and grant back only what a case above needs.
+- Policy helper pattern: `grant usage on schema private to authenticated;`, then create `private.is_member(target_tenant uuid)` as `language sql stable security definer set search_path = ''` returning `exists (select 1 from private.memberships m where m.tenant_id = target_tenant and m.user_id = (select auth.uid()) and m.status = 'active')`, then `revoke execute on function private.is_member(uuid) from public, anon;` and `grant execute on function private.is_member(uuid) to authenticated;`. Policies call it as `(select private.is_member(tenant_id))`. It passes this requirement because the caller comes from `auth.uid()`, the parameter only names the tenant being tested, and the schema is not exposed.
 - Prefer `security invoker` functions unless elevated rights are required, and record why when they are.
 
 **Verify.**
-1. Run the security advisor and confirm zero findings for lints `0028` and `0029` (security definer function executable by `anon` or `authenticated`).
+1. Run the security advisor and confirm zero findings for lints `0028` and `0029` (security definer function executable by `anon` or `authenticated`), other than functions recorded in the inventory under Exceptions.
 2. Query `pg_proc` joined to `pg_namespace` for `prosecdef = true` in exposed schemas and expect only functions in the recorded inventory of identity deriving functions, each reviewed for caller supplied identity parameters.
-3. Call each RPC endpoint with only the publishable key and expect a permission or not found error.
-4. For each function in the inventory, call it as user A with user B's id or tenant id in any parameter, and expect refusal or no effect on B's data.
+3. Query `pg_proc` for `prosecdef = true` where `has_function_privilege('anon', oid, 'execute')` is true and expect no rows other than extension owned functions you record. Read the exposed schema list (Data API settings, or `select rolconfig from pg_roles where rolname = 'authenticator'`) and confirm no schema that holds a policy helper is on it.
+4. Call each RPC endpoint with only the publishable key and expect a permission or not found error. Call each policy helper as `POST /rest/v1/rpc/<name>` with a signed in user's token and expect not found.
+5. For each function in the inventory, call it as user A with user B's id or tenant id in any parameter, and expect refusal or no effect on B's data. For each policy helper, as user A read and write a tenant B row through the Data API and expect denial.
 
-**Evidence.** Advisor export, query output, and the RPC call results.
+**Evidence.** Advisor export, query output, the exposed schema list, and the RPC call results.
 
-**Exceptions.** Client callable functions that derive the caller's identity internally, as the Requirement describes. Record each one in a function inventory with its reason and its grantee roles. Advisor lints `0028` and `0029` still list these functions, and each listed function must appear in the inventory.
+**Exceptions.** Client callable functions that derive the caller's identity internally, as the second case describes, and policy helpers as the first case describes. Record each one in a function inventory with its reason, its schema and its grantee roles. Advisor lints `0028` and `0029` still list the client callable functions, and each listed function must appear in the inventory.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-8.2.1 [SRC-010]; NIST SP 800-53 Rev. 5 AC-6(10) (ADVISORY) [SRC-062]; Supabase Row Level Security, security definer functions [SRC-070]; Supabase Advisors lints 0028 and 0029 [SRC-076].
 
-**AI Agent Instruction.** Never create a `security definer` function in `public` or any exposed schema, even when a vendor example does. Put it in a private schema, revoke execute from client roles, and report the change. If a feature seems to need a client callable definer function, stop and explain the risk.
+**AI Agent Instruction.** Never create a `security definer` function in `public` or any exposed schema, even when a vendor example does. Put it in a private schema, revoke execute from `public` and `anon`, and grant `authenticated` execute only for a policy helper that takes the tenant id and checks `auth.uid()`. Report the change. If a feature seems to need a client callable definer function that takes a user id, stop and explain the risk.
 
 ---
 
@@ -305,12 +302,12 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Prefer moving billing, entitlement, verification, role and credential state to a table with no client write grant, written only by server code. Supabase calls column level privileges an advanced feature and recommends row level policies plus a dedicated table for user roles [SRC-302].
 - Read the privileged value from that server written table or from `app_metadata` (SEC-AUTHZ-005), never from a column the client can update.
 - For each table with a client write policy, add a short record to the migration comment or the security decisions log: columns a user can change, privileged columns, and the server code that reads each privileged column.
-- Owns the root cause Client writable privileged columns. SEC-AUTHZ-004 (request body allowlists), SEC-AUTHZ-005, SEC-API-126 (entitlement writes), SEC-DB-002, SEC-DB-004 and SEC-DB-005 point here; report one finding.
-- Default stack: rebuild the final grant and policy set by reading `supabase/migrations` in order (the Hullproof Pro helper `tools/hullproof/helpers/policy_set.py` does this and flags client writable sensitive columns by name, where it is installed). The rebuilt set is a map to check against the live catalog, not proof.
+- Owns the root cause Client writable privileged columns. SEC-AUTHZ-004 (request body allowlists), SEC-AUTHZ-005, SEC-API-126 (entitlement writes), SEC-DB-002, Pro edition requirements point here; report one finding.
+- Default stack: rebuild the final grant and policy set by reading `supabase/migrations` in order (the Hullproof helper `tools/hullproof/helpers/policy_set.py` does this and flags client writable sensitive columns by name, where it is installed). The rebuilt set is a map to check against the live catalog, not proof.
 
 **Verify.**
 1. On the live database, list client write grants on the privileged columns: `select table_schema, table_name, column_name, grantee, privilege_type from information_schema.column_privileges where grantee in ('anon', 'authenticated', 'PUBLIC') and privilege_type in ('INSERT', 'UPDATE') and table_schema in (<exposed schemas>);`. A table level grant appears as one row per column [SRC-301]. Compare the rows with the list of privileged columns per table and expect none. The view lists only privileges granted to or by a currently enabled role, so run it as the owner role, or check each privileged column with `has_column_privilege('authenticated', '<schema>.<table>', '<column>', 'UPDATE')`, which also answers true for a table level grant [SRC-301].
-2. Read `supabase/migrations` in order and rebuild the final grants and policies for every table with a client write policy (or run the Hullproof Pro helper `tools/hullproof/helpers/policy_set.py` where installed), and confirm no client writable column that holds billing, entitlement, verification, role or credential state remains.
+2. Read `supabase/migrations` in order and rebuild the final grants and policies for every table with a client write policy (or run the Hullproof helper `tools/hullproof/helpers/policy_set.py` where installed), and confirm no client writable column that holds billing, entitlement, verification, role or credential state remains.
 3. Two user negative test. Sign in as user A, then send `PATCH /rest/v1/<table>?id=eq.<A row>` and a `POST` insert through the Data API, each setting every privileged column (`plan`, `role`, `credits`, `verified`, or the project's names). Expect a permission error or an unchanged row. Repeat as user B against user A's row. Also send every column of the table that is not on the editable list, taken from the live column list. Read the rows back with a server credential and confirm no privileged value changed.
 4. For every table with a client write policy, confirm the record from Implementation exists. A missing record while the grants are already limited to the editable columns is MEDIUM under the missing record rule in STANDARD.md. A missing record on a table whose client grants cover privileged columns is this requirement's severity.
 5. Derive the record instead of accepting it. List the writable columns of every client writable table from the column privileges catalog. For every json or text column that a client role can write, search the code for key reads that feed authorization, billing or verification; any hit moves that column to privileged, whatever the record says.
@@ -343,7 +340,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Create credential tables in a schema that is not in the exposed schema list, or revoke all privileges from `anon` and `authenticated` in the migration that creates the table.
 - Issue, verify and revoke credentials in a server route that uses a server credential (SEC-SECRETS-003). Keep the issuance route as the only writer.
 - Do not build views over credential tables or over `auth.users` in an exposed schema (SEC-DB-007).
-- Store hashes of API keys and codes, not the values (SEC-DATA-004), so a read through any path does not yield a usable secret.
+- Store hashes of API keys and codes, not the values (a Pro edition requirement), so a read through any path does not yield a usable secret.
 - Related: SEC-AUTH-010 covers bypass routes and flags. A client write path to a credential table is reported once, here.
 
 **Verify.**
@@ -376,9 +373,9 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 **Why.** Content that every reader sees without attribution carries the product's authority. A client that can write it can plant a phishing link, a fake instruction or a script in what every other reader and every email recipient sees, from one account. Stored model output is the same case, because a user who can write the row can make the product appear to say anything. Stored content shown to every reader gives an attacker control of what other users see and act on, which is why this requirement is BLOCKER. Output that reaches pages and emails without server side validation is the improper output handling risk in the OWASP LLM list [SRC-025].
 
 **Implementation.**
-- Split drafts from published content. Members write drafts to their own table under SEC-DB-002 policies. A server route validates the draft, then writes the shared row.
+- Split unpublished content from published content. Members write unpublished items to their own table under SEC-DB-002 policies. A server route validates the item, then writes the shared row.
 - Revoke `insert`, `update` and `delete` on the shared tables from `anon` and `authenticated`, and keep only `select` policies for readers.
-- Generate model output in a server route. Validate it against a schema (SEC-AI-039) before the server stores it for other readers, and keep raw HTML sinks out of the render path (SEC-WEB-031).
+- Generate model output in a server route. Validate it against a schema (a Pro edition requirement) before the server stores it for other readers, and keep raw HTML sinks out of the render path (SEC-WEB-031).
 - Build email bodies from server stored content only. Never interpolate a client writable column into a template.
 - Owns the root cause Shared content integrity. SEC-DB-002 and SEC-AUTHZ-004 point here.
 
@@ -428,7 +425,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Exceptions.** Out of scope: local databases, and disposable remote projects or branches holding seed data only, each recorded by name. Any other deviation is a CRITICAL exception: written risk acceptance with a named owner, a compensating control and an expiry date.
 
-**References.** NIST SP 800-53 Rev. 5 CP-10 (ADVISORY) [SRC-062]; NIST SSDF 1.2 PS.4.3 (DRAFT) [SRC-052]; Supabase CLI `migration down` [SRC-135]; Supabase Database Migrations [SRC-133]; Supabase Database Backups, PITR [SRC-131].
+**References.** NIST SP 800-53 Rev. 5 CP-10 (ADVISORY) [SRC-062]; NIST SSDF 1.2 PS.4.3 (comment version) [SRC-052]; Supabase CLI `migration down` [SRC-135]; Supabase Database Migrations [SRC-133]; Supabase Database Backups, PITR [SRC-131].
 
 **AI Agent Instruction.** Never run `supabase migration down`, `supabase db reset`, or a schema drop against a linked or remote database unless it is a recorded disposable project. To undo a migration, write a new forward migration and test it locally. If a human asks you to roll back production, explain the data loss and propose the forward fix or a restore.
 
@@ -451,14 +448,14 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 **Why.** Without automatic backups, a bad migration, a compromised account or a mistaken delete means permanent loss of customer data.
 
 **Implementation.**
-- Default stack: Supabase Pro, Team and Enterprise take daily backups. Free projects need SEC-DB-018.
+- Default stack: Supabase Pro, Team and Enterprise take daily backups. Free projects need a Pro edition requirement.
 - Write the schedule, the retention window and where copies live in the project's operations notes.
 - Alert when a scheduled backup job fails.
 
 **Verify.**
 1. Check the provider backup page or the scheduled job history and confirm a successful backup in the last 24 hours.
 2. Confirm the schedule is documented and the retention is at least 7 days for every backup location.
-3. Read the restore record: date, backup used and per table row counts, from a restore into a scratch environment (SEC-DB-025 in DATABASE-SECURITY.md sets the recurring test).
+3. Read the restore record: date, backup used and per table row counts, from a restore into a scratch environment (a Pro edition requirement in DATABASE-SECURITY.md sets the recurring test).
 
 **Evidence.** Backup listing or job history, the documented schedule and retention, and the restore record.
 

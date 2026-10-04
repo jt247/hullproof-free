@@ -12,7 +12,7 @@ This document covers the hosting layer under the application: environment separa
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 2 of the 42 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 2 of the 42 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 40. Pro covers cloud and platform hygiene, including environments, containers, access roles, domains, recovery targets and rollback.
 
 ## Requirement index
 
@@ -33,20 +33,9 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| Environment separation (development, preview, staging, production) | SECRETS.md | None | SEC-CLOUD-001, SEC-CLOUD-002, SEC-CLOUD-026 |
-| Preview and non production access control | None | None | SEC-CLOUD-003 |
-| Cloud and platform IAM (roles, least privilege, console MFA, access reviews, offboarding) | DEPENDENCIES.md, AGENTIC-DEV-SECURITY.md | None | SEC-CLOUD-012, SEC-CLOUD-013, SEC-CLOUD-014, SEC-CLOUD-035, SEC-CLOUD-036 |
-| CI and deploy credentials (OIDC where supported) | SECRETS.md, DEPENDENCIES.md | None | SEC-CLOUD-015, SEC-CLOUD-022, SEC-CLOUD-032 |
-| Network exposure (public endpoints, admin ports, database network restrictions) | DATABASE-SECURITY.md, API-SECURITY.md, BACKEND-SECURITY.md | None | SEC-CLOUD-006, SEC-CLOUD-007, SEC-CLOUD-037 |
-| DNS and domains (subdomain takeover, registrar lock, DNS change and certificate monitoring, DNSSEC) | GOVERNANCE.md, FRONTEND-SECURITY.md | None | SEC-CLOUD-004, SEC-CLOUD-038, SEC-CLOUD-039, SEC-CLOUD-044, SEC-CLOUD-045 |
+| Cloud and platform IAM (roles, least privilege, console MFA, access reviews, offboarding) | DEPENDENCIES.md, AGENTIC-DEV-SECURITY.md | None | SEC-CLOUD-012 (more in Pro edition) |
 | TLS termination and certificates | DATA-PROTECTION.md, DATABASE-SECURITY.md | None | None in this document |
-| Serverless function configuration (timeouts, memory, concurrency, environment variables) | GOVERNANCE.md, SECRETS.md | None | SEC-CLOUD-040 |
-| Containers (image provenance, base images, non root, scanning) | None | None | SEC-CLOUD-016, SEC-CLOUD-017, SEC-CLOUD-018, SEC-CLOUD-019, SEC-CLOUD-020, SEC-CLOUD-021, SEC-CLOUD-023, SEC-CLOUD-024, SEC-CLOUD-025, SEC-CLOUD-043 |
-| Infrastructure as code review | DEPENDENCIES.md, DATABASE-SECURITY.md | None | SEC-CLOUD-005, SEC-CLOUD-008 |
-| Production deployment process and rollback | DEPENDENCIES.md, DATABASE-SECURITY.md, SECRETS.md, GOVERNANCE.md | None | SEC-CLOUD-027, SEC-CLOUD-028, SEC-CLOUD-033, SEC-CLOUD-034 |
-| Disaster recovery (RTO, RPO, drills) | DATABASE-SECURITY.md | None | SEC-CLOUD-009, SEC-CLOUD-010, SEC-CLOUD-011 |
-| Platform cost and budget alerts | AI-SECURITY.md, OBSERVABILITY.md, GOVERNANCE.md | None | SEC-CLOUD-041 |
-| Logging of platform and admin actions | OBSERVABILITY.md | None | SEC-CLOUD-042 |
+| Containers (image provenance, base images, non root, scanning) | None | None | SEC-CLOUD-016 (more in Pro edition) |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -56,8 +45,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Check that no app.json, eas.json, ios or android folder, or expo or react-native dependency exists in any workspace, and that no store listing or TestFlight build exists. Record what was checked, or record the owner's written answer. A mobile scaffold counts as No only if it is not deployed and not reachable by real users at the audited commit; a release scope that leaves a live app out does not make the answer No. | SEC-CLOUD-034 |
-| GATE-CONTAINERS | Does the project build container images? | Find no Dockerfile, Containerfile or compose file in the repository, and no image build or registry push in the CI workflows. Record the find command and the workflow files read, or record the owner's written answer. Platforms that deploy from source (for example Vercel) do not build images you own. | SEC-CLOUD-016 (BLOCKER), SEC-CLOUD-017, SEC-CLOUD-018, SEC-CLOUD-019, SEC-CLOUD-020, SEC-CLOUD-021, SEC-CLOUD-022, SEC-CLOUD-023, SEC-CLOUD-024, SEC-CLOUD-025, SEC-CLOUD-043 |
+| GATE-CONTAINERS | Does the project build container images? | Find no Dockerfile, Containerfile or compose file in the repository, and no image build or registry push in the CI workflows. Record the find command and the workflow files read, or record the owner's written answer. Platforms that deploy from source (for example Vercel) do not build images you own. | SEC-CLOUD-016 (more in Pro edition) |
 <!-- hullproof:gates:end -->
 
 ---
@@ -74,25 +62,27 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | CONFIG REVIEW |
 
-**Requirement.** Every account that holds a privileged capability on the platforms that run or control production (database, hosting, source control, DNS, domain registrar, AI provider, payment provider dashboard and app stores) MUST have MFA enabled, and MFA MUST be enforced for all members where the platform offers an enforcement setting. Privileged means capability, not role name: every member who can read a production key, deploy to production, or change production data, DNS or billing counts as privileged whatever the role is called, and MFA is enforced for each or the access is removed.
+**Requirement.** Every account that holds a privileged capability on the platforms that run or control production (database, hosting, source control, DNS, domain registrar, AI provider, payment provider dashboard and app stores) MUST have MFA enabled, and MFA MUST be enforced for all members where the platform offers an enforcement setting. Privileged means capability, not role name: every member who can read a production key, deploy to production, or change production data, DNS or billing counts as privileged whatever the role is called, and MFA is enforced for each or the access is removed. Owner and admin accounts of the registrar, DNS provider, source control organization, database platform, hosting platform and payment dashboard MUST use a passkey or hardware security key where the platform supports one, and no privileged account MAY depend on an SMS code as its only second factor. Where a platform offers only authenticator app codes, that is recorded with the platform name and a review date.
 
-**Why.** One phished owner password can hand over the database, deployments, secrets and domain in a single step, and can be used to delete the project and its backups.
+**Why.** One phished owner password can hand over the database, deployments, secrets and domain in a single step, and can be used to delete the project and its backups. A one time code typed into a fake sign in page is relayed to the real site at once, and an SMS code can be taken by a SIM swap, so those factors do not stop the attack this requirement exists for. A passkey or security key is bound to the real site and gives a fake page nothing (CISA fact sheet) [SRC-445].
 
 **Implementation.**
 - Default stack: Supabase organization MFA enforcement, Vercel team 2FA requirement, Render workspace 2FA enforcement, GitHub organization 2FA requirement, plus MFA on the domain registrar and DNS provider.
-- Prefer authenticator apps or passkeys to SMS.
-- Repository member 2FA is also covered in SEC-SUPPLY-023.
+- Register a passkey or security key on each owner and admin account, keep a second key in a sealed place (a Pro edition requirement), and remove SMS as a second factor where the platform allows. Use authenticator app codes only for platforms that offer nothing stronger.
+- Open production consoles in a separate browser profile with no extensions (a Pro edition requirement in AGENTIC-DEV-SECURITY.md).
+- Repository member 2FA is also covered in a Pro edition requirement.
 - Default list of privileged account types: database platform owner and admin, hosting owner and admin, source control organization owner and repository admin, CI settings admin, DNS provider, domain registrar, AI provider organization owner, payment provider dashboard owner and admin, email sending provider owner, and the Apple and Google Play developer accounts. Add any other platform that can change production data or secrets.
 
 **Verify.**
 1. For each platform, read the enforcement setting or list every member with their capabilities (read production keys, deploy, change data, DNS or billing) and their MFA status, including members whose role is named developer, contractor or similar.
 2. Confirm the registrar and DNS accounts have MFA by checking their security settings.
+3. For each owner and admin account, open the security settings and confirm a passkey or security key is registered and SMS is not the only second factor. Record each platform that offers nothing stronger than app codes.
 
 **Evidence.** Per platform export or screenshot of MFA status and enforcement settings, dated.
 
-**Exceptions.** A platform that offers no MFA is recorded with the compensating control (for example a unique long password in a password manager and login alerts) and an expiry date for review.
+**Exceptions.** A platform that offers no MFA is recorded with the compensating control (for example a unique long password in a password manager and login alerts) and an expiry date for review. A platform that offers no passkey or security key keeps authenticator app codes as the floor, recorded with a review date.
 
-**References.** NIST SP 800-53 IA-2(1) [SRC-062]; CISA Secure by Design, SbD Tactic: Mandate MFA for privileged users [SRC-063]; Supabase Production Checklist, Account MFA [SRC-075]; Render Login Settings, Secure login enforcement [SRC-153]; NIST SSDF 1.1 PO.5.2 [SRC-050].
+**References.** NIST SP 800-53 IA-2(1) [SRC-062]; CISA Secure by Design, SbD Tactic: Mandate MFA for privileged users [SRC-063]; Supabase Production Checklist, Account MFA [SRC-075]; Render Login Settings, Secure login enforcement [SRC-153]; CISA, Implementing Phishing-Resistant MFA [SRC-445]; NIST SSDF 1.1 PO.5.1 [SRC-050].
 
 **AI Agent Instruction.** When auditing, check MFA status on every production platform you can query and report each account without it as CRITICAL. Never create a platform account or token for an account that lacks MFA.
 

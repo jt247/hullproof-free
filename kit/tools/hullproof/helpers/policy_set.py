@@ -567,7 +567,7 @@ def analyze(st, schemas):
             continue
         who = st.fgrant.get(key, set())
         if not f["search_path"]:
-            add("HIGH", "SEC-DB-009", "DEFINER_NO_SEARCH_PATH", show(key))
+            add("HIGH", "PRO-EDITION", "DEFINER_NO_SEARCH_PATH", show(key))
         if "public" in who or "anon" in who:
             add("HIGH", "SEC-DB-008", "DEFINER_EXEC_ANON_OR_PUBLIC", show(key),
                 "executable by " + ",".join(sorted(who & {"public", "anon"})))

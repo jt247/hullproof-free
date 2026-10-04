@@ -10,11 +10,9 @@ The projects that Hullproof scans are not in scope. A vulnerability in your own 
 
 ## How to report
 
-Use GitHub private vulnerability reporting. It covers the free edition and Hullproof Pro, and only the repository maintainers can read a report.
+Send your report by email to joshua@joshuatheophilus.com with the subject "Hullproof security report". It covers the free edition and Hullproof Pro. Send only what is needed to reproduce the problem. Do not send secrets, customer data or the contents of Pro files beyond the lines that show the problem. For a Pro file, say that it is a Hullproof Pro file and give its path.
 
-1. Open https://github.com/jt247/hullproof-free and choose the Security tab.
-2. Choose Report a vulnerability.
-3. Fill in the form. For a Pro file, say that it is a Hullproof Pro file and give its path.
+If the Security tab of https://github.com/jt247/hullproof-free shows a Report a vulnerability button, you may use it instead. It sends the report privately to the repository maintainers. If the button is not there, use email.
 
 Please do not open a public issue or pull request for a vulnerability.
 
@@ -36,7 +34,7 @@ Please include:
 
 ## Supported versions
 
-Only the latest release is supported. Fixes go into a new release, not into older ones.
+Only the latest release is supported. When a fix is made it goes into a new release, not into older ones, and the release is listed in `CHANGELOG.md`.
 
 ## Out of scope
 

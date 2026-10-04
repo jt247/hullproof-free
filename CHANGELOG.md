@@ -6,9 +6,25 @@ All notable changes to Hullproof are recorded here. Versions follow semantic ver
 
 Nothing yet.
 
-## [0.1.1] 2026-10-04
+## [0.1.2] 2026-10-04
 
-The free edition holds 109 requirements (every BLOCKER and every CRITICAL), 155 cited sources and a 109 item pre launch checklist.
+The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist.
+
+### Added
+
+- A contact address in SECURITY.md for vulnerability reports. GitHub private vulnerability reporting is the second route, where the repository offers it.
+- A statement in LICENSING.md of where the standard draws on OWASP and other share alike sources and that it restates them in its own words, a rule for files that exist in both editions, and a short statement on the use of the Hullproof name and the READY labels.
+- Platform and version requirements, a Start here order, a step to fill in the audit report, and a section on the evidence a READY needs from the owner, in the README.
+- A support route: GitHub issues on this repository.
+
+### Changed
+
+- The zip now holds one top level folder, `hullproof-free-0.1.2/`, so unzipping never spills files into the current folder. The install command uses the new path.
+- The free edition no longer lists Pro requirement IDs or titles. Each domain document shows how many requirements Pro adds and a short description. Coverage map rows that hold only Pro requirements are gone, and other mentions read "a Pro edition requirement".
+- Text derived from the CIS Docker Benchmark was removed or rewritten.
+- Counts in the README and changelog are filled from the registry at build time.
+
+## [0.1.1] 2026-10-04
 
 ### Added
 
@@ -19,7 +35,7 @@ The free edition holds 109 requirements (every BLOCKER and every CRITICAL), 155 
 
 ## [0.1.0] 2026-10-03
 
-First release of the free edition. It holds 106 requirements: every BLOCKER (43) and every CRITICAL (63) requirement. All 63 CRITICAL requirements apply at the LAUNCH stage. The release checklist has 106 items and REFERENCES.md lists 133 cited sources.
+First release of the free edition. It holds every BLOCKER and every CRITICAL requirement.
 
 ### Added
 
@@ -28,7 +44,7 @@ First release of the free edition. It holds 106 requirements: every BLOCKER (43)
 - The `/hullproof-prelaunch` skill and the `hullproof-pre-launch-auditor` agent, which check the release checklist in parallel, read only, and write a results file.
 - A read only shell hook that fails closed, checks flags, schemes, hosts and paths, and ships with a self test and a kit manifest.
 - Pre launch checklist results with routed NOT ASSESSED states (NEEDS DASHBOARD, NEEDS BUILD, NEEDS DYNAMIC TEST, ASK OWNER, ATTESTATION, UNKNOWN) and an owner action for each.
-- The READY (FREE SCOPE) verdict. It means the free scope of the gate was met for the 106 BLOCKER and CRITICAL requirements (G-1, G-2, G-3, G-4, G-5, G-7 and G-8). G-6 is outside the free scope, and the label says nothing about HIGH, MEDIUM or LOW findings.
+- The READY (FREE SCOPE) verdict. It means the free scope of the gate was met for the BLOCKER and CRITICAL requirements (G-1, G-2, G-3, G-4, G-5, G-7 and G-8). G-6 is outside the free scope, and the label says nothing about HIGH, MEDIUM or LOW findings.
 - Twelve applicability gates with evidence of absence, a solo builder path and an ordered set of severity rules.
 - Evidence freshness limits and limits on accepting a CRITICAL finding, labelled Hullproof policy.
 - Findings under a named BLOCKER requirement are never rated below CRITICAL. A rating of CRITICAL instead of BLOCKER stands only with code evidence and a reviewer who is independent of the author.

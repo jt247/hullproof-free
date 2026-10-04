@@ -12,7 +12,7 @@ Stages follow the Hullproof mobile mapping: OWASP MAS profiles L1 and P at LAUNC
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 2 of the 26 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 2 of the 26 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 24. Pro covers what the app does on the device, including storage, links, web views, notifications, release builds and over the air updates.
 
 ## Requirement index
 
@@ -33,35 +33,16 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| Sensitive data storage on device (MASVS-STORAGE-1) | SECRETS.md | None | SEC-MOBILE-020 |
-| Prevent leakage of sensitive data (MASVS-STORAGE-2) | PRIVACY.md | None | SEC-MOBILE-003, SEC-MOBILE-008 |
 | Strong cryptography following best practice (MASVS-CRYPTO-1) | DATA-PROTECTION.md | None | None in this document |
 | Key management (MASVS-CRYPTO-2) | DATA-PROTECTION.md | None | SEC-MOBILE-002 |
 | Secure authentication and authorization protocols (MASVS-AUTH-1) | AUTH.md | None | None in this document |
-| Secure local authentication and biometrics (MASVS-AUTH-2) | None | None | SEC-MOBILE-016 |
 | Additional authentication for sensitive operations (MASVS-AUTH-3) | AUTH.md, PRIVACY.md | None | None in this document |
-| Secure network traffic and no cleartext (MASVS-NETWORK-1) | DATA-PROTECTION.md | None | SEC-MOBILE-004 |
-| Certificate pinning decision (MASVS-NETWORK-2) | None | None | SEC-MOBILE-013 |
-| IPC, exported components and deep links (MASVS-PLATFORM-1) | AUTH.md | None | SEC-MOBILE-019 |
-| WebViews (MASVS-PLATFORM-2) | None | None | SEC-MOBILE-007 |
-| User interface and app switcher exposure (MASVS-PLATFORM-3) | None | None | SEC-MOBILE-017, SEC-MOBILE-023 |
-| Up to date platform version (MASVS-CODE-1) | None | None | SEC-MOBILE-021 |
 | Forced update and minimum app version (MASVS-CODE-2) | INFRASTRUCTURE-SECURITY.md | None | None in this document |
 | Third party components free of known vulnerabilities (MASVS-CODE-3) | DEPENDENCIES.md | None | None in this document |
-| Platform integrity and app attestation (MASVS-RESILIENCE-1) | API-SECURITY.md | None | SEC-MOBILE-018 |
-| Anti tampering and update integrity (MASVS-RESILIENCE-2) | None | None | SEC-MOBILE-012 |
-| Anti dynamic analysis and debug features in release builds (MASVS-RESILIENCE-4) | None | None | SEC-MOBILE-009 |
-| Data minimization and permissions (MASVS-PRIVACY-1) | None | None | SEC-MOBILE-014 |
-| Tracking and identification (MASVS-PRIVACY-2) | PRIVACY.md | None | SEC-MOBILE-022 |
-| Transparency and store privacy declarations (MASVS-PRIVACY-3) | PRIVACY.md | None | SEC-MOBILE-015 |
 | User control over data (MASVS-PRIVACY-4) | PRIVACY.md | None | None in this document |
 | Secrets in Expo app config and `EXPO_PUBLIC_` variables | SECRETS.md | None | SEC-MOBILE-001 |
-| Expo account, EAS and OTA publish path | INFRASTRUCTURE-SECURITY.md, DEPENDENCIES.md | None | SEC-MOBILE-010, SEC-MOBILE-011 |
-| Deep links and mobile auth callbacks | AUTH.md | None | SEC-MOBILE-005, SEC-MOBILE-006 |
 | Store account deletion (in app and Google Play web page) | PRIVACY.md | None | None in this document |
 | In app purchases with RevenueCat and store notifications | API-SECURITY.md | None | None in this document |
-| Push notifications (push tokens, payload content) | DATABASE-SECURITY.md, SECRETS.md | None | SEC-MOBILE-024, SEC-MOBILE-025 |
-| Outbound links opened by native code | FRONTEND-SECURITY.md | None | SEC-MOBILE-026 |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -71,7 +52,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Check that no app.json, eas.json, ios or android folder, or expo or react-native dependency exists in any workspace, and that no store listing or TestFlight build exists. Record what was checked, or record the owner's written answer. A mobile scaffold counts as No only if it is not deployed and not reachable by real users at the audited commit; a release scope that leaves a live app out does not make the answer No. | SEC-MOBILE-001 (BLOCKER), SEC-MOBILE-002, SEC-MOBILE-003, SEC-MOBILE-004, SEC-MOBILE-005, SEC-MOBILE-006, SEC-MOBILE-007, SEC-MOBILE-008, SEC-MOBILE-009, SEC-MOBILE-010, SEC-MOBILE-011, SEC-MOBILE-012, SEC-MOBILE-013, SEC-MOBILE-014, SEC-MOBILE-015, SEC-MOBILE-016, SEC-MOBILE-017, SEC-MOBILE-018, SEC-MOBILE-019, SEC-MOBILE-020, SEC-MOBILE-021, SEC-MOBILE-022, SEC-MOBILE-023, SEC-MOBILE-024, SEC-MOBILE-025 |
+| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Check that no app.json, eas.json, ios or android folder, or expo or react-native dependency exists in any workspace, and that no store listing or TestFlight build exists. Record what was checked, or record the owner's written answer. A mobile scaffold counts as No only if it is not deployed and not reachable by real users at the audited commit; a release scope that leaves a live app out does not make the answer No. | SEC-MOBILE-001, SEC-MOBILE-002 (more in Pro edition) |
 <!-- hullproof:gates:end -->
 
 ---

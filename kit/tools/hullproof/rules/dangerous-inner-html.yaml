@@ -35,7 +35,7 @@ rules:
       - pattern-not: $E.insertAdjacentHTML($P, DOMPurify.sanitize(...))
       - pattern-not: $E.setHTMLUnsafe(DOMPurify.sanitize(...))
     metadata:
-      sec_ids: [SEC-WEB-031, SEC-WEB-001]
+      sec_ids: [SEC-WEB-031]
       severity_hint: HIGH
       confidence: MEDIUM
       note: >-

@@ -1,6 +1,6 @@
 # AI and Agent Threat Model Extension
 
-Add these sections to a [THREAT-MODEL.md](THREAT-MODEL.md) model whenever the feature calls a model, gives a model tools, retrieves documents, keeps agent memory, connects to an MCP server, or gives a coding agent access to secrets or deploy. It satisfies SEC-GOV-010 in [GOVERNANCE.md](../GOVERNANCE.md) and SEC-AI-001 in [AI-SECURITY.md](../AI-SECURITY.md). It does not replace the main template: the new assets, actors and flows go into sections 1 to 7 as normal, and the threats found here go into the threat register as TM IDs.
+Add these sections to a [THREAT-MODEL.md](THREAT-MODEL.md) model whenever the feature calls a model, gives a model tools, retrieves documents, keeps agent memory, connects to an MCP server, or gives a coding agent access to secrets or deploy. It satisfies a Pro edition requirement in [GOVERNANCE.md](../GOVERNANCE.md) and a Pro edition requirement in [AI-SECURITY.md](../AI-SECURITY.md). It does not replace the main template: the new assets, actors and flows go into sections 1 to 7 as normal, and the threats found here go into the threat register as TM IDs.
 
 Requirement IDs in this extension that have no entry in your `docs/hullproof` folder are Hullproof Pro requirements; cite them by ID as written.
 
@@ -10,14 +10,14 @@ Requirement IDs in this extension that have no entry in your `docs/hullproof` fo
 
 | Asset | Check against |
 |-------|---------------|
-| System prompt and hidden context | SEC-AI-042, SEC-AI-013 |
-| Tool definitions and the credentials each tool runs under | SEC-AI-020, SEC-AI-022 |
-| Retrieved content and the documents behind it | SEC-AI-029, SEC-AI-030, SEC-AI-031 |
-| Vector store and embeddings | SEC-AI-034, SEC-AI-035, SEC-AI-037, SEC-AI-038 |
-| Conversation history and agent memory | SEC-AI-045, SEC-AI-053 |
-| Model provider account, keys and data settings | SEC-AI-041, SEC-AI-007, SEC-AI-048, SEC-AI-049 |
-| Prompt and output logs | SEC-AI-046, SEC-AI-047 |
-| AI spend budget | SEC-AI-002, SEC-AI-004 |
+| System prompt and hidden context | SEC-AI-042, a Pro edition requirement |
+| Tool definitions and the credentials each tool runs under | SEC-AI-020, a Pro edition requirement |
+| Retrieved content and the documents behind it | SEC-AI-029, a Pro edition requirement, SEC-AI-031 |
+| Vector store and embeddings | SEC-AI-034, SEC-AI-035, Pro edition requirements |
+| Conversation history and agent memory | SEC-AI-045, a Pro edition requirement |
+| Model provider account, keys and data settings | SEC-AI-041, Pro edition requirements |
+| Prompt and output logs | Pro edition requirements |
+| AI spend budget | SEC-AI-002, a Pro edition requirement |
 
 ## Extra actors to list in section 2
 
@@ -26,8 +26,8 @@ Requirement IDs in this extension that have no entry in your `docs/hullproof` fo
 | Malicious end user | Direct prompt injection, jailbreaks, cost abuse through the normal UI |
 | Malicious document author | Writes content the model reads later (an uploaded file, email, web page, ticket, review) and plants instructions in it |
 | Other tenant | Tries to reach another tenant's data through retrieval, memory or shared context |
-| Compromised or malicious MCP server or third party tool | Returns poisoned tool results or changes its tool definitions after approval (SEC-AI-052) |
-| Model provider and model supply chain | Holds the data you send, and can change model behavior between versions (SEC-AI-010, SEC-AI-012) |
+| Compromised or malicious MCP server or third party tool | Returns poisoned tool results or changes its tool definitions after approval (a Pro edition requirement) |
+| Model provider and model supply chain | Holds the data you send, and can change model behavior between versions (Pro edition requirements) |
 
 Treat the model itself as a process that can act with an attacker's intent once it has read untrusted content, not as a trusted component.
 

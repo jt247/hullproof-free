@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Hullproof PreToolUse hook for read only subagents (SEC-AGENT-027).
+// Hullproof PreToolUse hook for read only subagents (a Pro edition requirement).
 // Agent frontmatter: node "$CLAUDE_PROJECT_DIR/.claude/hooks/hullproof-readonly-bash.mjs" reviewer|auditor
-// Matcher: Bash|Write|Read|Grep|Glob.   Self test: node hullproof-readonly-bash.mjs --selftest
+// Matcher: Bash|Read|Grep|Glob, as every shipped skill and agent attaches it. The code also decides a Write call (reviewer profile only), for a custom setup; no shipped skill or agent attaches the hook to Write.   Self test: node hullproof-readonly-bash.mjs --selftest
 // Probe: the Bash command `hullproof-hook-probe` is always blocked with the text HULLPROOF HOOK ACTIVE, so a skill can tell an
 // active hook from a missing one (a missing hook gives "command not found" or a non blocking hook error).
 //
 // Fail closed: every problem exits 2 (exit 1 is a non blocking error in Claude Code, so no path may exit 1).
-// Profiles: reviewer = read only helpers plus Write for new report files. auditor = reviewer helpers (no Write) plus gitleaks and curl.
+// Profiles: reviewer = read only helpers (and, if you attach the hook to Write yourself, new report files only). auditor = reviewer helpers (no Write) plus gitleaks and curl.
 //   skill = auditor plus exactly: date +%Y-%m-%d, git check-ignore -q <path>, git ls-files --others --exclude-standard, command -v <tool>,
 //   semgrep --version, node --version, gitleaks version. The skills attach it with a hooks block in their frontmatter (matcher Bash|Read|Grep|Glob, no Write).
 // Shell rule: a command is split into words by this file, never by a shell trick. Outside quotes these are blocked:

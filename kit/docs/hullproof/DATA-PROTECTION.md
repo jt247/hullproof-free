@@ -8,11 +8,11 @@
 
 This document covers how the product protects data: the cryptography it chooses, keys, encryption in transit and at rest, and files in object storage. Personal data handling, retention, deletion, consent and privacy governance live in PRIVACY.md. Row level security lives in DATABASE-SECURITY.md, sessions in AUTH.md, uploads in BACKEND-SECURITY.md, webhooks in API-SECURITY.md, log content in OBSERVABILITY.md, on device storage in MOBILE-SECURITY.md, and AI context and retrieval indexes in AI-SECURITY.md.
 
-> Research based engineering guidance, not legal advice. Requirements that name a law and a market (NG Nigeria NDPA 2023 and GAID 2025, EU GDPR, ZA POPIA, KE Kenya DPA 2019 and its 2021 Regulations, GH Ghana Act 843) are Hullproof's engineering reading of the official texts. Where a source marks a duty as Derived, it is our interpretation of a general legal duty. A law driven requirement applies only when the product serves that market. Meeting these requirements does not by itself make a product compliant, and a qualified lawyer in each market has the final word.
+> Research based engineering guidance, not legal advice. Requirements that name a law and a market (NG Nigeria NDPA 2023 and GAID 2025, EU GDPR, ZA POPIA, KE Kenya DPA 2019 and its 2021 Regulations, GH Ghana Act 843) are Hullproof's engineering reading of the official texts. Where a source marks a duty as Derived, it is our interpretation of a general legal duty. A requirement that names a market applies from LAUNCH where that law applies and from GROWTH otherwise, as the security standard sets out under Stages, unless its own Applies To or Exceptions field says it is market only (for example a Pro edition requirement). Meeting these requirements does not by itself make a product compliant, and a qualified lawyer in each market has the final word.
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 6 of the 24 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 6 of the 25 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 19. Pro covers how data is encrypted in storage and in transit, how keys and public storage are handled, and how files shared with users are protected.
 
 ## Requirement index
 
@@ -38,29 +38,14 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
 | Secure random values (ASVS V11.5) | AUTH.md, API-SECURITY.md | None | SEC-DATA-001 |
-| Vetted crypto libraries and no custom cryptography (ASVS V11.2) | AUTH.md | None | SEC-DATA-002 |
-| Encryption algorithms and modes (ASVS V11.3) | None | None | SEC-DATA-003 |
-| Hashing and hash based functions (ASVS V11.4) | API-SECURITY.md | None | SEC-DATA-004 |
 | Password hashing | AUTH.md | None | SEC-DATA-005 |
-| Key storage apart from data and platform keystore on devices | DATABASE-SECURITY.md, MOBILE-SECURITY.md | None | SEC-DATA-007 |
-| Field level encryption of sensitive category data | PRIVACY.md, AUTH.md | None | SEC-DATA-008 |
-| Constant time comparison of secrets | API-SECURITY.md | None | SEC-DATA-009 |
-| Crypto inventory and key lifecycle (ASVS V11.1) | SECRETS.md | None | SEC-DATA-010 |
 | In use data cryptography (ASVS V11.7) | None | None | None in this document |
 | TLS versions and certificates on external endpoints (ASVS V12.1, V12.2) | INFRASTRUCTURE-SECURITY.md | None | SEC-DATA-011 |
-| Plain HTTP redirects to HTTPS with no plaintext fallback (ASVS V12.2) | None | None | SEC-DATA-012 |
-| HSTS | None | None | SEC-DATA-013, SEC-DATA-014 |
-| WebSocket encryption | FRONTEND-SECURITY.md | None | SEC-DATA-015 |
 | Mobile app traffic over HTTPS | MOBILE-SECURITY.md | None | None in this document |
-| TLS certificate validation never disabled (ASVS V12.3) | None | None | SEC-DATA-016 |
-| Internal, database and outbound connections encrypted (ASVS V12.3) | DATABASE-SECURITY.md, API-SECURITY.md | None | SEC-DATA-017 |
 | Certificate pinning decision for the mobile app | MOBILE-SECURITY.md | None | None in this document |
 | Private buckets for user data (ASVS V5.3) | None | None | SEC-DATA-019 |
 | Object access limited to the owning user or tenant | AUTH.md | None | SEC-DATA-020 |
-| No listing of public buckets | None | None | SEC-DATA-021 |
-| Short lived signed URLs | None | None | SEC-DATA-022 |
 | Storage keys generated on the server (ASVS V5.3) | BACKEND-SECURITY.md | None | None in this document |
-| Storage credentials least privilege and server only | SECRETS.md | None | SEC-DATA-023 |
 | Upload handling (ASVS V5.2) | BACKEND-SECURITY.md | None | None in this document |
 | Backups of uploaded files | DATABASE-SECURITY.md | None | None in this document |
 | Data classification and protection documentation (ASVS V14.1) | PRIVACY.md | None | None in this document |
@@ -70,10 +55,9 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Personal data sent to processors, logs and analytics (ASVS V14.2) | PRIVACY.md, OBSERVABILITY.md | None | None in this document |
 | Retention and deletion (ASVS V14.2) | PRIVACY.md | None | None in this document |
 | Production data in lower environments | PRIVACY.md, DATABASE-SECURITY.md | None | None in this document |
-| Metadata removal from user submitted files (ASVS V14.2) | BACKEND-SECURITY.md | None | SEC-DATA-058 |
 | Client side data protection (ASVS V14.3) | FRONTEND-SECURITY.md, AUTH.md, MOBILE-SECURITY.md | None | None in this document |
 | Privacy law controls (lawful basis, notices, consent, data subject rights) | PRIVACY.md | None | None in this document |
-| Client presented storage keys and public bucket uploads | None | None | SEC-DATA-059, SEC-DATA-060 |
+| Client presented storage keys and public bucket uploads | None | None | SEC-DATA-059 (more in Pro edition) |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -83,7 +67,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-UPLOADS | Does the product accept user uploaded files from any source (browser, client SDK, mobile picker, base64 or data URL body, inbound email attachment, avatar or file import), or keep user data in object storage buckets? | Search the source and storage configuration for multipart or formData file handling, signed upload URLs, upload libraries, client SDK uploads, base64 and data URL bodies, mobile pickers, inbound email attachments and avatar import. Cover stores other than S3 compatible ones (managed storage products, database large objects, file fields in a CMS), a storage bucket, putObject or getSignedUrl, and list the buckets on the storage provider. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer. | SEC-DATA-019 (BLOCKER), SEC-DATA-020 (BLOCKER), SEC-DATA-021, SEC-DATA-022, SEC-DATA-058 |
+| GATE-UPLOADS | Does the product accept user uploaded files from any source (browser, client SDK, mobile picker, base64 or data URL body, inbound email attachment, avatar or file import), or keep user data in object storage buckets? | Search the source and storage configuration for multipart or formData file handling, signed upload URLs, upload libraries, client SDK uploads, base64 and data URL bodies, mobile pickers, inbound email attachments and avatar import. Cover stores other than S3 compatible ones (managed storage products, database large objects, file fields in a CMS), a storage bucket, putObject or getSignedUrl, and list the buckets on the storage provider. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer. | SEC-DATA-019, SEC-DATA-020 (more in Pro edition) |
 <!-- hullproof:gates:end -->
 
 ---
@@ -182,12 +166,14 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Default stack: Vercel, Render and Supabase terminate TLS. Test each host rather than assume its TLS settings meet this requirement.
 - Cloudflare R2 custom domains: set the minimum TLS version on the domain (available through the API).
 - Monitor certificate expiry for any certificate the team manages itself. HSTS makes certificate errors fatal for users (RFC 6797 §12.1).
+- Provider managed items: on Vercel, Render, Supabase and Cloudflare the provider owns the cipher suite list and order, client certificate (mutual TLS) trust, trust stores for internal certificate authorities, and the handling of HTTP message boundaries that stops request smuggling. The team cannot change these on the default stack, so the team's duty is to record the provider as the owner in the TLS scan record and to scan each hostname. A project that terminates TLS itself (a self run proxy or server) owns them and MUST choose only recommended cipher suites with forward secrecy preferred, validate client certificates before trusting their identity, trust only named internal certificate authorities, and use a proxy that rejects ambiguous request framing. ASVS 12.1.3, 12.3.4 and 4.2.1 are out of scope for a project that runs no mutual TLS and no self run proxy.
 
 **Verify.**
 1. Run testssl.sh or SSL Labs against every public hostname, including API, app, marketing, storage custom domains and webhook receivers.
 2. Fail if TLS 1.0, TLS 1.1 or SSL is offered, or the certificate is untrusted, expired or mismatched.
+3. Read the cipher suite section of the same scan. On a provider managed host, record the provider as the owner of the suite list in the scan record and flag any suite the scan grades weak to the provider. On a host the team runs, fail any weak suite or any suite without forward secrecy that is preferred over one with it.
 
-**Evidence.** Scan output per hostname, dated within the release cycle.
+**Evidence.** Scan output per hostname, dated within the release cycle, with the owner of the cipher suites and of internal trust recorded for each host.
 
 **Exceptions.** None for hosts that carry user data or credentials. A purely static public host may record a waiver with an owner and expiry.
 
@@ -255,7 +241,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 1. Automated test: user B requests a download URL, upload URL and delete for user A's object, and every request is refused.
 2. Automated test per Supabase storage policy for anonymous, owner, second user and second tenant.
 3. Review the signing function and confirm the ownership query runs before signing.
-4. Client presented keys: run the Verify steps of SEC-DATA-059. For a public bucket written through presigned uploads, run the Verify steps of SEC-DATA-060.
+4. Client presented keys: run the Verify steps of SEC-DATA-059. For a public bucket written through presigned uploads, run the Verify steps of a Pro edition requirement.
 
 **Evidence.** Passing authorization tests and the review note.
 
@@ -286,7 +272,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - In every confirm, attach, read and delete route, load the record by key and tenant in one query. Refuse when no row is returned. Set the state to consumed in the same transaction as the attach.
 - Build keys as `<tenant id>/<purpose>/<random id>`, with a random id from a CSPRNG (SEC-DATA-001). Do not add the client file name; store it as a separate column and encode it when served (ASVS 5.3.2).
 - Where a prefix bound to the tenant is the design, check the prefix against the session tenant on every use, not only when issuing.
-- Related: SEC-DATA-020 (ownership check before any access), SEC-DATA-022 (signed URL lifetime).
+- Related: SEC-DATA-020 (ownership check before any access), a Pro edition requirement (signed URL lifetime).
 
 **Verify.**
 1. List every route that takes a key, path, file id or URL from the request body, query or path (search for `key`, `path`, `objectKey`, `fileId`, `storagePath`) and open each handler. Confirm a lookup by key and tenant runs before any storage call.

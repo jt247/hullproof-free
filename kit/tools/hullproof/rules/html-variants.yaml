@@ -19,7 +19,7 @@ rules:
           metavariable: $Y
           regex: (?s)^(?!["'`])(?!\s*(?:escapeHtml|escapeHTML|htmlEscape|esc|he\.encode|he\.escape|encodeURIComponent|DOMPurify\.sanitize|sanitizeHtml)\s*\()
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-001]
+      sec_ids: [PRO-EDITION]
       severity_hint: HIGH
       confidence: MEDIUM
       note: >-
@@ -75,7 +75,7 @@ rules:
             - pattern-not: '"..."'
             - pattern-not: "`...`"
     metadata:
-      sec_ids: [SEC-API-147, SEC-WEB-001]
+      sec_ids: [PRO-EDITION]
       severity_hint: HIGH
       confidence: LOW
       note: Lead only. A body returned by a trusted renderer or read from a static file is a false positive.

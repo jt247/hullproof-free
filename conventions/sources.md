@@ -23,7 +23,7 @@ Every claim in the standard traces to a recorded source. Sources are listed in `
 ## Rules
 
 1. Prefer primary sources: the standard body, the vendor's own documentation, or the original advisory.
-2. Never invent statistics, quotes, or attributions. If a claim cannot be sourced, cut it or label it Unverified in the requirement text, with the instruction to check the current vendor documents.
+2. Never invent statistics, quotes, or attributions. If a claim cannot be sourced, cut it, or state the action the reader takes, such as checking the current vendor documents.
 3. Record the license before using a source. Text from share alike licenses (such as CC BY-SA) is never copied into either edition. Map to it by ID and link out.
 4. Write requirements in Hullproof's own words. Mappings to other standards hold IDs and links only.
 5. When a source publishes a new version, recheck every requirement that cites it and update the version field.

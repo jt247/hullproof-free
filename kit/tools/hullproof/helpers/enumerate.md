@@ -80,7 +80,7 @@ done
 
 ## One list, with totals
 
-Run the setup block and the four recipes above, then count by kind. Compare the totals with the access matrix and with the log inventory. A handler in this list and not in the matrix is the finding for SEC-AUTHZ-001 and SEC-AUTHZ-002, and a handler with no denial record is the finding for SEC-LOG-003.
+Run the setup block and the four recipes above, then count by kind. Compare the totals with the access matrix and with the log inventory. A handler in this list and not in the matrix is the finding for a Pro edition requirement and SEC-AUTHZ-002, and a handler with no denial record is the finding for SEC-LOG-003.
 
 <!-- recipe:enum-totals -->
 ```bash
@@ -93,11 +93,11 @@ Run the setup block and the four recipes above, then count by kind. Compare the 
 
 The gate questions in the standard are about the data model and the code paths. The word lists in the gate evidence text are hints. These queries give the structural answer first. Run the SQL on every environment's database (a read only role is enough: they read the catalog and no row), and the code searches on the whole repository. Record the commands, the number of files searched and the counts, as the gate asks.
 
-### GATE-TENANTS: sharing boundaries in the schema (Postgres, Supabase)
+### GATE-TENANTS: candidate sharing boundaries in the schema (Postgres, Supabase)
 
 <!-- recipe:sql-tenants -->
 ```sql
--- 1. Every table with a foreign key to a table other than the users table is a sharing boundary
+-- 1. Candidates: every table that other tables reference with a foreign key, other than the users table (a helper, not the test)
 select c.conrelid::regclass::text as child_table, c.confrelid::regclass::text as parent_table
 from pg_constraint c
 join pg_namespace n on n.oid = c.connamespace
@@ -120,7 +120,7 @@ where table_type = 'BASE TABLE'
 order by 1, 2;
 ```
 
-A result in query 1 or 3 means the answer is Yes, whatever the column names are. No result from all three queries, on a schema that has tables, is the evidence for No. Cross check it with the owner's statement that every customer has a separate deployment.
+Read the results as the gate defines a sharing boundary: a table that groups users or customers (an organisation, team, workspace or account) and that other tables reference to decide who may see their rows. Query 1 lists candidates only. A foreign key from one ordinary table to another (orders to products, comments to posts) is not a sharing boundary on its own, so look at the parent tables it returns and ask whether any of them groups customers. A hit in query 3 usually points to one. If a parent table from query 1 groups customers, or query 3 finds a membership style table, the answer is Yes, whatever the column names are. A schema with tables and no grouping table in any of the three queries is the evidence for No. Cross check it with the owner's statement that every customer has a separate deployment.
 
 ### GATE-PAYMENTS: payment tables and columns
 
@@ -179,7 +179,7 @@ src_files | xargs grep -lE "formData\(\)|multipart|multer|busboy|formidable|crea
 
 | Result | Meaning for the gate |
 |--------|----------------------|
-| SQL query 1 or 3 returns rows | GATE-TENANTS is Yes. |
+| SQL query 3 returns a membership style table, or a parent table from query 1 groups customers (an organisation, team, workspace or account) | GATE-TENANTS is Yes. A foreign key between ordinary tables is not enough on its own. |
 | `code-tools` lists any file | Read each. A file that sends model output to a write, a message or a parameter makes GATE-TOOLS Yes, with or without a tool interface. |
 | `code-urlfetch` lists a call whose first argument is a variable | Read it. If a user, a stored record, a file or a model chose the value, GATE-URLFETCH is Yes (SEC-API-035). |
 | `code-mcp` lists any file | It is an MCP server until read (GATE-MCP). |

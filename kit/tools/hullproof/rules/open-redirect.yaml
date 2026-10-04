@@ -30,6 +30,6 @@ rules:
               - pattern: window.location.href = ...
               - pattern: location.href = ...
     metadata:
-      sec_ids: [SEC-AUTH-039, SEC-AUTH-030]
+      sec_ids: [SEC-AUTH-030]
       severity_hint: MEDIUM
       confidence: MEDIUM

@@ -8,11 +8,11 @@
 
 This document covers controls that run in or for the browser: encoding output for its context, security headers and HSTS, framing, cookies, cross origin reads, forged cross site requests, and script injection, including how model output is rendered. Session lifetime, logout and token storage rules live in [AUTH.md](AUTH.md). Secrets in client bundles are owned by [SECRETS.md](SECRETS.md). File uploads, including SVG and download serving, are in [BACKEND-SECURITY.md](BACKEND-SECURITY.md). Other uses of model output are in [AI-SECURITY.md](AI-SECURITY.md). TLS is in [DATA-PROTECTION.md](DATA-PROTECTION.md), and WebViews in [MOBILE-SECURITY.md](MOBILE-SECURITY.md).
 
-**Default stack cookie exception.** `@supabase/ssr` writes session cookies that browser code can read, so the default stack cannot meet the session cookie HttpOnly rule in SEC-AUTH-021 ([AUTH.md](AUTH.md)) as shipped. A project may record a stack exception at LAUNCH only when every compensating control listed in SEC-AUTH-021 is in place. The exception covers Supabase session cookies only; every other cookie follows SEC-WEB-016. The exception is recorded in the project's security decisions log and is revisited when Supabase supports HttpOnly session cookies.
+**Default stack cookie exception.** `@supabase/ssr` writes session cookies that browser code can read, so the default stack cannot meet the session cookie HttpOnly rule in a Pro edition requirement ([AUTH.md](AUTH.md)) as shipped. A project may record a stack exception at LAUNCH only when every compensating control listed in a Pro edition requirement is in place. The exception covers Supabase session cookies only; every other cookie follows a Pro edition requirement. The exception is recorded in the project's security decisions log and is revisited when Supabase supports HttpOnly session cookies.
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 5 of the 40 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 5 of the 40 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 35. Pro covers the browser side, including output encoding, cookies, cross site and cross origin rules, content security policy and the handling of model output.
 
 ## Requirement index
 
@@ -36,23 +36,13 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
-| XSS (reflected, stored, DOM) | AUTH.md | None | SEC-WEB-031, SEC-WEB-043 |
-| Output encoding | None | None | SEC-WEB-003, SEC-WEB-004, SEC-WEB-005 |
-| Content Security Policy | None | None | SEC-WEB-008, SEC-WEB-042 |
-| CSRF | None | None | SEC-WEB-025, SEC-WEB-026, SEC-WEB-027, SEC-WEB-028, SEC-WEB-029, SEC-WEB-030 |
-| CORS | None | None | SEC-WEB-022, SEC-WEB-023, SEC-WEB-040, SEC-WEB-041 |
-| Cookies (all attributes) | AUTH.md | None | SEC-WEB-015, SEC-WEB-016, SEC-WEB-017, SEC-WEB-019, SEC-WEB-020, SEC-WEB-021 |
-| Clickjacking and framing | None | None | SEC-WEB-038 |
-| Security headers | DATA-PROTECTION.md, AUTH.md | None | SEC-WEB-009, SEC-WEB-010, SEC-WEB-011, SEC-WEB-036 |
-| Third party scripts and Subresource Integrity | DEPENDENCIES.md | None | SEC-WEB-035 |
-| Client side storage of tokens and personal data | AUTH.md | None | SEC-WEB-013 |
+| XSS (reflected, stored, DOM) | AUTH.md | None | SEC-WEB-031, SEC-WEB-032 (more in Pro edition) |
+| CSRF | None | None | SEC-WEB-026 (more in Pro edition) |
+| CORS | None | None | SEC-WEB-022 (more in Pro edition) |
+| Third party scripts and Subresource Integrity | DEPENDENCIES.md | None | None in this document |
 | Secrets in client bundles | SECRETS.md, AI-SECURITY.md | None | None in this document |
-| Source maps in production | SECRETS.md, OBSERVABILITY.md | None | SEC-WEB-039 |
-| Open redirects | AUTH.md | None | SEC-WEB-002 |
-| Rendering model output | None | None | SEC-WEB-001, SEC-WEB-033, SEC-WEB-034 |
-| postMessage and cross window messaging | None | None | SEC-WEB-014, SEC-WEB-037 |
-| Dependency and framework versions in the browser | DEPENDENCIES.md | None | SEC-WEB-032 |
-| WebSocket origin checks | None | None | SEC-WEB-024 |
+| Open redirects | AUTH.md | None | None in this document |
+| Dependency and framework versions in the browser | DEPENDENCIES.md | None | None in this document |
 | Isolated frames for supplied HTML | AI-SECURITY.md | Isolated frames for supplied HTML | SEC-WEB-044 |
 <!-- hullproof:coverage-map:end -->
 
@@ -115,7 +105,8 @@ Each requirement in this document is listed in exactly one row. A row with no re
 - Default stack: Next.js Server Actions accept only POST and compare `Origin` with the host; Route Handlers have no such check, so add one of the listed controls to every cookie authenticated Route Handler.
 - For JSON APIs, require `Content-Type: application/json` or a custom header and reject requests without it.
 - Do not use the naive (unsigned) double submit cookie pattern.
-- Token based APIs that never read ambient cookies are out of scope, but still follow SEC-WEB-025.
+- Token based APIs that never read ambient cookies are out of scope, but still follow a Pro edition requirement.
+- a Pro edition requirement is the second, framework independent layer for the same failure: it rejects the cross site and same site request by its Fetch Metadata or Origin. A route that fails both is one finding against this requirement.
 
 **Verify.**
 1. List every state changing route handler and exported Server Action from the framework route table (not from memory). From a page on another origin, submit each as a form post and as a `fetch` with `credentials: 'include'`, while signed in; every one must fail, and the same request from the app's own origin must succeed (positive control).
@@ -124,7 +115,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 **Evidence.** Cross origin test record or automated test results.
 
-**Exceptions.** Does not apply to a route that authenticates only with an `Authorization` bearer token and never reads an ambient cookie. Webhook routes that verify a provider signature over the raw body (SEC-API-101; SEC-WEB-028 in FRONTEND-SECURITY.md) are exempt. No acceptance is available for any other case: a finding here is in the authentication class under Protected classes in STANDARD.md, and the fix is a CSRF token, an origin check or a SameSite setting that the route's tests confirm.
+**Exceptions.** Does not apply to a route that authenticates only with an `Authorization` bearer token and never reads an ambient cookie. Webhook routes that verify a provider signature over the raw body (SEC-API-101; a Pro edition requirement in FRONTEND-SECURITY.md) are exempt. No acceptance is available for any other case: a finding here is in the authentication class under Protected classes in STANDARD.md, and the fix is a CSRF token, an origin check or a SameSite setting that the route's tests confirm.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-3.5.1, v5.0.0-3.5.2 [SRC-010]; OWASP WSTG 4.2 WSTG-v42-SESS-05 [SRC-186]; OWASP Cross-Site Request Forgery Prevention Cheat Sheet, sections Token-Based Mitigation and Employing Custom Request Headers for AJAX/API [SRC-040]; OWASP Top 10:2025 A01:2025 (CWE-352) [SRC-020]; Next.js Data Security guide, section CSRF [SRC-078].
 
@@ -144,7 +135,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Automation | PARTIAL |
 | Verification method | STATIC ANALYSIS, CODE REVIEW |
 
-**Requirement.** Client and server code MUST render text through framework escaping or safe DOM APIs such as `textContent`, and every use of a raw HTML sink MUST be listed in an inventory with its data source and receive only sanitizer output (SEC-WEB-032) or constant markup. A raw HTML sink is any API that turns a string into markup or a document: `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `v-html`, iframe `srcdoc`, `createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe`, DOM parser output inserted into the live document, jQuery `html`, `append` or `prepend` called with a string, a Markdown renderer with raw HTML enabled, and any wrapper component that forwards its prop to one of these. Untrusted or generated HTML (from users, models, third parties or staff) MUST pass the sanitizer or render in an isolated frame that meets SEC-WEB-044 (a `sandbox` attribute without `allow-same-origin`, or a separate registrable domain; on content that has the origin of the embedding page, a sandbox with both `allow-scripts` and `allow-same-origin` gives no isolation). A data script block (for example structured data) whose content comes from the project's single registered encoder (SEC-WEB-001) and holds no HTML is constant markup: list it in the inventory and it needs no sanitizer. The sink definition also covers HTML that server code builds from template literals, string concatenation, library HTML generators and email templates, which SEC-API-147 in BACKEND-SECURITY.md owns.
+**Requirement.** Client and server code MUST render text through framework escaping or safe DOM APIs such as `textContent`, and every use of a raw HTML sink MUST be listed in an inventory with its data source and receive only sanitizer output (SEC-WEB-032) or constant markup. A raw HTML sink is any API that turns a string into markup or a document: `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `v-html`, iframe `srcdoc`, `createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe`, DOM parser output inserted into the live document, jQuery `html`, `append` or `prepend` called with a string, a Markdown renderer with raw HTML enabled, and any wrapper component that forwards its prop to one of these. Untrusted or generated HTML (from users, models, third parties or staff) MUST pass the sanitizer or render in an isolated frame that meets SEC-WEB-044 (a `sandbox` attribute without `allow-same-origin`, or a separate registrable domain; on content that has the origin of the embedding page, a sandbox with both `allow-scripts` and `allow-same-origin` gives no isolation). A data script block (for example structured data) whose content comes from the project's single registered encoder (a Pro edition requirement) and holds no HTML is constant markup: list it in the inventory and it needs no sanitizer. The sink definition also covers HTML that server code builds from template literals, string concatenation, library HTML generators and email templates, which a Pro edition requirement in BACKEND-SECURITY.md owns.
 
 **Why.** Raw HTML sinks bypass the framework's escaping; one fed with user or model content runs attacker script in the app's origin.
 
@@ -153,7 +144,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 - Keep the inventory in the security decisions log or as a comment registry checked in review.
 - Add a lint or Semgrep rule that fails CI on any raw HTML sink not on the inventory.
 - `eval`, `new Function` and string timers in client code are also banned; server side rules are in BACKEND-SECURITY.md.
-- Owned by SEC-API-147 in BACKEND-SECURITY.md for this root cause (HTML built by server code, including email); report one finding. Browser DOM sinks stay here.
+- Owned by a Pro edition requirement in BACKEND-SECURITY.md for this root cause (HTML built by server code, including email); report one finding. Browser DOM sinks stay here.
 - Owned by SEC-WEB-044 for this root cause (Isolated frames for supplied HTML); report one finding. The sink inventory stays here.
 - Severity tiers: a sink that receives user or model data without sanitizer output is CRITICAL. When every sink the scan finds is verified to receive only constant markup or sanitizer output and only the inventory is missing or stale, the finding is a documentation gap rated LOW.
 
@@ -188,7 +179,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 **Implementation.**
 - Use a widely maintained sanitizer (for example DOMPurify) with an explicit tag and attribute allowlist; never write a regex based filter.
 - Sanitize at render time, because sanitizers change and stored data may predate the current rules. Sanitizing before storage as well is allowed.
-- Block event handler attributes, `style` where not needed, and URLs that fail SEC-WEB-002.
+- Block event handler attributes, `style` where not needed, and URLs that fail a Pro edition requirement.
 - Keep the sanitizer within its patch window; dependency rules are in DEPENDENCIES.md.
 
 **Verify.**

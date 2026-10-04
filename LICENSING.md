@@ -34,8 +34,20 @@ Statement: [LICENSE-DOCS.md](LICENSE-DOCS.md). Full legal code: [LICENSE-DOCS-CC
 
 ## Hullproof Pro
 
-The paid edition is a separate package under its own commercial license (LICENSE-PRO.md, inside that package). It is not included in this repository or in the free edition download, and these two licenses do not cover its Pro only files. Files that appear in both editions stay available to everyone under the licenses above.
+The paid edition is a separate package under its own commercial license (LICENSE-PRO.md, inside that package). It is not included in this repository or in the free edition download, and these two licenses do not cover its Pro only files.
+
+Some files exist in both editions, with a fuller version in Pro. The text of such a file that appears in this edition is available to everyone under the licenses above, whatever else the Pro copy holds. Text that appears only in the Pro copy is not covered by these licenses. Files carry no license header, so the tables on this page are the record: a path under `kit/.claude/`, `kit/tools/` or `kit/docs/hullproof/.kit-manifest` is code, and a path under `kit/docs/`, `conventions/` or a root document is documentation.
+
+## Sources and names
+
+Hullproof cites other people's standards and documents by ID and link. It restates their points in its own words. OWASP ASVS, MASVS, MASTG and MASWE, the OWASP Cheat Sheet Series, the OWASP Top 10 lists and MDN pages are shared under CC BY-SA licenses. Many Hullproof requirements restate the point of one or more of their items in Hullproof's own words and cite the item by its ID. Other sources (NIST, CISA, vendor documentation, laws and regulator guidance) are cited the same way, and their licenses are listed in `kit/docs/hullproof/REFERENCES.md`. If you believe a passage copies a source, tell us through the contact in [SECURITY.md](SECURITY.md) and we will rewrite it.
+
+Hullproof is an independent project. It is not affiliated with or endorsed by any organisation or vendor it names. Hullproof and the READY labels describe the result of a defined set of checks on one commit. You may say that a project was checked against Hullproof, with the date and the commit. You may not say a project is certified, approved or endorsed by Hullproof, and you may not use the Hullproof name as the name of your own product or service. The Apache License 2.0 does not give you rights to the Hullproof name.
+
+## Support
+
+Ask questions and report problems with the kit as GitHub issues on https://github.com/jt247/hullproof-free/issues. Issues are public, so do not paste secrets or private project details. A security problem goes through [SECURITY.md](SECURITY.md).
 
 ## What this means in practice
 
-If you copy the kit into your project, keep `LICENSE`, `LICENSE-DOCS.md` and `NOTICE.md` in your repository along with the license notices that come with the files. If you share or adapt the documentation, credit Hullproof and release your adapted text under CC BY-SA 4.0 as the license requires. If this page and the license texts differ, the license texts apply.
+If you copy the kit into your project, keep `LICENSE`, `LICENSE-DOCS.md`, `LICENSE-DOCS-CC-BY-SA-4.0.txt`, `LICENSING.md` and `NOTICE.md` in your repository. They sit outside `kit/`, so the install command does not copy them. The README install steps put them in `docs/hullproof/licence/`. If you share or adapt the documentation, credit Hullproof and release your adapted text under CC BY-SA 4.0 as the license requires. If this page and the license texts differ, the license texts apply.

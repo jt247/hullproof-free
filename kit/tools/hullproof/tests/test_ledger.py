@@ -30,7 +30,7 @@ PRELAUNCH = """# Pre Launch Audit
 
 ## Part 3: CRITICAL requirements at GROWTH
 
-- [ ] **SEC-LOG-012** Alerts | CRITICAL | PARTIAL | CONFIG REVIEW | Authority: dashboard
+- [ ] **SEC-FIX-404** Alerts | CRITICAL | PARTIAL | CONFIG REVIEW | Authority: dashboard
 
 ## Results
 
@@ -58,12 +58,12 @@ class Ledger(unittest.TestCase):
 
     def test_checklist_ids_follow_the_declared_stage(self):
         self.assertEqual(ledger.checklist_ids(PRELAUNCH, "LAUNCH"), ["SEC-AUTH-002", "SEC-API-001", "SEC-DB-002"])
-        self.assertEqual(ledger.checklist_ids(PRELAUNCH, "GROWTH")[-1], "SEC-LOG-012")
+        self.assertEqual(ledger.checklist_ids(PRELAUNCH, "GROWTH")[-1], "SEC-FIX-404")
         self.assertEqual(len(ledger.checklist_ids(PRELAUNCH)), 4)
 
     def test_checklist_item_stage_field_is_used_without_parts(self):
-        text = "- [ ] **SEC-WEB-026** CSRF | HIGH | GROWTH | Authority: runtime | [r](x)\n- [ ] **SEC-WEB-001** Enc | HIGH | LAUNCH | Authority: repo | [r](x)\n"
-        self.assertEqual(ledger.checklist_ids(text, "LAUNCH"), ["SEC-WEB-001"])
+        text = "- [ ] **SEC-WEB-026** CSRF | HIGH | GROWTH | Authority: runtime | [r](x)\n- [ ] **SEC-FIX-510** Enc | HIGH | LAUNCH | Authority: repo | [r](x)\n"
+        self.assertEqual(ledger.checklist_ids(text, "LAUNCH"), ["SEC-FIX-510"])
 
     def test_clean_run_exits_zero_and_prints_the_count_line(self):
         code, out = self.run_cli(PRELAUNCH, PRELAUNCH, "--stage", "LAUNCH")
@@ -71,13 +71,13 @@ class Ledger(unittest.TestCase):
         self.assertEqual(out.strip(), "Ledger: in scope 3, rows 3, missing 0, duplicate 0, extra 0")
 
     def test_missing_duplicate_and_extra_ids_are_named(self):
-        res = results(["SEC-AUTH-002", "SEC-AUTH-002", "SEC-WEB-001"])
+        res = results(["SEC-AUTH-002", "SEC-AUTH-002", "SEC-FIX-510"])
         code, out = self.run_cli(PRELAUNCH, res, "--stage", "LAUNCH")
         self.assertEqual(code, 1)
         self.assertIn("Ledger: in scope 3, rows 3, missing 2, duplicate 1, extra 1", out)
         self.assertIn("missing (2): SEC-API-001, SEC-DB-002", out)
         self.assertIn("duplicate (1): SEC-AUTH-002", out)
-        self.assertIn("extra (1): SEC-WEB-001", out)
+        self.assertIn("extra (1): SEC-FIX-510", out)
 
     def test_section_limits_the_tables(self):
         res = results(["SEC-AUTH-002"], "Other table") + results(["SEC-AUTH-002", "SEC-API-001", "SEC-DB-002"], "Coverage ledger")
@@ -85,7 +85,7 @@ class Ledger(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_tables_without_a_result_column_are_ignored(self):
-        res = "## Findings\n\n| ID | Title |\n|----|-------|\n| SEC-WEB-001 | x |\n\n" + results(["SEC-AUTH-002", "SEC-API-001", "SEC-DB-002"])
+        res = "## Findings\n\n| ID | Title |\n|----|-------|\n| SEC-FIX-510 | x |\n\n" + results(["SEC-AUTH-002", "SEC-API-001", "SEC-DB-002"])
         code, out = self.run_cli(PRELAUNCH, res, "--stage", "LAUNCH")
         self.assertEqual(code, 0, out)
 

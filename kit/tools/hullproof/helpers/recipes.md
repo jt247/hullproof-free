@@ -49,7 +49,7 @@ semgrep scan --config p/default --metrics=off --quiet --json --output "$OUT/semg
 jq -r '[.results[] | .check_id | split(".") | last] | group_by(.) | map("\(.[0]) \(length)") | .[]' "$OUT/semgrep-registry.json"
 ```
 
-## Secret scans: working tree and history (SEC-SECRETS-004, SEC-SECRETS-005)
+## Secret scans: working tree and history (SEC-SECRETS-004, a Pro edition requirement)
 
 Run both with the Hullproof config and no other. The repository's own `.gitleaks.toml` and `gitleaks:allow` comments can hide findings, so name the config and turn the comments off. Run both: a clean history says nothing about the files you have now, and the reverse.
 
@@ -85,7 +85,7 @@ Commit messages are not scanned by gitleaks. Search them by prefix class and pri
 git log --all --format=%h --grep='sk_live_\|ghp_\|AKIA\|sb_secret_\|pdl_live_' | wc -l
 ```
 
-A history hit means the secret must be rotated even if the file is gone now (SEC-AGENT-013 for secrets seen in an agent session).
+A history hit means the secret must be rotated even if the file is gone now (a Pro edition requirement for secrets seen in an agent session).
 
 ### Planted value check (a scan that cannot find a planted value is not evidence)
 
@@ -112,7 +112,7 @@ The kit ships a checksum list. Run it from the repository root before you rely o
 shasum -a 256 -c docs/hullproof/.kit-manifest
 ```
 
-## Dependency scan and reachability (SEC-SUPPLY-002, SEC-SUPPLY-006)
+## Dependency scan and reachability (SEC-SUPPLY-002, a Pro edition requirement)
 
 ```bash
 osv-scanner scan source -r --format json --output-file "$OUT/osv.json" .
@@ -127,7 +127,7 @@ Classify each name into one of three classes before assigning severity. Most hit
 |-------|-------------|-------------------|
 | Direct runtime | The name is under `dependencies` of a shipped workspace package. See the package.json recipe below. | Full advisory severity. |
 | Transitive runtime | A lockfile recipe below reaches the name from a `dependencies` entry of a shipped workspace package. | Full severity when the vulnerable code path is used, otherwise one level lower with the reason recorded. |
-| Dev and build only | A lockfile recipe below reaches the name only from `devDependencies`. | Record as dev only, with a one line decisions log entry, as the standard says. If the package runs in CI with secrets (SEC-SUPPLY-016, SEC-SUPPLY-017), treat it as runtime. |
+| Dev and build only | A lockfile recipe below reaches the name only from `devDependencies`. | Record as dev only, with a one line decisions log entry, as the standard says. If the package runs in CI with secrets (SEC-SUPPLY-016, a Pro edition requirement), treat it as runtime. |
 
 The recipes read the lockfile as text. They do not run the package manager, install anything, execute a script or contact a registry. Set `NAME` to the package name first.
 
@@ -200,7 +200,7 @@ done
 
 A line with `dependencies` in the output means runtime. Only `devDependencies` lines mean dev only. No output means the package is not reached from a listed manifest.
 
-OSV cannot see vendored copies. Look for them by hand for SEC-SUPPLY-006: `find . -path ./node_modules -prune -o \( -name '*.min.js' -o -type d -name vendor \) -print | head -20` lists candidates by path only.
+OSV cannot see vendored copies. Look for them by hand for a Pro edition requirement: `find . -path ./node_modules -prune -o \( -name '*.min.js' -o -type d -name vendor \) -print | head -20` lists candidates by path only.
 
 ## Report provenance recipes
 
@@ -247,13 +247,13 @@ Each line says what a hit means. `sgx -L` lists files that lack the call, which 
 - **SEC-AUTHZ-020**: Admin files with no admin guard.
   `sgx -L '(requireAdmin|assertAdmin|isAdmin|requireRole)' app/admin`
 
-- **SEC-API-002**: `select *` in API code.
+- **Pro edition**: `select *` in API code.
   `sgx -c "select\\((['\"])\\*\\1\\)|select \\*" app`
 
-- **SEC-API-010**: Route files with no schema parse.
+- **Pro edition**: Route files with no schema parse.
   `sgx -L '(\.parse\(|\.safeParse\()' app/api`
 
-- **SEC-API-102, SEC-DATA-009**: Plain comparison of signatures or secrets.
+- **Pro edition**: Plain comparison of signatures or secrets.
   `sgx -c '(signature|digest|hmac|secret|sig)[[:alnum:]_]*[[:space:]]*[!=]==?' .`
 
 - **SEC-API-125**: Checkout code reading price from the request.
@@ -274,7 +274,7 @@ Each line says what a hit means. `sgx -L` lists files that lack the call, which 
 - **SEC-AUTH-002**: Token decode without verify, session reads on the server.
   `sgx -c '(jwt\.decode|decodeJwt|auth\.getSession)\(' .`
 
-- **SEC-AUTH-031**: Weak OAuth flow settings.
+- **Pro edition**: Weak OAuth flow settings.
   `sgx -c "(usePKCE:[[:space:]]*false|codeChallengeMethod:[[:space:]]*['\"]plain|responseType:[[:space:]]*['\"]token)" .`
 
 - **SEC-AUTHZ-003, SEC-AUTHZ-015**: Tenant or owner id taken from the request.
@@ -283,61 +283,61 @@ Each line says what a hit means. `sgx -L` lists files that lack the call, which 
 - **SEC-AUTHZ-004**: Request body passed straight into a write.
   `sgn '\.(insert|update|upsert)\((await[[:space:]]+)?(\.\.\.)?(body|data|input|payload|[a-z]+\.json\(\))' .`
 
-- **SEC-DATA-003**: Cipher modes.
+- **Pro edition**: Cipher modes.
   `sgx -c "(createCipheriv|ecb|cbc|ctr|cfb|ofb)" .`
 
-- **SEC-DATA-004**: Weak hashes, include SQL migrations.
+- **Pro edition**: Weak hashes, include SQL migrations.
   `sgx -c '(md5|md4|sha1|SHA-1|crc32)' .` and `grep -rciE 'md5\(' supabase/migrations | grep -v ':0$'`
 
-- **SEC-DATA-007**: Literal keys in crypto calls. Count only, never print..
+- **Pro edition**: Literal keys in crypto calls. Count only, never print..
   `sgx -c "(createCipheriv|createHmac|importKey)\\([^)]*['\"][A-Za-z0-9+/=]{16,}['\"]" .`
 
-- **SEC-DATA-016**: TLS verification off.
+- **Pro edition**: TLS verification off.
   `sgx -c '(rejectUnauthorized:[[:space:]]*false|NODE_TLS_REJECT_UNAUTHORIZED|strictSSL:[[:space:]]*false|sslmode=(disable|allow|prefer))' .`
 
-- **SEC-DATA-027**: Personal fields inside URLs.
+- **Pro edition**: Personal fields inside URLs.
   `sgn '(searchParams|URLSearchParams).*(email|phone|dob)' .`
 
-- **SEC-WEB-002**: Link targets from data.
+- **Pro edition**: Link targets from data.
   `sgn '(href|src|action)=\{[^}]*(req|request|params|searchParams|data|props)' .`
 
-- **SEC-WEB-003**: Headers built from data.
+- **Pro edition**: Headers built from data.
   `sgn '(setHeader|headers\.set)\(.*(req|request|params|searchParams|body)' .`
 
-- **SEC-WEB-004, SEC-LOG-001**: Logger calls that receive request bodies or secret named values.
+- **a Pro edition requirement, SEC-LOG-001**: Logger calls that receive request bodies or secret named values.
   `sgx -c '(console|logger|log)\.[a-z]+\(.*(req\.body|headers|token|secret|password|authorization)' .`
 
-- **SEC-WEB-014**: `postMessage` with a wildcard, message listeners.
+- **Pro edition**: `postMessage` with a wildcard, message listeners.
   `sgn "(postMessage\\(.*['\"]\\*['\"]|addEventListener\\(['\"]message)" .`
 
-- **SEC-WEB-025**: GET handlers that also change state.
+- **Pro edition**: GET handlers that also change state.
   `sgx -l 'export (async )?function GET' app | xargs grep -lE '\.(insert|update|upsert|delete)\(|\.rpc\('`
 
-- **SEC-WEB-033**: Markdown with raw HTML enabled.
+- **Pro edition**: Markdown with raw HTML enabled.
   `sgx -c '(rehype-raw|allowDangerousHtml|skipHtml=\{false)' .`
 
-- **SEC-WEB-040**: JSONP.
+- **Pro edition**: JSONP.
   `sgn '(jsonp|callback)[[:space:]]*=|searchParams.get\(.callback.\)' app`
 
-- **SEC-LOG-002**: Personal fields in log calls.
+- **Pro edition**: Personal fields in log calls.
   `sgx -c '(console|logger|log)\.[a-z]+\(.*(email|phone|nin|bvn)' .`
 
-- **SEC-LOG-017**: Error text returned to the client.
+- **Pro edition**: Error text returned to the client.
   `sgn 'json\(.*(error|err)\.(message|stack)' app`
 
 - **SEC-LOG-019**: Single line empty catch.
   `sgx -c 'catch[[:space:]]*(\([^)]*\))?[[:space:]]*\{[[:space:]]*\}' .`
 
-- **SEC-MOBILE-003**: SecureStore writes with no ThisDeviceOnly option.
+- **Pro edition**: SecureStore writes with no ThisDeviceOnly option.
   `sgx -l 'setItemAsync' . | xargs grep -L ThisDeviceOnly`
 
-- **SEC-MOBILE-007**: WebView with no origin allowlist.
+- **Pro edition**: WebView with no origin allowlist.
   `sgx -l '<WebView' . | xargs grep -L originWhitelist`
 
-- **SEC-MOBILE-008**: Console or analytics calls with token named values.
+- **Pro edition**: Console or analytics calls with token named values.
   `sgx -c '(console|Sentry|posthog)\.[A-Za-z]+\(.*(token|session|password)' .`
 
-- **SEC-MOBILE-020**: Writes to shared storage.
+- **Pro edition**: Writes to shared storage.
   `sgx -c '(MediaLibrary\.(saveToLibraryAsync|createAssetAsync)|Sharing\.shareAsync)' .`
 
 - **SEC-DB-003**: Default privilege revoke present in migrations.

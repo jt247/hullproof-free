@@ -1,6 +1,6 @@
 # Threat Model Template
 
-Use this template for every FULL threat model required by SEC-GOV-007 in [GOVERNANCE.md](../GOVERNANCE.md). Write the model before major architecture work or a security sensitive feature is implemented, and revisit it when the design changes. A model written after the code exists is still useful, but mark it RETROSPECTIVE in the header.
+Use this template for every FULL threat model required by a Pro edition requirement in [GOVERNANCE.md](../GOVERNANCE.md). Write the model before major architecture work or a security sensitive feature is implemented, and revisit it when the design changes. A model written after the code exists is still useful, but mark it RETROSPECTIVE in the header.
 
 Save each model in the project as `docs/security/threat-models/YYYY-MM-DD-<slug>.md`. The `/hullproof-threat-model` skill (Hullproof Pro) drafts one from this template. If the feature calls a model, uses tools, retrieval or agent memory, also complete [AI-THREAT-MODEL.md](AI-THREAT-MODEL.md) in the same file.
 
@@ -22,16 +22,16 @@ Rules for whoever fills it in, person or agent:
 | Scope | What is modeled, in one or two sentences |
 | In scope | Components, routes, tables, services covered |
 | Out of scope | What is deliberately excluded and why |
-| Model type | FULL (SEC-GOV-007) |
+| Model type | FULL (a Pro edition requirement) |
 | Timing | BEFORE IMPLEMENTATION, or RETROSPECTIVE (code already exists) |
 | Version | 1.0, raised on every material change |
 | Commit SHA | Full SHA the model was drawn against, or "design only, no code yet" |
 | Author | Person or agent that drafted it |
 | Date | YYYY-MM-DD |
-| Project stage | LAUNCH, GROWTH or SCALE (SEC-GOV-018) |
+| Project stage | LAUNCH, GROWTH or SCALE (a Pro edition requirement) |
 | AI extension | YES (AI-THREAT-MODEL.md sections included) or NO |
-| Status | DRAFT, REVIEWED or SUPERSEDED |
-| Review trigger | Written before major architecture or security sensitive features. Revisit when the design changes, after an incident or finding that shows a missed threat (SEC-GOV-016), and at least once per release that touches this scope. |
+| Status | PROPOSED, REVIEWED or SUPERSEDED |
+| Review trigger | Written before major architecture or security sensitive features. Revisit when the design changes, after an incident or finding that shows a missed threat (a Pro edition requirement), and at least once per release that touches this scope. |
 
 ## What are we working on?
 
@@ -103,7 +103,7 @@ Third party services, providers and APIs. Data received from them is untrusted i
 
 ### 8. Abuse cases
 
-Legitimate features used harmfully, usually at volume: signup, invites, referrals, coupons, trials, messaging, exports, AI generation (SEC-GOV-012). Also list resource heavy functions and their limits (SEC-GOV-013).
+Legitimate features used harmfully, usually at volume: signup, invites, referrals, coupons, trials, messaging, exports, AI generation (a Pro edition requirement). Also list resource heavy functions and their limits (a Pro edition requirement).
 
 | ID | Flow | Abuse | Limit per user | Global limit | Enforced where | SEC ID |
 |----|------|-------|----------------|--------------|----------------|--------|
@@ -111,7 +111,7 @@ Legitimate features used harmfully, usually at volume: signup, invites, referral
 
 ### STRIDE walk
 
-STRIDE is a prompt list for finding threats, not a score. Walk it per element as SEC-GOV-009 sets out: all six categories for processes; tampering, information disclosure and denial of service for data flows and data stores (plus repudiation for audit logs); spoofing and repudiation for external entities.
+STRIDE is a prompt list for finding threats, not a score. Walk it per element as a Pro edition requirement sets out: all six categories for processes; tampering, information disclosure and denial of service for data flows and data stores (plus repudiation for audit logs); spoofing and repudiation for external entities.
 
 | Element | Type | Categories walked | Threats found | Categories ruled out, and why |
 |---------|------|-------------------|---------------|-------------------------------|
@@ -135,7 +135,7 @@ One block per threat, numbered TM-01, TM-02 and so on. Exactly these eleven fiel
 | Existing controls | SEC IDs already met, each with `file:line` evidence and VERIFIED or SUSPECTED, or "None found" |
 | Recommended controls | SEC IDs to implement and the concrete change for this system |
 | Residual risk | Response: MITIGATE, ELIMINATE, TRANSFER or ACCEPT. Rank before controls and after recommended controls (HIGH, MEDIUM or LOW, as a judgement from impact and likelihood). If ACCEPT, link the entry in section 11 |
-| Verification | The named test or manual check that proves the control works. HIGH rank threats need an automated test that passes before merge (SEC-GOV-009) |
+| Verification | The named test or manual check that proves the control works. HIGH rank threats need an automated test that passes before merge (a Pro edition requirement) |
 
 ## What are we going to do about it?
 
@@ -149,7 +149,7 @@ Every recommended control from section 9 in one list, so it can become tasks.
 
 ### 11. Residual risk
 
-Risk that remains after the recommended controls, and every threat answered ACCEPT or TRANSFER. Accepted risks follow the Exceptions and risk acceptance rules in `docs/hullproof/STANDARD.md` and are recorded in the project's security decisions log (SEC-GOV-011). BLOCKER level risk is never accepted. A CRITICAL acceptance needs a named owner, a compensating control and an expiry date; a HIGH acceptance needs an owner and a fix date. An agent never accepts a risk on the owner's behalf: it records the proposal as PENDING.
+Risk that remains after the recommended controls, and every threat answered ACCEPT or TRANSFER. Accepted risks follow the Exceptions and risk acceptance rules in `docs/hullproof/STANDARD.md` and are recorded in the project's security decisions log (a Pro edition requirement). BLOCKER level risk is never accepted. A CRITICAL acceptance needs a named owner, a compensating control and an expiry date; a HIGH acceptance needs an owner and a fix date. An agent never accepts a risk on the owner's behalf: it records the proposal as PENDING.
 
 | Threat ID | Response | Residual rank | Why this is acceptable | Owner | Decisions log entry | Review or expiry date |
 |-----------|----------|---------------|------------------------|-------|---------------------|-----------------------|
@@ -167,7 +167,7 @@ Unknowns that block a confident answer. A threat that depends on an open questio
 
 ### Review
 
-Required for authentication, payments, multi tenancy and AI tool use (SEC-GOV-015). An agent may act as a second viewpoint but is never recorded as the human reviewer.
+Required for authentication, payments, multi tenancy and AI tool use (a Pro edition requirement). An agent may act as a second viewpoint but is never recorded as the human reviewer.
 
 | Reviewer | Role | Date | Outcome |
 |----------|------|------|---------|
@@ -182,9 +182,9 @@ Ticked by the human owner, not only the agent that drafted the model.
 - [ ] Every threat has all eleven fields and exactly one response.
 - [ ] Every mitigation names a SEC ID and a test; tests for HIGH threats exist and pass.
 - [ ] Every ACCEPT has a decisions log entry with an owner and a date.
-- [ ] The AI extension is complete if the feature uses a model, tools, retrieval or memory (SEC-GOV-010).
+- [ ] The AI extension is complete if the feature uses a model, tools, retrieval or memory (a Pro edition requirement).
 - [ ] Open questions are answered or carried as named follow ups.
-- [ ] The model is linked from the pull request (SEC-GOV-007).
+- [ ] The model is linked from the pull request (a Pro edition requirement).
 
 ### Change log
 
@@ -195,7 +195,7 @@ Ticked by the human owner, not only the agent that drafted the model.
 
 ## Requirements this template serves
 
-SEC-GOV-007 (FULL model before merge), SEC-GOV-008 (DELTA notes point to this model), SEC-GOV-009 (diagram, STRIDE walk, one response per threat, SEC ID and test per mitigation, exit check), SEC-GOV-010 (AI section, through AI-THREAT-MODEL.md), SEC-GOV-011 (accepted risk record), SEC-GOV-012 (abuse cases and limits), SEC-GOV-013 (resource heavy functions), SEC-GOV-015 (independent review), SEC-GOV-016 (refresh after new evidence) and SEC-AI-001 (threat model entry for every AI feature).
+a Pro edition requirement (FULL model before merge), a Pro edition requirement (DELTA notes point to this model), a Pro edition requirement (diagram, STRIDE walk, one response per threat, SEC ID and test per mitigation, exit check), a Pro edition requirement (AI section, through AI-THREAT-MODEL.md), a Pro edition requirement (accepted risk record), a Pro edition requirement (abuse cases and limits), a Pro edition requirement (resource heavy functions), a Pro edition requirement (independent review), a Pro edition requirement (refresh after new evidence) and a Pro edition requirement (threat model entry for every AI feature).
 
 ## Sources
 

@@ -6,11 +6,11 @@
 | Topics covered | API Security, Input Validation, Third-Party Integrations, Webhooks, Rate Limiting, Abuse Prevention, Payments |
 | Part of | Hullproof Security Standard, see STANDARD.md |
 
-This document covers the server side surface of a product: endpoints and Server Actions, input validation, server side interpreters, backend service behavior, outbound requests, file uploads, and calls to third party APIs. Object and tenant authorization rules live in [AUTH.md](AUTH.md), row level security and database roles in [DATABASE-SECURITY.md](DATABASE-SECURITY.md), browser side controls in [FRONTEND-SECURITY.md](FRONTEND-SECURITY.md), storage buckets and signed download URLs in [DATA-PROTECTION.md](DATA-PROTECTION.md), error responses and failure handling in [OBSERVABILITY.md](OBSERVABILITY.md), dependency versions in [DEPENDENCIES.md](DEPENDENCIES.md), and model specific output handling in [AI-SECURITY.md](AI-SECURITY.md). The core requirements are numbered from SEC-API-001; webhooks, rate limiting, abuse prevention and payments start at SEC-API-101. API keys, API versioning and idempotency are SEC-API-140 to SEC-API-142, and outbound webhooks the product sends are SEC-API-143 to SEC-API-146.
+This document covers the server side surface of a product: endpoints and Server Actions, input validation, server side interpreters, backend service behavior, outbound requests, file uploads, and calls to third party APIs. Object and tenant authorization rules live in [AUTH.md](AUTH.md), row level security and database roles in [DATABASE-SECURITY.md](DATABASE-SECURITY.md), browser side controls in [FRONTEND-SECURITY.md](FRONTEND-SECURITY.md), storage buckets and signed download URLs in [DATA-PROTECTION.md](DATA-PROTECTION.md), error responses and failure handling in [OBSERVABILITY.md](OBSERVABILITY.md), dependency versions in [DEPENDENCIES.md](DEPENDENCIES.md), and model specific output handling in [AI-SECURITY.md](AI-SECURITY.md). The core requirements are numbered from SEC-API-001; webhooks, rate limiting, abuse prevention and payments start at SEC-API-101. API keys, API versioning and idempotency are Pro edition requirements, and outbound webhooks the product sends are Pro edition requirements.
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 11 of the 60 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 12 of the 60 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 48. Pro covers the wider API surface, including how responses are shaped, how webhooks and payments are handled, how keys are issued and how abuse is limited.
 
 ## Requirement index
 
@@ -23,8 +23,9 @@ This document covers the server side surface of a product: endpoints and Server 
 | [SEC-API-126](#sec-api-126-grant-entitlements-only-from-verified-server-side-signals) | Grant entitlements only from verified server side signals | BLOCKER | LAUNCH | SaaS, API, Backend, Mobile |
 | [SEC-API-127](#sec-api-127-match-provider-payment-details-to-the-order-before-granting) | Match provider payment details to the order before granting | CRITICAL | LAUNCH | SaaS, API, Backend, Mobile |
 | [SEC-API-128](#sec-api-128-grant-each-payment-at-most-once-in-one-transaction) | Grant each payment at most once, in one transaction | CRITICAL | LAUNCH | API, Backend, Database |
-| [SEC-API-132](#sec-api-132-require-the-revenuecat-authorization-header) | Require the RevenueCat authorization header | BLOCKER | LAUNCH | API (RevenueCat), Mobile |
+| [SEC-API-132](#sec-api-132-authenticate-revenuecat-webhook-requests) | Authenticate RevenueCat webhook requests | BLOCKER | LAUNCH | API (RevenueCat), Mobile |
 | [SEC-API-133](#sec-api-133-verify-apple-notifications-with-the-full-certificate-chain) | Verify Apple notifications with the full certificate chain | BLOCKER | LAUNCH | API (Apple App Store), Mobile |
+| [SEC-API-134](#sec-api-134-authenticate-google-play-rtdn-push-requests) | Authenticate Google Play RTDN push requests | BLOCKER | LAUNCH | API (Google Play), Cloud, Mobile |
 | [SEC-API-135](#sec-api-135-never-grant-production-entitlements-from-sandbox-events) | Never grant production entitlements from sandbox events | CRITICAL | LAUNCH | API, Backend, Mobile |
 | [SEC-API-137](#sec-api-137-collect-card-data-only-through-the-providers-hosted-checkout) | Collect card data only through the provider's hosted checkout | CRITICAL | LAUNCH | SaaS, Web, Mobile, API |
 <!-- hullproof:index:end -->
@@ -42,27 +43,13 @@ Each requirement in this document is listed in exactly one row. A row with no re
 |------|----------|-------------|-------------------------------|
 | Object level authorization | AUTH.md, DATABASE-SECURITY.md, BACKEND-SECURITY.md, DATA-PROTECTION.md | None | None in this document |
 | Function level authorization, including a documented rule per endpoint that tests check | AUTH.md | None | None in this document |
-| Property level authorization (mass assignment and excessive data exposure) | AUTH.md | None | SEC-API-002, SEC-API-011 |
-| Resource exhaustion (payload size, pagination, query cost, timeouts, expensive operations) | BACKEND-SECURITY.md, AI-SECURITY.md, OBSERVABILITY.md, INFRASTRUCTURE-SECURITY.md | None | SEC-API-113, SEC-API-114 |
-| Inventory and version management (API inventory, deprecated versions, non production hosts) | BACKEND-SECURITY.md, INFRASTRUCTURE-SECURITY.md | None | SEC-API-008 |
-| Unsafe consumption of third party APIs | BACKEND-SECURITY.md, DATA-PROTECTION.md, OBSERVABILITY.md | None | SEC-API-049, SEC-API-050, SEC-API-105 |
-| Authentication | AUTH.md, SECRETS.md | None | SEC-API-110 |
-| Validation | BACKEND-SECURITY.md | Webhook body validation | SEC-API-010, SEC-API-012, SEC-API-013, SEC-API-014, SEC-API-015, SEC-API-016 |
-| Rate limiting | AUTH.md | None | SEC-API-115, SEC-API-116 |
-| Webhooks | SECRETS.md, OBSERVABILITY.md, BACKEND-SECURITY.md | None | SEC-API-101, SEC-API-102, SEC-API-106, SEC-API-132, SEC-API-133, SEC-API-134, SEC-API-135 |
-| Outbound webhooks sent to customers (signing, per endpoint secrets, rotation, HTTPS) | BACKEND-SECURITY.md | None | SEC-API-143, SEC-API-144, SEC-API-145, SEC-API-146 |
-| Replay attacks | AUTH.md | None | SEC-API-103, SEC-API-104, SEC-API-128 |
-| Idempotency | BACKEND-SECURITY.md, OBSERVABILITY.md | None | SEC-API-142, SEC-API-129 |
+| Resource exhaustion (payload size, pagination, query cost, timeouts, expensive operations) | BACKEND-SECURITY.md, AI-SECURITY.md, OBSERVABILITY.md, INFRASTRUCTURE-SECURITY.md | None | SEC-API-114 (more in Pro edition) |
+| Webhooks | SECRETS.md, OBSERVABILITY.md, BACKEND-SECURITY.md | None | SEC-API-101, SEC-API-132, SEC-API-133, SEC-API-134, SEC-API-135 (more in Pro edition) |
+| Replay attacks | AUTH.md | None | SEC-API-128 (more in Pro edition) |
 | API1:2023 Broken Object Level Authorization | AUTH.md, DATABASE-SECURITY.md, BACKEND-SECURITY.md | None | None in this document |
-| API2:2023 Broken Authentication | AUTH.md, SECRETS.md | None | SEC-API-140, SEC-API-109 |
-| API4:2023 Unrestricted Resource Consumption | BACKEND-SECURITY.md, AI-SECURITY.md, OBSERVABILITY.md | None | SEC-API-007, SEC-API-111, SEC-API-112, SEC-API-122 |
 | API5:2023 Broken Function Level Authorization | AUTH.md | None | SEC-API-001 |
-| API6:2023 Unrestricted Access to Sensitive Business Flows | BACKEND-SECURITY.md | None | SEC-API-117, SEC-API-118, SEC-API-119, SEC-API-120, SEC-API-121, SEC-API-124 |
 | API7:2023 Server Side Request Forgery | BACKEND-SECURITY.md | None | None in this document |
-| API8:2023 Security Misconfiguration | FRONTEND-SECURITY.md, OBSERVABILITY.md, DATA-PROTECTION.md, INFRASTRUCTURE-SECURITY.md, BACKEND-SECURITY.md | None | SEC-API-003, SEC-API-004 |
-| API9:2023 Improper Inventory Management | INFRASTRUCTURE-SECURITY.md, BACKEND-SECURITY.md | None | SEC-API-005, SEC-API-006, SEC-API-141 |
-| Analytics and tag scripts on sensitive pages | None | None | SEC-API-051 |
-| Payments and entitlements | None | None | SEC-API-125, SEC-API-126, SEC-API-127, SEC-API-130, SEC-API-136, SEC-API-137, SEC-API-138, SEC-API-139 |
+| Payments and entitlements | None | None | SEC-API-125, SEC-API-126, SEC-API-127, SEC-API-137 (more in Pro edition) |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -72,9 +59,8 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 | Gate | Question | Evidence of absence | A No answer marks these NOT APPLICABLE |
 |------|----------|---------------------|----------------------------------------|
-| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Check that no app.json, eas.json, ios or android folder, or expo or react-native dependency exists in any workspace, and that no store listing or TestFlight build exists. Record what was checked, or record the owner's written answer. A mobile scaffold counts as No only if it is not deployed and not reachable by real users at the audited commit; a release scope that leaves a live app out does not make the answer No. | SEC-API-124, SEC-API-132 (BLOCKER), SEC-API-133 (BLOCKER), SEC-API-134 |
-| GATE-WEBHOOKS | Does the product send webhooks to URLs that customers supply, or request any other URL that a user chooses (link previews, import from URL)? | Search the schema and source for webhook_url, callback_url or a webhook endpoints table, and for outbound delivery jobs. Also search for link previews, unfurling, import from URL and any other request to a URL a user chose. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer. A No here does not clear SEC-API-035: it is also named by GATE-URLFETCH, and both gates must be No. See GATE-TOOLS for model supplied URLs. | SEC-API-143, SEC-API-144, SEC-API-145, SEC-API-146 |
-| GATE-PAYMENTS | Does the product take payments or grant paid entitlements through a payment provider or an app store? | Search package.json and the source for paystack, paddle, stripe, flutterwave, revenuecat, apple or google billing, and for a checkout or entitlement route. Any handler that changes a plan, credit, role or entitlement is a payment path, whatever the payment provider is called. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer that no money is taken through the product. | SEC-API-125 (BLOCKER), SEC-API-126 (BLOCKER), SEC-API-127, SEC-API-128, SEC-API-129, SEC-API-130, SEC-API-132 (BLOCKER), SEC-API-133 (BLOCKER), SEC-API-134, SEC-API-135, SEC-API-136, SEC-API-137, SEC-API-138 |
+| GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Check that no app.json, eas.json, ios or android folder, or expo or react-native dependency exists in any workspace, and that no store listing or TestFlight build exists. Record what was checked, or record the owner's written answer. A mobile scaffold counts as No only if it is not deployed and not reachable by real users at the audited commit; a release scope that leaves a live app out does not make the answer No. | SEC-API-132, SEC-API-133, SEC-API-134 (more in Pro edition) |
+| GATE-PAYMENTS | Does the product take payments or grant paid entitlements through a payment provider or an app store? | Search package.json and the source for paystack, paddle, stripe, flutterwave, revenuecat, apple or google billing, and for a checkout or entitlement route. Any handler that changes a plan, credit, role or entitlement is a payment path, whatever the payment provider is called. Record the commands, the number of files searched and that nothing was found, or record the owner's written answer that no money is taken through the product. | SEC-API-125, SEC-API-126, SEC-API-127, SEC-API-128, SEC-API-132, SEC-API-133, SEC-API-134, SEC-API-135, SEC-API-137 (more in Pro edition) |
 <!-- hullproof:gates:end -->
 
 The OWASP API Security Top 10 2023 is the organising frame for the rows named with an API number. Each requirement is listed once, under the most specific row.
@@ -157,7 +143,7 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 
 **References.** OWASP Top 10:2025 A08:2025 (CWE-345) [SRC-020]; OWASP API Security Top 10 2023 API10:2023 [SRC-021]; Stripe Webhooks: Signature verification [SRC-086]; Paystack Webhooks: Signature validation, Raw body [SRC-088]; Flutterwave Webhooks: v4 HMAC signature [SRC-089]; Paddle Verify webhook signatures: Signature scheme, Raw body [SRC-090]; Node.js crypto.createHmac [SRC-370].
 
-**AI Agent Instruction.** When you create or change a webhook route, make signature verification over the raw body the first statement that touches the request, and write the negative tests in Verify step 1 alongside it. Never parse the body before verifying, never add a flag, environment switch or `try/catch` that lets an unverified event through, and never remove or bypass an existing verification step to make a test pass. If you cannot find the provider's verification method, stop and report it instead of shipping an unverified route.
+**AI Agent Instruction.** When you create or change a webhook route, make signature verification over the raw body the first statement that touches the request, and write the negative tests in Verify step 1 alongside it. Never parse the body before verifying, never add a flag, environment switch or `try/catch` that lets an event with no valid signature through, and never remove or bypass an existing verification step to make a test pass. If you cannot find the provider's verification method, stop and report it instead of shipping a route with no signature check.
 
 ---
 
@@ -188,7 +174,7 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 **Verify.**
 1. For each paid route, including every AI model route, mock the limiter to time out and then to throw, and call the route. The paid service must not be called and the route must return a non 2xx status.
 2. Review each paid route for the timeout check and for any error path that continues to the paid call.
-3. Repeat step 1 for the login, signup, password reset and OTP limiters. A limiter that allows the request on timeout removes the brute force ceiling on those routes. Report it as a finding under this requirement unless the decisions log records why that route fails open.
+3. Repeat step 1 for the login, signup, password reset and OTP limiters. A limiter that allows the request on timeout removes the brute force ceiling on those routes. Report it as a finding under this requirement unless the decisions log records the sign in limiter exception described in a Pro edition requirement. SEC-LOG-019 in OBSERVABILITY.md owns authentication, validation and signature checks that fail open; a Pro edition requirement in BACKEND-SECURITY.md is the general rule for every other check.
 
 **Evidence.** Passing fail closed test per paid route.
 
@@ -341,7 +327,7 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 
 ---
 
-### SEC-API-132: Require the RevenueCat authorization header
+### SEC-API-132: Authenticate RevenueCat webhook requests
 
 | Field | Value |
 |-------|-------|
@@ -351,19 +337,20 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 | Automation | PARTIAL |
 | Verification method | CONFIG REVIEW, DYNAMIC TEST, CODE REVIEW |
 
-**Requirement.** Projects using RevenueCat webhooks MUST configure an authorization header value in RevenueCat and MUST reject any webhook request whose `Authorization` header does not match it in a constant time comparison. The header MUST be configured before the webhook can grant its first entitlement, in every environment where it can.
+**Requirement.** Projects using RevenueCat webhooks MUST authenticate every webhook request, either by verifying the HMAC signature and timestamp RevenueCat sends, or by configuring an authorization header value in RevenueCat and rejecting any request whose `Authorization` header does not match it in a constant time comparison. The authentication MUST be configured before the webhook can act on its first event, in every environment where it can.
 
-**Why.** RevenueCat treats the authorization header as optional. Without it the webhook URL accepts any request, so anyone who finds it can post a fake purchase event.
+**Why.** RevenueCat treats the authorization header as optional. Without any authentication the webhook URL accepts any request, so anyone who finds it can post a fake purchase event, flood the endpoint or trigger state changes. The grant itself must still come from a RevenueCat API call (SEC-API-126), which is meant to stop a forged event from granting access. This is rated BLOCKER for two reasons. Payments is a protected class, so a failure here can never be accepted as a risk. And an open webhook leaves a single check between the internet and a free entitlement: any gap in that check, such as a lookup that trusts the event body, a missing amount match (SEC-API-127) or a replay (a Pro edition requirement), becomes a direct path to free paid access with nothing in front of it. Authentication removes forged events from the handler altogether and stops floods of fake events that cost lookups, writes and entitlement moves. Both checks are required. The same level applies to the matching Google Play rule in SEC-API-134.
 
 **Implementation.**
-- Generate a long random value, store it in a server environment variable, and set it in the RevenueCat dashboard.
-- RevenueCat HMAC signing (`X-RevenueCat-Webhook-Signature`) SHOULD also be enabled; it covers the body and a timestamp.
+- Prefer HMAC signature verification where your RevenueCat plan offers it: it covers the body and a timestamp, so it also supports the stale event rule in a Pro edition requirement. Check the current RevenueCat webhook documentation for how to enable it.
+- Otherwise generate a long random value, store it in a server environment variable, and set it as the authorization header value in the RevenueCat dashboard.
 - Grant only after `GET /subscribers` (SEC-API-126). Use the Supabase user UUID as the App User ID, never an email, because subscription status is reachable through RevenueCat's public API.
-- Handle `TRANSFER` events so entitlements move to the right account (SEC-API-136).
+- Handle `TRANSFER` events so entitlements move to the right account (a Pro edition requirement).
 
 **Verify.**
-1. Send a webhook request with no header and with a wrong header. Both must be rejected with no side effect.
-2. Confirm the header is set in the RevenueCat dashboard for every environment.
+1. Send a webhook request with no authentication and with a wrong one (a wrong header value, or a body with an invalid or stale signature). Each must be rejected with no side effect.
+2. Confirm the authentication is configured in the RevenueCat dashboard for every environment.
+3. In staging, send a forged purchase event for a test user that carries the correct authentication but names a purchase that does not exist. Confirm no entitlement is granted, which shows SEC-API-126 holds.
 
 **Evidence.** Passing negative tests; dashboard configuration record.
 
@@ -371,7 +358,7 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 
 **References.** OWASP Top 10:2025 A08:2025 [SRC-020]; OWASP ASVS 5.0.0 v5.0.0-11.2.4 (promoted) [SRC-010]; RevenueCat Webhooks: Authorization header, HMAC signing, App User IDs [SRC-173].
 
-**AI Agent Instruction.** When you add a RevenueCat webhook handler, check the authorization header first with a constant time compare and add the negative tests. If the header is not configured, stop and tell the developer; do not ship the handler without it.
+**AI Agent Instruction.** When you add a RevenueCat webhook handler, authenticate the request first (signature check or a constant time compare of the authorization header) and add the negative tests. If neither is configured, stop and tell the developer; do not ship the handler without it.
 
 ---
 
@@ -409,6 +396,40 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 
 ---
 
+### SEC-API-134: Authenticate Google Play RTDN push requests
+
+| Field | Value |
+|-------|-------|
+| Severity | BLOCKER |
+| Stage | LAUNCH |
+| Applies To | API (Google Play), Cloud, Mobile |
+| Automation | PARTIAL |
+| Verification method | CONFIG REVIEW, DYNAMIC TEST, CODE REVIEW |
+
+**Requirement.** A Pub/Sub push endpoint for Google Play Real time Developer Notifications MUST have push authentication enabled and MUST reject requests whose Google signed OIDC token fails signature validation or whose `email` and `aud` claims do not equal the configured push service account and audience.
+
+**Why.** Without push authentication the RTDN endpoint is an unauthenticated public URL. Attackers can flood it or trigger state changes if any handler logic trusts the message before calling the Play Developer API. This is rated BLOCKER for the same reasons as the RevenueCat rule in SEC-API-132. Payments is a protected class, so a failure can never be accepted as a risk. The Play Developer API call (SEC-API-126) is the second check, and with push authentication missing it is the only check between the internet and a free entitlement, so any gap in the handler becomes a direct path to free paid access. Push authentication removes forged messages and floods from the handler.
+
+**Implementation.**
+- Enable authentication on the push subscription and set a dedicated service account and audience.
+- Validate the token with a Google library; the issuer is `https://accounts.google.com`.
+- Grant only `google-play-developer-notifications@system.gserviceaccount.com` the Publisher role on the topic, and keep `iam.serviceAccounts.actAs` on the push service account narrow.
+- The grant itself still comes from the Play Developer API (SEC-API-126).
+
+**Verify.**
+1. Post to the endpoint with no token, an expired token, and a valid Google token with a different audience. Each must be rejected.
+2. Export the topic IAM policy and push subscription settings.
+
+**Evidence.** Passing negative tests; IAM and subscription configuration export.
+
+**Exceptions.** Pull subscriptions, which have no public endpoint. Record the subscription type.
+
+**References.** OWASP Top 10:2025 A08:2025 [SRC-020]; Google Cloud Pub/Sub Authentication for push subscriptions: Enable push auth, Validate the JWT, actAs control [SRC-178]; Google Play RTDN: Publisher grant, Push or pull [SRC-176].
+
+**AI Agent Instruction.** When you build an RTDN push handler, validate the OIDC token and its `email` and `aud` claims first, and then call the Play Developer API before changing any entitlement. Never treat the notification body as proof of purchase.
+
+---
+
 ### SEC-API-135: Never grant production entitlements from sandbox events
 
 | Field | Value |
@@ -426,7 +447,7 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 **Implementation.**
 - Default stack: RevenueCat events carry `environment` (`SANDBOX` or `PRODUCTION`); filter integrations by environment where possible and check the field in code.
 - Default stack: Apple, set the expected environment in the verifier (SEC-API-133).
-- Web providers: keep test and live keys and webhook endpoints separate per environment (SEC-SECRETS-009).
+- Web providers: keep test and live keys and webhook endpoints separate per environment (a Pro edition requirement).
 
 **Verify.**
 1. Deliver a verified sandbox event to the production handler. No production entitlement must be granted.
@@ -459,7 +480,7 @@ The OWASP API Security Top 10 2023 is the organising frame for the rows named wi
 **Implementation.**
 - Default stack: Stripe Checkout, Paystack, Flutterwave and Paddle hosted checkout or overlays; Apple and Google purchase sheets for in app purchases.
 - Do not build custom card input fields that post to your own server.
-- Ask the payment provider or acquirer which SAQ applies and record the answer (SEC-API-139).
+- Ask the payment provider or acquirer which SAQ applies and record the answer (a Pro edition requirement).
 
 **Verify.**
 1. Search the code for form fields named like card number, CVC or expiry, and for request schemas containing them.

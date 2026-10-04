@@ -16,14 +16,14 @@ The findings sections are fixed and always appear in this order, even when empty
 | Scope | Paths or "full" |
 | Live target tested | URL, or "none (static only)" |
 | Audit type | CODE ONLY, or CODE AND LIVE |
-| Release scope | Which of web, mobile and API ship. Requirements for targets that do not ship are NOT APPLICABLE, out of release scope. |
+| Release scope | Which of web, mobile and API ship. Requirements for targets that do not ship are NOT APPLICABLE, out of release scope. For a BLOCKER this needs the release record that shows the target is absent and a search showing no code for it is deployed from this commit; the owner's word is not enough. |
 | Live in production | Yes or no. Yes starts breach triage if a personal data exposure is verified. |
 | Report folder ignored by git | Yes or no (`git check-ignore`) |
 | Project stage | The declared stage (LAUNCH, GROWTH or SCALE) and the derived stage. Only requirements at or below the stage in force are scored, and the declared stage is never lower than the derived one. |
 | Stage triggers found | Each trigger with file and line (payments, roles besides the owner, shared workspaces, business customer data, enterprise or regulation markers), or "none found" |
 | Markets served | Countries or regions, from `docs/security/STAGE.md` or the user |
 | Hullproof version | From the Version line in `docs/hullproof/STANDARD.md` |
-| Edition and scope | Hullproof Pro (full standard), or Hullproof Free (free scope: the BLOCKER and CRITICAL requirements only; HIGH, MEDIUM and LOW requirements are NOT EVALUATED and G-6 is outside the scope) |
+| Edition and scope | Hullproof Pro (full standard), or Hullproof Free (free scope: the BLOCKER and CRITICAL requirements only; HIGH, MEDIUM and LOW requirements are outside the scope and not scored, and G-6 is outside the scope) |
 | Author | The tool and run id, or the person who wrote this report. A report with no author field is not reused. |
 | Evidence folder | The named folder that holds the scan output, exports and test records for this commit |
 | Tool and version | The skill or agent that wrote this report (for example `hullproof-security-audit`) and the Hullproof version from the Version line of `docs/hullproof/STANDARD.md`. A person writes their name and "by hand". |
@@ -88,7 +88,7 @@ Placed ahead of BLOCKERS. This is triage, not a legal determination. Notificatio
 | Architecture | Monolith, monorepo, services, serverless, and how they connect | file paths |
 | Languages and frameworks | | |
 | Trust boundaries | Browser to server, server to database, webhooks in, third party calls out, admin surfaces | |
-| Authentication | Provider, session type, MFA, OAuth | |
+| Authentication | Provider, session type, whether end user MFA is required, offered or absent, admin MFA, OAuth | |
 | Authorization | Where access checks run: middleware, route handlers, row level security, roles | |
 | External services | Payments, email, analytics, AI providers, webhooks | |
 | Secrets handling | Where secrets load, which reach client code, env files present | |
