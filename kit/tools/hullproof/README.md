@@ -14,7 +14,13 @@ A small rule pack and helpers that back the static checks in the Hullproof requi
 | `tests/lockfiles/` | Small pnpm, npm and Yarn lockfiles for the lockfile recipe tests. |
 | `helpers/policy_set.py` | Rebuilds the final live policy, function and grant set from ordered SQL migrations and flags risks. Python 3 standard library only. |
 | `helpers/run_rules.sh` | Runs the rule pack against a repo from a private temporary folder and prints counts only. |
-| `helpers/recipes.md` | One line grep commands, the secret scan commands, the lockfile reachability recipes and the kit integrity check. |
+| `helpers/recipes.md` | One line grep commands, the secret scan commands, the lockfile reachability recipes, the kit integrity check and the report provenance recipes. |
+| `helpers/enumerate.md` | Tested recipes that list route handlers (Next.js app and pages router, server actions, Express routers) and answer the gate questions from the data model and the code (tenants, payments, tools, URL fetching, MCP, uploads). |
+| `helpers/ledger.py` | Coverage ledger: compares the in scope requirement IDs with the rows of a results table and prints the missing, duplicate and extra IDs. Python 3 standard library only. |
+| `helpers/ssrf_guard_test.py` | SSRF guard test harness: blocked address ranges and 100+ test URLs with expected verdicts computed by Python `ipaddress`. No network calls. |
+| `helpers/connector-evidence.md` | What to export per provider to see the grants of hosted coding agent connectors, and how to compare them with the inventory using counts. |
+| `helpers/injection-corpus.md` | The named injection corpus for SEC-AI-050 (garak probes) and how to use the shipped delimiter breakout set for SEC-AI-016. |
+| `tests/fixtures/` | Synthetic repositories and text files used by the helper tests, including `injection-delimiters.txt`. |
 
 ## Run
 
@@ -28,6 +34,13 @@ gitleaks git . --redact --no-banner --config tools/hullproof/gitleaks.toml --ign
 
 # Policy set from migrations (default stack: supabase/migrations)
 python3 tools/hullproof/helpers/policy_set.py supabase/migrations
+
+# Coverage ledger: every in scope ID must appear exactly once in the results table
+python3 tools/hullproof/helpers/ledger.py docs/hullproof/PRE-LAUNCH-AUDIT.md --results docs/security/reports/PRE-LAUNCH-RESULTS-2026-01-31.md --stage LAUNCH
+
+# SSRF guard cases (list them, export them for your own test runner, or run a guard program against them)
+python3 tools/hullproof/helpers/ssrf_guard_test.py --list
+python3 tools/hullproof/helpers/ssrf_guard_test.py --cmd 'node tools/guard-cli.mjs'
 
 # Self tests for the kit
 semgrep --test --config tools/hullproof/rules tools/hullproof/tests
@@ -157,7 +170,7 @@ One variant that was not marked as a known gap was missed on the first run (`Fun
 | Paddle notification destination secret | `hullproof-paddle-webhook-secret` | docs (`pdl_ntfset_` prefix and example) |
 | Paystack secret key | Default `stripe-access-token` finds the same shape | tested |
 | Resend | `hullproof-resend-api-key` | lenient (prefix `re_` from docs) |
-| Render | `hullproof-render-api-key` | lenient (prefix `rnd_`, not verified) |
+| Render | `hullproof-render-api-key` | lenient (prefix `rnd_`) |
 | Vercel token | `hullproof-vercel-token` | context |
 | Cloudflare R2 secret access key | `hullproof-r2-secret-access-key` | context (64 hex next to an r2, cloudflare or s3 secret name) |
 | PostHog personal and project secret keys | `hullproof-posthog-secret-key` | docs (prefixes `phx_` and `phs_`). The `phc_` project token is public and is not matched. |
@@ -237,3 +250,13 @@ Gaps. No requirement in `DEPENDENCIES.md` names release age, trust policy or exo
 ## Writing note
 
 All text here follows the Hullproof writing rules. Commands, flags and rule ids keep their hyphens because they are identifiers.
+
+## SSRF guard harness
+
+`helpers/ssrf_guard_test.py` tests an outbound request guard (SEC-API-034, SEC-API-035) without a network. It holds the blocked ranges (private use, loopback, link local including the cloud metadata address, shared address space 100.64.0.0/10, the unspecified address, documentation and benchmarking ranges, multicast and reserved space, unique local and link local IPv6, Teredo) and unwraps the IPv4 inside mapped, 6to4 and NAT64 addresses before it judges them. The 100+ cases include decimal, octal and hex IPv4 forms, short forms such as `127.1`, a trailing dot, the at sign trick (`http://allowed.example@127.0.0.1/`), fragment and backslash delimiters, bracketed IPv6 with a zone id, and names whose stub answer is private. The expected verdict of each case is computed from the table with the `ipaddress` module.
+
+Your guard must accept an injected resolver, because the harness never resolves a name. With `--cmd` the program gets the URL on standard input and the stub answers in the environment variable `SSRF_RESOLVE`, and prints `allow` or `block`. With `--emit json` you can feed the same cases to a test in the guard's own language. A guard that only passes these cases is not proven safe: DNS rebinding, redirects and server side renderers need the checks in `python3 tools/hullproof/helpers/ssrf_guard_test.py --rebind-note`.
+
+## Coverage ledger
+
+`helpers/ledger.py` reads the checklist (`PRE-LAUNCH-AUDIT.md` or a file in `checklists/`) and a results table (a markdown table with an ID column and a Result column) and prints one count line, then the IDs that are missing, duplicated or not in scope. It exits 1 when any exist. `--stage` cuts the checklist to the declared stage, `--ids` takes an explicit in scope list, and `--section` limits it to the tables under one heading (the audit report uses `Coverage ledger`). The skills write the same count line in the results file; the hook allows no Python, so the owner runs the script as the independent check.

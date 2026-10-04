@@ -46,3 +46,5 @@ One yes or no per gate. A No marks the gate's IDs NOT APPLICABLE in every audit 
 | GATE-MARKET-EU | Does the product process personal data of people in the EU, or place an AI feature on the EU market? | Yes or no | Markets rows above, plus the geography check |
 | GATE-MARKET-UK | Does the product process personal data of people in the United Kingdom? | Yes or no | Markets rows above, plus the geography check |
 | GATE-MARKET-ZA | Does the product process personal data of people in South Africa? | Yes or no | Markets rows above, plus the geography check |
+| GATE-MARKET-KE | Does the product process personal data of people in Kenya? | Yes or no | Markets rows above, plus the geography check |
+| GATE-MARKET-GH | Does the product process personal data of people in Ghana? | Yes or no | Markets rows above, plus the geography check |

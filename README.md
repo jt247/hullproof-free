@@ -2,7 +2,7 @@
 
 A secure software development standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.1.0. The free edition contains 106 requirements: every BLOCKER (43) and every CRITICAL (63) requirement. All 63 CRITICAL requirements apply at the LAUNCH stage. It also holds the Production Security Gate and a release checklist of 106 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.1.1. The free edition contains 109 requirements: every BLOCKER (43) and every CRITICAL (63) requirement. All 66 CRITICAL requirements apply at the LAUNCH stage. It also holds the Production Security Gate and a release checklist of 109 items. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What Hullproof is
 
@@ -11,7 +11,7 @@ Hullproof is a kit you copy into your own project. It does two jobs.
 1. It tells your AI coding agent what the security rules are, so the agent follows them whenever it touches security sensitive code.
 2. It gives you a checklist and an auditor agent that test a release against those rules and write a report with evidence, so a person can decide whether to ship.
 
-Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check it, and the evidence to keep. Cited sources are listed in `kit/docs/hullproof/REFERENCES.md` (133 in this edition).
+Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check it, and the evidence to keep. Cited sources are listed in `kit/docs/hullproof/REFERENCES.md` (155 in this edition).
 
 ## What the free edition contains
 
@@ -19,8 +19,8 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 |------|------|--------------|
 | Agent instructions | `kit/docs/hullproof/HULLPROOF.md` | Security operating rules and the required development process |
 | Master standard | `kit/docs/hullproof/STANDARD.md` | Severity rules, stages, risk acceptance and the Production Security Gate |
-| Domain standards | `kit/docs/hullproof/*.md` | 106 requirements across the security domains, each with Verify steps and an Evidence line |
-| Release checklist | `kit/docs/hullproof/PRE-LAUNCH-AUDIT.md` | 106 items to check before you ship |
+| Domain standards | `kit/docs/hullproof/*.md` | 109 requirements across the security domains, each with Verify steps and an Evidence line |
+| Release checklist | `kit/docs/hullproof/PRE-LAUNCH-AUDIT.md` | 109 items to check before you ship |
 | Short checklist | `kit/docs/hullproof/LITE-CHECKLIST.md` | The checks a solo builder can run alone, each linked to its full requirement |
 | Skill | `kit/.claude/skills/hullproof-prelaunch/` | The `/hullproof-prelaunch` command, which runs the checklist and writes a results file |
 | Agent | `kit/.claude/agents/hullproof-pre-launch-auditor.md` | Checks the items in parallel, read only |
@@ -31,9 +31,9 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 
 ## What Hullproof Pro adds
 
-Hullproof Pro is the paid edition. It holds 628 requirements, of which 43 are BLOCKER, and uses the same requirement IDs. The free edition already holds every BLOCKER and every CRITICAL requirement. Pro adds:
+Hullproof Pro is the paid edition. It holds 632 requirements, of which 43 are BLOCKER, and uses the same requirement IDs. The free edition already holds every BLOCKER and every CRITICAL requirement. Pro adds:
 
-1. The 522 HIGH, MEDIUM and LOW requirements.
+1. The 523 HIGH, MEDIUM and LOW requirements.
 2. The `/hullproof-security-audit`, `/hullproof-api-review` and `/hullproof-threat-model` skills, with the security reviewer and threat modeler agents and the audit workflows.
 3. The machine readable `security-controls.json` and a CI gate example.
 4. Rule files for Cursor, Windsurf, Codex and GitHub Copilot, and an AI agent security prompt.
@@ -41,7 +41,7 @@ Hullproof Pro is the paid edition. It holds 628 requirements, of which 43 are BL
 
 ## What READY (FREE SCOPE) means
 
-The free scope is the 106 BLOCKER and CRITICAL requirements. The Production Security Gate has eight conditions, G-1 to G-8. In the free scope they mean this:
+The free scope is the 109 BLOCKER and CRITICAL requirements. The Production Security Gate has eight conditions, G-1 to G-8. In the free scope they mean this:
 
 | Condition | In the free scope |
 |-----------|-------------------|
@@ -132,7 +132,7 @@ Before its first real command the auditor runs a probe that a working hook block
 2. READY (FREE SCOPE) covers the BLOCKER and CRITICAL requirements at the declared stage and nothing else. It is evidence that a defined set of checks was done on one commit. It is not a certification and not proof that a product is secure.
 3. Static analysis and scans cannot settle items that live in a provider dashboard, a build or a running system, and scans find only what their rules know. Those items stay NOT ASSESSED until the owner supplies evidence.
 4. The requirements were validated on products built on the default stack: Next.js, TypeScript, Supabase and Vercel. Other stacks have not been validated.
-5. A few vendor behaviours are labelled Unverified in the requirement text, such as WebAuthn factor support in the default authentication provider and some US state breach notice rules. Check the current vendor documents before relying on them.
+5. Vendor behaviour changes between releases, so check the current vendor documents against the date each citation shows.
 
 ## How the standard is organized
 

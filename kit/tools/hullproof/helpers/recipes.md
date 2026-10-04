@@ -202,6 +202,41 @@ A line with `dependencies` in the output means runtime. Only `devDependencies` l
 
 OSV cannot see vendored copies. Look for them by hand for SEC-SUPPLY-006: `find . -path ./node_modules -prune -o \( -name '*.min.js' -o -type d -name vendor \) -print | head -20` lists candidates by path only.
 
+## Report provenance recipes
+
+These fill the provenance fields of `templates/AUDIT-REPORT.md` (Adopted on, Audited tree, Evidence hashes, Pull request refs fetched). The first block holds the commands the skills and agents run: every line is allowed by the read only hook for the auditor profile, and a test runs each one through the hook. The second block is for the owner's own terminal, because the hook blocks `git fetch`, `for-each-ref` and `shasum` on evidence files.
+
+Run by the skill or agent:
+
+<!-- hookcmd -->
+```
+git rev-parse HEAD
+git log -1 --no-textconv --no-ext-diff --format=%H%x20%T HEAD
+git log --no-textconv --no-ext-diff --reverse --diff-filter=A --name-status --format=%H%x20%cI -- docs/hullproof/STANDARD.md
+git diff --no-textconv --no-ext-diff --name-only 1a2b3c4 HEAD
+git ls-files -s docs/security/evidence/2026-01-31/semgrep.json
+```
+
+1. `%T` is the tree id of the audited commit. Write it in the trailer. In a delta audit also write the tree id of the base commit and the number of paths the `--name-only` line prints.
+2. The `--reverse --diff-filter=A` line prints the commit and committer date of the first commit that added `STANDARD.md`. The first line of its output is the Adopted on value. If it prints nothing, write "not in git history". A rewritten history changes this date, so compare it with the first push date shown by the hosting platform.
+3. `git ls-files -s <path>` prints the blob id of a file committed to git, which is the hash kind to write for committed evidence. An evidence file that is not committed has no hash the agent can compute: use the owner's `shasum` output.
+4. A shallow clone sees one commit. Look for the file `.git/shallow` with Glob. If it exists, the history scan did not cover history, so say so in the Tool output section.
+
+Run by the owner in their own terminal:
+
+```
+# Pull request and fork refs, so the history scan sees commits that never reached a branch (GitHub, then GitLab)
+git fetch origin '+refs/pull/*/head:refs/remotes/origin/pr/*'
+git fetch origin '+refs/merge-requests/*/head:refs/remotes/origin/mr/*'
+git for-each-ref refs/remotes/origin/pr refs/remotes/origin/mr | wc -l
+# Hashes of the evidence files, written next to them and pasted into the report unchanged
+(cd docs/security/evidence/2026-01-31 && shasum -a 256 * > SHA256SUMS)
+# Later, a new run can check the same files
+(cd docs/security/evidence/2026-01-31 && shasum -a 256 -c SHA256SUMS)
+```
+
+The fetch brings in the pull request refs the host still serves. A commit that a force push or a deleted branch left reachable only by its hash is not fetched this way: the owner asks the host (or lists it from the push events) and gives the hashes to fetch. Write the ref count the owner reports in the Pull request refs fetched row, then run `gitleaks git` again. The skills run `gitleaks git .` with all refs, so refs fetched into the clone are scanned.
+
 ## Recipes for requirements with no shipped rule
 
 Each line says what a hit means. `sgx -L` lists files that lack the call, which is usually the finding.

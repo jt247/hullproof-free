@@ -57,7 +57,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | GATE-MARKET-ZA | Does the product process personal data of people in South Africa? | STAGE.md Markets served and Markets excluded name the market, and a check of signup country, billing country or analytics geography shows no South African data subjects, or the owner's written answer says so. A market is excluded only by a technical control that blocks it (a country block at signup and billing) or by a recorded count of zero data subjects from the user table by country. Where the product collects no country, Global applies. | SEC-LOG-026 |
 <!-- hullproof:gates:end -->
 
-The security, abuse and leaked key routes Hullproof research found for each default stack provider (checked 2026-10-02) are in the provider contacts template (`templates/PROVIDER-CONTACTS.md`). Routes change, so SEC-LOG-065 requires the team to confirm each one from the provider's own pages.
+The security, abuse and leaked key routes for each default stack provider (checked 2026-10-02) are in the provider contacts template (`templates/PROVIDER-CONTACTS.md`). Routes change, so SEC-LOG-065 requires the team to confirm each one from the provider's own pages.
 
 ---
 

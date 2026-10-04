@@ -18,7 +18,7 @@ Each requirement carries a `Control type` row: Application security (a control a
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 18 of the 65 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 18 of the 66 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
 
 ## Requirement index
 
@@ -98,6 +98,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | EU AI Act prohibited practices (generation of non consensual intimate imagery and child abuse material) | PRIVACY.md | None | SEC-AI-060 |
 | Threat model entry for AI features | None | None | SEC-AI-001 |
 | Retry and background amplification of model spend | None | Retry and background model spend | SEC-AI-066 |
+| Stored model output read back | DATABASE-SECURITY.md, FRONTEND-SECURITY.md | Stored model output read back | SEC-AI-067 |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->

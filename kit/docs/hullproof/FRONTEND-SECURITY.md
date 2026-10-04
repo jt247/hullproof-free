@@ -12,7 +12,7 @@ This document covers controls that run in or for the browser: encoding output fo
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 4 of the 39 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 5 of the 40 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
 
 ## Requirement index
 
@@ -22,6 +22,7 @@ This document covers controls that run in or for the browser: encoding output fo
 | [SEC-WEB-026](#sec-web-026-protect-cookie-authenticated-state-changes-against-forgery) | Protect cookie authenticated state changes against forgery | CRITICAL | LAUNCH | Web, API, SaaS |
 | [SEC-WEB-031](#sec-web-031-list-and-justify-every-raw-html-sink) | List and justify every raw HTML sink | CRITICAL | LAUNCH | Web, SaaS, AI features |
 | [SEC-WEB-032](#sec-web-032-sanitize-user-supplied-html-with-a-maintained-library) | Sanitize user supplied HTML with a maintained library | CRITICAL | LAUNCH | Web, SaaS |
+| [SEC-WEB-044](#sec-web-044-generated-or-supplied-html-renders-in-an-isolated-frame) | Generated or supplied HTML renders in an isolated frame | CRITICAL | LAUNCH | Web, SaaS, AI features |
 <!-- hullproof:index:end -->
 
 ---
@@ -52,6 +53,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | postMessage and cross window messaging | None | None | SEC-WEB-014, SEC-WEB-037 |
 | Dependency and framework versions in the browser | DEPENDENCIES.md | None | SEC-WEB-032 |
 | WebSocket origin checks | None | None | SEC-WEB-024 |
+| Isolated frames for supplied HTML | AI-SECURITY.md | Isolated frames for supplied HTML | SEC-WEB-044 |
 <!-- hullproof:coverage-map:end -->
 
 ---
@@ -142,7 +144,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Automation | PARTIAL |
 | Verification method | STATIC ANALYSIS, CODE REVIEW |
 
-**Requirement.** Client and server code MUST render text through framework escaping or safe DOM APIs such as `textContent`, and every use of a raw HTML sink MUST be listed in an inventory with its data source and receive only sanitizer output (SEC-WEB-032) or constant markup. A raw HTML sink is any API that turns a string into markup or a document: `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `v-html`, iframe `srcdoc`, `createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe`, DOM parser output inserted into the live document, jQuery `html`, `append` or `prepend` called with a string, a Markdown renderer with raw HTML enabled, and any wrapper component that forwards its prop to one of these. Untrusted or generated HTML (from users, models, third parties or staff) MUST pass the sanitizer or render in an iframe whose `sandbox` attribute omits `allow-same-origin` (a sandbox with both `allow-scripts` and `allow-same-origin` gives no isolation), or on a separate registrable domain. A data script block (for example structured data) whose content comes from the project's single registered encoder (SEC-WEB-001) and holds no HTML is constant markup: list it in the inventory and it needs no sanitizer. The sink definition also covers HTML that server code builds from template literals, string concatenation, library HTML generators and email templates, which SEC-API-147 in BACKEND-SECURITY.md owns.
+**Requirement.** Client and server code MUST render text through framework escaping or safe DOM APIs such as `textContent`, and every use of a raw HTML sink MUST be listed in an inventory with its data source and receive only sanitizer output (SEC-WEB-032) or constant markup. A raw HTML sink is any API that turns a string into markup or a document: `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `v-html`, iframe `srcdoc`, `createContextualFragment`, `setHTMLUnsafe`, `parseHTMLUnsafe`, DOM parser output inserted into the live document, jQuery `html`, `append` or `prepend` called with a string, a Markdown renderer with raw HTML enabled, and any wrapper component that forwards its prop to one of these. Untrusted or generated HTML (from users, models, third parties or staff) MUST pass the sanitizer or render in an isolated frame that meets SEC-WEB-044 (a `sandbox` attribute without `allow-same-origin`, or a separate registrable domain; on content that has the origin of the embedding page, a sandbox with both `allow-scripts` and `allow-same-origin` gives no isolation). A data script block (for example structured data) whose content comes from the project's single registered encoder (SEC-WEB-001) and holds no HTML is constant markup: list it in the inventory and it needs no sanitizer. The sink definition also covers HTML that server code builds from template literals, string concatenation, library HTML generators and email templates, which SEC-API-147 in BACKEND-SECURITY.md owns.
 
 **Why.** Raw HTML sinks bypass the framework's escaping; one fed with user or model content runs attacker script in the app's origin.
 
@@ -152,6 +154,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 - Add a lint or Semgrep rule that fails CI on any raw HTML sink not on the inventory.
 - `eval`, `new Function` and string timers in client code are also banned; server side rules are in BACKEND-SECURITY.md.
 - Owned by SEC-API-147 in BACKEND-SECURITY.md for this root cause (HTML built by server code, including email); report one finding. Browser DOM sinks stay here.
+- Owned by SEC-WEB-044 for this root cause (Isolated frames for supplied HTML); report one finding. The sink inventory stays here.
 - Severity tiers: a sink that receives user or model data without sanitizer output is CRITICAL. When every sink the scan finds is verified to receive only constant markup or sanitizer output and only the inventory is missing or stale, the finding is a documentation gap rated LOW.
 
 **Verify.**
@@ -162,7 +165,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 **Exceptions.** None for sinks fed by user or model data. A missing or stale inventory alone, with every sink traced and shown safe, is rated LOW. Sinks fed only by constant markup are listed but need no further exception.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-3.2.2, v5.0.0-1.3.2 [SRC-010]; OWASP Cross Site Scripting Prevention Cheat Sheet, section Framework Security [SRC-039]; CISA Secure by Design, SbD Tactic: Web template frameworks [SRC-063]; OWASP Top 10:2025 A05:2025 (CWE-79) [SRC-020].
+**References.** OWASP ASVS 5.0.0 v5.0.0-3.2.2, v5.0.0-1.3.2 [SRC-010]; OWASP Cross Site Scripting Prevention Cheat Sheet, section Framework Security [SRC-039]; MDN HTMLIFrameElement srcdoc, Security considerations [SRC-366]; CISA Secure by Design, SbD Tactic: Web template frameworks [SRC-063]; OWASP Top 10:2025 A05:2025 (CWE-79) [SRC-020].
 
 **AI Agent Instruction.** Do not add a raw HTML sink. If one seems necessary, use sanitizer output only, add it to the inventory, and say so in your summary. Never pass user or model content to a raw HTML sink directly.
 
@@ -178,7 +181,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Automation | PARTIAL |
 | Verification method | AUTOMATED TEST, CODE REVIEW, DEPENDENCY SCAN |
 
-**Requirement.** HTML from users, including rich text editor output and imported content, and HTML generated by a model or taken from a third party, MUST pass through a maintained HTML sanitizer library with an allowlist of tags and attributes immediately before it is rendered, unless it renders in a sandboxed iframe as SEC-WEB-031 allows.
+**Requirement.** HTML from users, including rich text editor output and imported content, and HTML generated by a model or taken from a third party, MUST pass through a maintained HTML sanitizer library with an allowlist of tags and attributes immediately before it is rendered, unless it renders in an isolated frame that meets SEC-WEB-044.
 
 **Why.** Rich text stored without sanitization becomes stored XSS that runs for every user who views it, including admins.
 
@@ -199,3 +202,43 @@ Each requirement in this document is listed in exactly one row. A row with no re
 **References.** OWASP ASVS 5.0.0 v5.0.0-1.3.1 [SRC-010]; OWASP Cross Site Scripting Prevention Cheat Sheet, section HTML Sanitization [SRC-039]; OWASP Input Validation Cheat Sheet, section Validating Rich User Content [SRC-037]; OWASP Top 10:2025 A05:2025 (CWE-79) [SRC-020].
 
 **AI Agent Instruction.** Render user HTML only through the project's sanitizer with its allowlist. Never write a custom HTML filter and never render user HTML unsanitized.
+
+---
+
+### SEC-WEB-044: Generated or supplied HTML renders in an isolated frame
+
+| Field | Value |
+|-------|-------|
+| Severity | CRITICAL |
+| Stage | LAUNCH |
+| Applies To | Web, SaaS, AI features |
+| Automation | PARTIAL |
+| Verification method | STATIC ANALYSIS, DYNAMIC TEST, CODE REVIEW |
+
+**Requirement.** HTML that the product did not write (from users, models, third parties or staff) and that is shown in a frame instead of passing the sanitizer of SEC-WEB-032 MUST render in an `iframe` that is isolated from the app origin. The frame MUST have a `sandbox` attribute that does not contain `allow-same-origin`, or it MUST load from a separate registrable domain that holds no app cookies, storage or sessions. A `srcdoc` frame inherits the origin of the page that embeds it, so a `srcdoc` frame MUST use the first form. A `sandbox` attribute MUST NOT contain `allow-scripts` and `allow-same-origin` together on content that has the origin of the embedding page, because the framed script can then remove the sandbox. The `sandbox` attribute MUST be present in the markup that creates the frame and MUST NOT add `allow-top-navigation`, `allow-popups-to-escape-sandbox` or `allow-modals` without a recorded reason. Where the same HTML is also served as its own URL, the response MUST carry a `Content-Security-Policy` header with the `sandbox` directive, so opening it in a tab does not remove the isolation. Messages sent from the frame with `postMessage` MUST be treated as untrusted input. This requirement applies only to products that show such HTML in a frame.
+
+**Why.** Script that runs in a frame with the app's origin can read the parent page, the cookies the page can see and local storage, and can act as the signed in user. Many teams add a `sandbox` attribute to feel safe and then add `allow-scripts` and `allow-same-origin` to make the preview work, which removes the protection. A page preview made from model output is the common case: the model's HTML can be steered by text it read.
+
+**Implementation.**
+- Start from `sandbox=""` and add only the tokens the preview needs, usually `allow-scripts`. Without `allow-same-origin` the frame gets an opaque origin that fails same origin checks and cannot read the parent's storage or cookies [SRC-365, SRC-368].
+- For `srcdoc`, the framed document is same origin with the parent unless the frame is sandboxed without `allow-same-origin` [SRC-366]. Do not use `srcdoc` with a sandbox that includes `allow-same-origin`.
+- For a separate origin, use a registrable domain of its own (not a subdomain that shares cookies with the app) and keep app cookies off it.
+- Add the CSP `sandbox` directive on the response when the HTML also has its own URL. MDN notes that a sandbox does not help if the content can be shown outside the frame, for example when the viewer opens the frame in a new tab [SRC-365].
+- Serve the framed document with a `Content-Security-Policy` that restricts script and outbound connections, so generated script cannot send data out. Test in the browsers you support that the policy applies to `srcdoc` content.
+- Treat any `postMessage` from the frame as untrusted: check `event.source` against the frame you created, and validate the shape of the data before use. A sandboxed frame without `allow-same-origin` reports its origin as `null`.
+- The sink inventory and the sanitizer path are owned by SEC-WEB-031 and SEC-WEB-032. This requirement owns the frame. Report one finding for a frame that fails here.
+
+**Verify.**
+1. Search the whole source tree for `srcdoc`, `<iframe`, `sandbox`, `allow-same-origin` and `allow-scripts`, including wrapper components, and list each frame with the source of its content.
+2. For each frame that receives user, model, third party or staff HTML, read the `sandbox` value. Fail any frame that has no `sandbox`, that has `allow-same-origin` on `srcdoc` or same origin content, or that has `allow-scripts` and `allow-same-origin` together on same origin content.
+3. Browser test (Playwright): store HTML whose script tries `parent.document.cookie`, `parent.document.body`, `localStorage`, `window.frameElement.removeAttribute('sandbox')` and `fetch` to the app's own API with credentials. Each must fail or return no authenticated data, and `window.origin` inside the frame must be `null` for the sandboxed form.
+4. Request the HTML URL directly (where one exists) and confirm the `Content-Security-Policy` response header contains `sandbox`. Open the URL in a new tab and repeat step 3.
+5. For a separate origin, confirm the cookie jar of the framed domain holds no app cookie and that the app's session cookie is not sent to it.
+
+**Evidence.** The frame list from step 1 with sandbox values, the browser test output, and the response headers.
+
+**Exceptions.** A frame whose content is constant markup from the project's own repository is listed and needs no further evidence. A frame embedding a trusted third party service (a video player, a payment form) follows the provider's embedding guidance and still takes a `sandbox` attribute where the provider allows one.
+
+**References.** MDN iframe element, sandbox and srcdoc [SRC-365]; MDN HTMLIFrameElement srcdoc, Security considerations [SRC-366]; HTML Standard, The iframe element [SRC-367]; MDN Content Security Policy sandbox directive [SRC-368]; OWASP Top 10:2025 A05:2025 (CWE-79) [SRC-020].
+
+**AI Agent Instruction.** When you show generated or user supplied HTML in a frame, set `sandbox` without `allow-same-origin`, and never combine `allow-scripts` with `allow-same-origin` on content that has the origin of the page. If the preview only works with both, serve it from a separate registrable domain instead and say so in your summary.

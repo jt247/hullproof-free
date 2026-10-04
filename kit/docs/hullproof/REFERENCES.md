@@ -1,6 +1,6 @@
 # References
 
-Every source cited by the Hullproof domain standards. Requirements cite sources as `[SRC-xxx]` with the source's own control ID. Hullproof does not reproduce source text. OWASP material is CC BY-SA 4.0 and is referenced, not copied. The License column shows the license recorded for each source when it was reviewed. A value marked unconfirmed was not checked on the source's own page. Credits and notices are in NOTICE.md.
+Every source cited by the Hullproof domain standards. Requirements cite sources as `[SRC-xxx]` with the source's own control ID. Hullproof does not reproduce source text. OWASP material is CC BY-SA 4.0 and is referenced, not copied. The License column shows the license or terms recorded for each source. Check the source's own page for current terms. Credits and notices are in NOTICE.md.
 
 | ID | Title | Publisher | Version | License | Link |
 |----|-------|-----------|---------|---------|------|
@@ -47,17 +47,17 @@ Every source cited by the Hullproof domain standards. Requirements cite sources 
 | SRC-074 | Storage Access Control; Buckets fundamentals | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/storage/security/access-control |
 | SRC-075 | Production Checklist | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/platform/going-into-prod |
 | SRC-076 | Advisors (lints 0001 to 0030) | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/database/database-advisors |
-| SRC-077 | Row Security Policies; CREATE POLICY | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License (unconfirmed) | https://www.postgresql.org/docs/current/ddl-rowsecurity.html |
+| SRC-077 | Row Security Policies; CREATE POLICY | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License | https://www.postgresql.org/docs/current/ddl-rowsecurity.html |
 | SRC-078 | Data Security guide | Vercel (Next.js) | Updated 2026-08-25 | MIT | https://nextjs.org/docs/app/guides/data-security |
 | SRC-079 | Environment Variables guide | Vercel (Next.js) | Updated 2026-08-25 | MIT | https://nextjs.org/docs/app/guides/environment-variables |
 | SRC-080 | Authentication guide | Vercel (Next.js) | Updated 2026-08-25 | MIT | https://nextjs.org/docs/app/guides/authentication |
-| SRC-082 | Sensitive environment variables | Vercel | Updated 2026-08-28 | Proprietary (unconfirmed) | https://vercel.com/docs/environment-variables/sensitive-environment-variables |
+| SRC-082 | Sensitive environment variables | Vercel | Updated 2026-08-28 | Proprietary | https://vercel.com/docs/environment-variables/sensitive-environment-variables |
 | SRC-084 | Environment variables in Expo | Expo | Living docs | MIT | https://docs.expo.dev/guides/environment-variables/ |
 | SRC-085 | SecureStore | Expo | SDK latest | MIT | https://docs.expo.dev/versions/latest/sdk/securestore/ |
-| SRC-086 | Receive Stripe events in your webhook endpoint | Stripe | Living docs | Proprietary (unconfirmed) | https://docs.stripe.com/webhooks |
-| SRC-088 | Webhooks | Paystack | Living docs | Proprietary (unconfirmed) | https://paystack.com/docs/payments/webhooks/ |
-| SRC-089 | Webhooks (v3 and v4) | Flutterwave | v3.0.0 and v4.0.0 | Proprietary (unconfirmed) | https://developer.flutterwave.com/docs/webhooks |
-| SRC-090 | Verify webhook signatures; Respond to webhooks | Paddle | Living docs | Proprietary (unconfirmed) | https://developer.paddle.com/webhooks/signature-verification |
+| SRC-086 | Receive Stripe events in your webhook endpoint | Stripe | Living docs | Proprietary | https://docs.stripe.com/webhooks |
+| SRC-088 | Webhooks | Paystack | Living docs | Proprietary | https://paystack.com/docs/payments/webhooks/ |
+| SRC-089 | Webhooks (v3 and v4) | Flutterwave | v3.0.0 and v4.0.0 | Proprietary | https://developer.flutterwave.com/docs/webhooks |
+| SRC-090 | Verify webhook signatures; Respond to webhooks | Paddle | Living docs | Proprietary | https://developer.paddle.com/webhooks/signature-verification |
 | SRC-091 | About rulesets; About protected branches | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets |
 | SRC-092 | GitHub App permissions | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app |
 | SRC-093 | Secret scanning; Push protection | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning |
@@ -65,19 +65,19 @@ Every source cited by the Hullproof domain standards. Requirements cite sources 
 | SRC-096 | GHSA-5j59-xgg2-r9c4 Next.js RSC DoS follow up | GitHub Advisory Database | updated 2026-01-15 | CC BY 4.0 | https://github.com/advisories/GHSA-5j59-xgg2-r9c4 |
 | SRC-097 | GHSA-h25m-26qc-wcjf Next.js deserialization DoS | GitHub Advisory Database | 2026-01-28 | CC BY 4.0 | https://github.com/advisories/GHSA-h25m-26qc-wcjf |
 | SRC-100 | Nigeria Data Protection Act, 2023 (Act No. 37) | National Assembly of Nigeria (hosted by NDPC) | As enacted, commenced 2023-06-12 | Not stated | https://ndpc.gov.ng/wp-content/uploads/2024/03/Nigeria_Data_Protection_Act_2023.pdf |
-| SRC-101 | NDP Act General Application and Implementation Directive (GAID) 2025 | Nigeria Data Protection Commission | Issued 2025-03-20; effective date UNCONFIRMED (no commencement clause) | Not stated | https://ndpc.gov.ng/wp-content/uploads/2025/07/NDP-ACT-GAID-2025-MARCH-20TH.pdf |
+| SRC-101 | NDP Act General Application and Implementation Directive (GAID) 2025 | Nigeria Data Protection Commission | Issued 2025-03-20; no commencement clause | Not stated | https://ndpc.gov.ng/wp-content/uploads/2025/07/NDP-ACT-GAID-2025-MARCH-20TH.pdf |
 | SRC-103 | Regulation (EU) 2016/679 (GDPR) | European Parliament and Council (EUR-Lex) | OJ L 119, 4.5.2016; three corrigenda, no amending act; pending proposals COM(2025) 501 and 837 are not law | CC BY 4.0 | https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng |
 | SRC-104 | Protection of Personal Information Act 4 of 2013 (POPIA) | Parliament of South Africa (hosted by Information Regulator) | Most sections in force 2020-07-01 | Not stated | https://inforegulator.org.za/wp-content/uploads/2025/08/PROTECTION-OF-PERSONAL-INFORMATION-ACT-4-OF-2013.pdf |
 | SRC-105 | Reporting of Security Compromises on the eServices Portal | Information Regulator (South Africa) | Undated | Not stated | https://eservices.inforegulator.org.za/compromises/docs/guide.pdf |
 | SRC-106 | Data Protection Act, 2019 (No. 24 of 2019) | Parliament of Kenya (hosted by ODPC) | Commenced 2019-11-25 | Not stated | https://www.odpc.go.ke/wp-content/uploads/2024/02/TheDataProtectionAct__No24of2019.pdf |
 | SRC-107 | Data Protection (General) Regulations, 2021 | Kenya Ministry of ICT (hosted by ODPC) | 2021 | Not stated | https://www.odpc.go.ke/wp-content/uploads/2024/03/THE-DATA-PROTECTION-GENERAL-REGULATIONS-2021-1.pdf |
 | SRC-109 | Data Protection Act, 2012 (Act 843) | Parliament of Ghana | As enacted, gazetted 2012-05-18; section numbers verified 2026-10-02 | Not stated | https://ghalii.org/akn/gh/act/2012/843/eng@2012-05-18 |
-| SRC-120 | Security (React Native docs) | Meta (React Native) | Living docs | CC BY 4.0 (unconfirmed) | https://reactnative.dev/docs/security |
-| SRC-121 | Supabase Auth session docs (User sessions, SSR advanced guide, Creating a client) | Supabase | Living docs | Apache-2.0 repo (unconfirmed) | https://supabase.com/docs/guides/auth/sessions |
-| SRC-123 | Expo React Native tutorial | Supabase | Living docs | Apache-2.0 repo (unconfirmed) | https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native |
+| SRC-120 | Security (React Native docs) | Meta (React Native) | Living docs | CC BY 4.0 | https://reactnative.dev/docs/security |
+| SRC-121 | Supabase Auth session docs (User sessions, SSR advanced guide, Creating a client) | Supabase | Living docs | Apache-2.0 repo | https://supabase.com/docs/guides/auth/sessions |
+| SRC-123 | Expo React Native tutorial | Supabase | Living docs | Apache-2.0 repo | https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native |
 | SRC-125 | Cloudflare R2 docs (presigned URLs, public buckets, CORS, tokens, locks) | Cloudflare | Pages dated 2026-04 to 2026-10 | CC BY 4.0 | https://developers.cloudflare.com/r2/api/s3/presigned-urls/ |
 | SRC-127 | Upstash Ratelimit docs | Upstash | lib v2.2.0 | Library MIT, docs not stated | https://upstash.com/docs/redis/sdks/ratelimit-ts/overview |
-| SRC-131 | Database Backups | Supabase | Living docs | Apache-2.0 repo (unconfirmed) | https://supabase.com/docs/guides/platform/backups |
+| SRC-131 | Database Backups | Supabase | Living docs | Apache-2.0 repo | https://supabase.com/docs/guides/platform/backups |
 | SRC-133 | Database Migrations | Supabase | Living docs | As SRC-131 | https://supabase.com/docs/guides/deployment/database-migrations |
 | SRC-135 | CLI supabase migration down | Supabase | develop branch | MIT | https://supabase.com/docs/reference/cli/supabase-migration-down |
 | SRC-140 | Claude Platform docs: workspaces, API keys, rate limits, data retention | Anthropic | Living docs | No open license stated | https://platform.claude.com/docs/en/manage-claude/workspaces |
@@ -88,23 +88,30 @@ Every source cited by the Hullproof domain standards. Requirements cite sources 
 | SRC-146 | MCP Security Cheat Sheet | OWASP Foundation | Last commit 2026-10-01 | CC BY-SA 4.0 | https://cheatsheetseries.owasp.org/cheatsheets/MCP_Security_Cheat_Sheet.html |
 | SRC-147 | Claude Code docs: permissions, settings, sandboxing, hooks, MCP, security, data usage | Anthropic | Living docs | No open license stated | https://code.claude.com/docs/en/permissions |
 | SRC-148 | Cursor docs: agent security, run modes, permissions.json, ignore file, privacy | Anysphere (Cursor) | Living docs | No open license stated | https://cursor.com/docs/agent/security |
-| SRC-153 | Workspaces, Members, and Roles | Render | Living docs | Not stated (unconfirmed) | https://render.com/docs/team-members |
+| SRC-151 | Personal Access Tokens | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/platform/personal-access-tokens |
+| SRC-153 | Workspaces, Members, and Roles | Render | Living docs | Not stated | https://render.com/docs/team-members |
+| SRC-154 | OpenID Connect (GitHub Actions) | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/actions/concepts/security/openid-connect |
 | SRC-155 | Application Container Security Guide (SP 800-190) | NIST | Final, 2017-09-25 | US Government work | https://csrc.nist.gov/pubs/sp/800/190/final |
 | SRC-157 | Supabase Auth custom claims, hooks, and tenancy patterns | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/auth/auth-hooks/custom-access-token-hook |
 | SRC-158 | RAG with Permissions; Semantic search; HNSW indexes | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/ai/rag-with-permissions |
-| SRC-164 | Managing Cron Jobs | Vercel | Updated 2026-08-11 | Proprietary (unconfirmed) | https://vercel.com/docs/cron-jobs/manage-cron-jobs |
-| SRC-165 | Server-Side Data Scrubbing | Sentry | Living docs | Unconfirmed | https://docs.sentry.io/security-legal-pii/scrubbing/server-side-scrubbing/ |
-| SRC-173 | Webhooks | RevenueCat | Living docs | Proprietary (unconfirmed) | https://www.revenuecat.com/docs/integrations/webhooks |
+| SRC-164 | Managing Cron Jobs | Vercel | Updated 2026-08-11 | Proprietary | https://vercel.com/docs/cron-jobs/manage-cron-jobs |
+| SRC-165 | Server-Side Data Scrubbing | Sentry | Living docs | See publisher terms | https://docs.sentry.io/security-legal-pii/scrubbing/server-side-scrubbing/ |
+| SRC-173 | Webhooks | RevenueCat | Living docs | Proprietary | https://www.revenuecat.com/docs/integrations/webhooks |
 | SRC-174 | App Store Server Notifications | Apple | V2 | Apple terms | https://developer.apple.com/documentation/appstoreservernotifications |
 | SRC-175 | app-store-server-library-node | Apple | v3.1.0 | MIT | https://github.com/apple/app-store-server-library-node |
 | SRC-176 | Real-time developer notifications reference | Google | Updated 2026-09-01 | CC BY 4.0 / Apache 2.0 | https://developer.android.com/google/play/billing/rtdn-reference |
 | SRC-177 | Fight fraud and abuse (Play Billing) | Google | Updated 2026-09-01 | CC BY 4.0 / Apache 2.0 | https://developer.android.com/google/play/billing/security |
 | SRC-179 | PCI SSC FAQ 1588 (SAQ A script criterion), with FAQ 1604 | PCI Security Standards Council | SAQ A r1 (PCI DSS v4.0.1) | PCI SSC terms | https://www.pcisecuritystandards.org/faqs/1588/ |
 | SRC-180 | Best Current Practice for OAuth 2.0 Security (RFC 9700, BCP 240) | IETF | January 2025 | IETF Trust | https://www.rfc-editor.org/rfc/rfc9700 |
-| SRC-181 | Supabase Auth docs: redirect URLs, PKCE and implicit flows, mobile deep linking, signing keys | Supabase | Living docs | Apache-2.0 repo (unconfirmed) | https://supabase.com/docs/guides/auth/redirect-urls |
-| SRC-182 | Expo AuthSession | Expo | SDK ~57.0.13 | MIT repo (unconfirmed) | https://docs.expo.dev/versions/latest/sdk/auth-session/ |
+| SRC-181 | Supabase Auth docs: redirect URLs, PKCE and implicit flows, mobile deep linking, signing keys | Supabase | Living docs | Apache-2.0 repo | https://supabase.com/docs/guides/auth/redirect-urls |
+| SRC-182 | Expo AuthSession | Expo | SDK ~57.0.13 | MIT repo | https://docs.expo.dev/versions/latest/sdk/auth-session/ |
 | SRC-186 | OWASP Web Security Testing Guide | OWASP Foundation | 4.2 (stable); cite as WSTG-v42-XXXX-NN | CC BY-SA 4.0 | https://owasp.org/www-project-web-security-testing-guide/v42/ |
+| SRC-187 | HTTP Strict Transport Security (RFC 6797) | IETF | RFC 6797 | IETF Trust | https://www.rfc-editor.org/rfc/rfc6797 |
 | SRC-189 | HTTP Caching (RFC 9111) | IETF | RFC 9111 | IETF Trust | https://www.rfc-editor.org/rfc/rfc9111 |
+| SRC-190 | Incident management (guidance collection: processes, technical response capabilities, building and maintaining capability) | UK National Cyber Security Centre | Version 1.0, published and reviewed 2019-09-19 | Open Government Licence v3.0 | https://www.ncsc.gov.uk/collection/incident-management |
+| SRC-200 | SAC044: A Registrant's Guide to Protecting Domain Name Registration Accounts | ICANN Security and Stability Advisory Committee | 2010-11-05 | Not stated | https://www.icann.org/en/system/files/files/sac-044-en.pdf |
+| SRC-201 | Managing public domain names | UK National Cyber Security Centre | Version 1.0, published and reviewed 2019-09-25 | Open Government Licence v3.0 | https://www.ncsc.gov.uk/guidance/managing-public-domain-names |
+| SRC-202 | Emergency Directive 19-01: Mitigate DNS Infrastructure Tampering (Closed) | CISA | 2019-01-22, sunset (Closed) | No explicit license | https://www.cisa.gov/news-events/directives/ed-19-01-mitigate-dns-infrastructure-tampering |
 | SRC-214 | Regulation (EU) 2024/1689 (Artificial Intelligence Act) | European Parliament and Council (EUR-Lex) | OJ L 12.7.2024; amended by Regulation (EU) 2026/1744 (in force 2026-07-27) | CC BY 4.0 | https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng |
 | SRC-215 | Regulation (EU) 2026/1744 (Digital Omnibus on AI) | European Parliament and Council (EUR-Lex) | OJ L 24.7.2026, in force 2026-07-27 | CC BY 4.0 | https://eur-lex.europa.eu/eli/reg/2026/1744/oj/eng |
 | SRC-216 | AI Act Service Desk, AI Act Explorer | European Commission | Live site, shows Omnibus amendments; summaries not binding | Not stated | https://ai-act-service-desk.ec.europa.eu/en/ai-act-explorer |
@@ -112,28 +119,43 @@ Every source cited by the Hullproof domain standards. Requirements cite sources 
 | SRC-222 | Keeping your GitHub Actions and workflows secure, Parts 1 to 4 | GitHub Security Lab | Parts 1 to 3 2021-08-03 to 2021-08-05; Part 4 2025-01-16 | All rights reserved | https://securitylab.github.com/resources/github-actions-new-patterns-and-mitigations/ |
 | SRC-224 | OpenSSF Scorecard checks documentation | OpenSSF | Scorecard v5.5.0 (2026-04-23) | Apache-2.0 | https://github.com/ossf/scorecard/blob/main/docs/checks.md |
 | SRC-227 | Standard Webhooks specification | Standard Webhooks | 1.0.0 (repo tag v1.0.2) | Apache-2.0 | https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md |
+| SRC-250 | Best practices for event logging and threat detection | ASD's ACSC with CISA, NSA, FBI, NCSC-UK and international partners | 2024-08-21 | Not stated | https://www.cyber.gov.au/sites/default/files/2024-08/best-practices-for-event-logging-and-threat-detection.pdf |
+| SRC-251 | Introduction to logging for security purposes | UK National Cyber Security Centre | Version 1.0, published and reviewed 2018-07-08 | Open Government Licence v3.0 | https://www.ncsc.gov.uk/guidance/introduction-logging-security-purposes |
 | SRC-257 | Queues: Quickstart; API | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/queues/quickstart |
-| SRC-259 | Cron Jobs; Background Workers | Render | Living docs | Not stated (unconfirmed) | https://render.com/docs/cronjobs |
-| SRC-260 | Signing Keys; Retries | Inngest | Living docs | Not stated (unconfirmed) | https://www.inngest.com/docs/platform/signing-keys |
-| SRC-261 | QStash: Verify Signatures | Upstash | Living docs | Not stated (unconfirmed) | https://upstash.com/docs/qstash/howto/signature |
-| SRC-263 | Common Weakness Enumeration (CWE) List | MITRE | CWE List 4.20 | CWE Terms of Use (unconfirmed) | https://cwe.mitre.org/data/index.html |
+| SRC-259 | Cron Jobs; Background Workers | Render | Living docs | Not stated | https://render.com/docs/cronjobs |
+| SRC-260 | Signing Keys; Retries | Inngest | Living docs | Not stated | https://www.inngest.com/docs/platform/signing-keys |
+| SRC-261 | QStash: Verify Signatures | Upstash | Living docs | Not stated | https://upstash.com/docs/qstash/howto/signature |
+| SRC-263 | Common Weakness Enumeration (CWE) List | MITRE | CWE List 4.20 | CWE Terms of Use | https://cwe.mitre.org/data/index.html |
 | SRC-271 | Signing out (Sign out and scopes) | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/auth/signout |
 | SRC-280 | Claude Platform docs: Computer use tool (Security considerations; Data retention) | Anthropic | Living docs | No open license stated | https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool |
 | SRC-281 | Claude Platform docs: Bash tool (Security) and Text editor tool (Implement security measures) | Anthropic | Living docs | No open license stated | https://platform.claude.com/docs/en/agents-and-tools/tool-use/bash-tool |
 | SRC-284 | OpenAI API docs: Computer use (Run safely) | OpenAI | Living docs | No open license stated | https://developers.openai.com/api/docs/guides/tools-computer-use |
-| SRC-285 | Playwright docs: Isolation (browser contexts) | Microsoft (Playwright project) | Living docs | Unconfirmed | https://playwright.dev/docs/browser-contexts |
+| SRC-285 | Playwright docs: Isolation (browser contexts) | Microsoft (Playwright project) | Living docs | See publisher terms | https://playwright.dev/docs/browser-contexts |
 | SRC-286 | PostgreSQL documentation: SET TRANSACTION | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License | https://www.postgresql.org/docs/current/sql-set-transaction.html |
 | SRC-287 | Supabase docs: Model context protocol (MCP) server, read only mode | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/getting-started/mcp |
-| SRC-288 | Vercel AI Gateway docs: Model fallbacks; Zero Data Retention; Disallow Prompt Training; Provider and Model Allowlists; Regional Inference | Vercel | Updated 2026-09-08 to 2026-09-22 | Proprietary (unconfirmed) | https://vercel.com/docs/ai-gateway/models-and-providers/model-fallbacks |
-| SRC-289 | Vercel Sandbox docs: Sandbox firewall | Vercel | Updated 2026-09-16 | Proprietary (unconfirmed) | https://vercel.com/docs/sandbox/concepts/firewall |
-| SRC-300 | PostgreSQL documentation: GRANT (column and table level privileges) | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License (unconfirmed) | https://www.postgresql.org/docs/current/sql-grant.html |
-| SRC-301 | PostgreSQL documentation: information_schema column_privileges; System Information Functions (has_column_privilege) | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License (unconfirmed) | https://www.postgresql.org/docs/current/infoschema-column-privileges.html |
+| SRC-288 | Vercel AI Gateway docs: Model fallbacks; Zero Data Retention; Disallow Prompt Training; Provider and Model Allowlists; Regional Inference | Vercel | Updated 2026-09-08 to 2026-09-22 | Proprietary | https://vercel.com/docs/ai-gateway/models-and-providers/model-fallbacks |
+| SRC-289 | Vercel Sandbox docs: Sandbox firewall | Vercel | Updated 2026-09-16 | Proprietary | https://vercel.com/docs/sandbox/concepts/firewall |
+| SRC-300 | PostgreSQL documentation: GRANT (column and table level privileges) | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License | https://www.postgresql.org/docs/current/sql-grant.html |
+| SRC-301 | PostgreSQL documentation: information_schema column_privileges; System Information Functions (has_column_privilege) | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License | https://www.postgresql.org/docs/current/infoschema-column-privileges.html |
 | SRC-302 | Supabase docs: Column Level Security | Supabase | Living docs | Apache-2.0 | https://supabase.com/docs/guides/database/postgres/column-level-security |
 | SRC-323 | UK GDPR: Regulation (EU) 2016/679 as it forms part of UK law (Art 3, 13, 14, 27, 33, 34, 83) | UK Government (legislation.gov.uk) | Revised text; Art 33 and 27 show the ICO to Information Commission substitution effective 2026-09-30 (S.I. 2026/386) | Open Government Licence v3.0 | https://www.legislation.gov.uk/eur/2016/679/contents |
-| SRC-325 | Personal Information Protection and Electronic Documents Act (S.C. 2000, c. 5), s 4 and s 10.1 | Government of Canada (Justice Laws) | Current to 2026-09-21, last amended 2025-03-04 | Crown copyright, reproduction permitted for non commercial use (unconfirmed) | https://laws-lois.justice.gc.ca/eng/acts/P-8.6/section-10.1.html |
-| SRC-326 | Breach of Security Safeguards Regulations (SOR/2018-64) | Government of Canada (Justice Laws) | Current to 2026-09-21, last amended 2018-11-01 | Crown copyright, reproduction permitted for non commercial use (unconfirmed) | https://laws-lois.justice.gc.ca/eng/regulations/SOR-2018-64/FullText.html |
+| SRC-325 | Personal Information Protection and Electronic Documents Act (S.C. 2000, c. 5), s 4 and s 10.1 | Government of Canada (Justice Laws) | Current to 2026-09-21, last amended 2025-03-04 | Crown copyright, reproduction permitted for non commercial use | https://laws-lois.justice.gc.ca/eng/acts/P-8.6/section-10.1.html |
+| SRC-326 | Breach of Security Safeguards Regulations (SOR/2018-64) | Government of Canada (Justice Laws) | Current to 2026-09-21, last amended 2018-11-01 | Crown copyright, reproduction permitted for non commercial use | https://laws-lois.justice.gc.ca/eng/regulations/SOR-2018-64/FullText.html |
 | SRC-327 | California Civil Code section 1798.82 (breach notification) | California Legislative Counsel | Current text read 2026-10-03 | Not stated | https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=1798.82 |
 | SRC-328 | Florida Statutes 501.171, Security of confidential personal information | Florida Senate | 2024 Florida Statutes (including 2025C) | Not stated | https://www.flsenate.gov/Laws/Statutes/2024/501.171 |
 | SRC-329 | Texas Business and Commerce Code 521.053, Notification required following breach of security of computerized data | Texas Legislature | Includes Acts 2023 S.B. 768 (eff. 2023-09-01). Official page renders by script, so the text was read from the mirror https://texas.public.law/statutes/tex._bus._and_com._code_section_521.053 | Not stated | https://statutes.capitol.texas.gov/Docs/BC/htm/BC.521.htm |
 | SRC-330 | Colorado's Consumer Data Protection Laws: FAQs for Businesses and Government Agencies | Colorado Attorney General | Page modified 2026-08-06 | Not stated | https://coag.gov/resources/data-protection-laws/ |
-| SRC-356 | Supabase JWT claims reference (aud values) | Supabase | Living docs, page text read 2026-10-03 | Apache-2.0 repo (unconfirmed) | https://supabase.com/docs/guides/auth/jwt-fields |
+| SRC-342 | Yarn configuration: .yarnrc.yml (npmMinimalAgeGate, npmPreapprovedPackages) | Yarn | Living docs; Yarn 4.18.1 is latest on npm | BSD 2 Clause | https://yarnpkg.com/configuration/yarnrc |
+| SRC-344 | Dependabot options reference: cooldown (default-days, semver-*-days, include, exclude) | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference |
+| SRC-356 | Supabase JWT claims reference (aud values) | Supabase | Living docs, page text read 2026-10-03 | Apache-2.0 repo | https://supabase.com/docs/guides/auth/jwt-fields |
+| SRC-362 | Privileges (default object privileges, TRUNCATE and REFERENCES privileges); ALTER DEFAULT PRIVILEGES | PostgreSQL Global Development Group | PostgreSQL 18 | PostgreSQL License | https://www.postgresql.org/docs/current/ddl-priv.html |
+| SRC-364 | Tables and Views: horizontal filtering, logical operators (or, and, not), reserved characters in values | PostgREST | Stable docs (PostgREST 16 header), read 2026-10-04 | MIT | https://docs.postgrest.org/en/stable/references/api/tables_views.html |
+| SRC-365 | iframe element: sandbox and srcdoc attributes | MDN (Mozilla) | Living docs (modified 2026-10-01) | CC BY-SA 2.5, CC0 | https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe |
+| SRC-366 | HTMLIFrameElement: srcdoc property (security considerations) | MDN (Mozilla) | Living docs, read 2026-10-04 | CC BY-SA 2.5, CC0 | https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement/srcdoc |
+| SRC-367 | HTML Standard, 4.8.5 The iframe element (srcdoc, sandbox) | WHATWG | Living Standard, last updated 2026-10-03 | CC BY 4.0 | https://html.spec.whatwg.org/multipage/iframe-embed-object.html |
+| SRC-368 | Content-Security-Policy: sandbox directive | MDN (Mozilla) | Living docs (modified 2025-11-30) | CC BY-SA 2.5, CC0 | https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/sandbox |
+| SRC-369 | URL Standard (authority state, userinfo percent-encode set, path parsing) | WHATWG | Living Standard, last updated 2026-09-10 | CC BY 4.0 | https://url.spec.whatwg.org/ |
+| SRC-370 | Node.js crypto: crypto.createHmac(algorithm, key[, options]) | OpenJS Foundation (Node.js) | Node.js v26.10.0 docs; behaviour also run on Node.js v22.23.2 | MIT and Node.js docs terms | https://nodejs.org/api/crypto.html |
+| SRC-371 | Realtime Authorization (private channels, RLS policies on realtime.messages, policy cache) | Supabase | Living docs, page text read 2026-10-04 | Apache-2.0 repo | https://supabase.com/docs/guides/realtime/authorization |
+| SRC-372 | Socket.IO 4.x: Rooms; Middlewares | Socket.IO | 4.x docs, read 2026-10-04 | MIT | https://socket.io/docs/v4/rooms/ |
+| SRC-373 | Managing environments for deployment; Using secrets in GitHub Actions (repository, environment and organization secrets) | GitHub | GitHub.com docs | CC BY 4.0 | https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments |

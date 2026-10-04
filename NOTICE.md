@@ -54,15 +54,18 @@ This file credits the sources cited by the Hullproof free edition whose licenses
 | Model Context Protocol Specification | MCP project | [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0); [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (documentation) | [Source](https://modelcontextprotocol.io/specification/2026-07-28) |
 | MCP Security Best Practices | MCP project | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Source](https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices) |
 | MCP Security Cheat Sheet | OWASP Foundation | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | [Source](https://cheatsheetseries.owasp.org/cheatsheets/MCP_Security_Cheat_Sheet.html) |
+| OpenID Connect (GitHub Actions) | GitHub | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Source](https://docs.github.com/en/actions/concepts/security/openid-connect) |
 | Real-time developer notifications reference | Google | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [Source](https://developer.android.com/google/play/billing/rtdn-reference) |
 | Fight fraud and abuse (Play Billing) | Google | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) | [Source](https://developer.android.com/google/play/billing/security) |
 | Best Current Practice for OAuth 2.0 Security (RFC 9700, BCP 240) | IETF | IETF Trust (BCP 78) | [Source](https://www.rfc-editor.org/rfc/rfc9700) |
+| HTTP Strict Transport Security (RFC 6797) | IETF | IETF Trust (BCP 78) | [Source](https://www.rfc-editor.org/rfc/rfc6797) |
 | HTTP Caching (RFC 9111) | IETF | IETF Trust (BCP 78) | [Source](https://www.rfc-editor.org/rfc/rfc9111) |
 | Regulation (EU) 2024/1689 (Artificial Intelligence Act) | European Parliament and Council (EUR-Lex) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Source](https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng) |
 | Regulation (EU) 2026/1744 (Digital Omnibus on AI) | European Parliament and Council (EUR-Lex) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Source](https://eur-lex.europa.eu/eli/reg/2026/1744/oj/eng) |
 | AI Act Service Desk, AI Act Explorer | European Commission | EU reuse notice | [Source](https://ai-act-service-desk.ec.europa.eu/en/ai-act-explorer) |
 | Secure use reference; Script injections; Managing GitHub Actions settings for a repository; REST API endpoints for GitHub Actions permissions | GitHub | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Source](https://docs.github.com/en/actions/reference/security/secure-use) |
 | UK GDPR: Regulation (EU) 2016/679 as it forms part of UK law (Art 3, 13, 14, 27, 33, 34, 83) | UK Government (legislation.gov.uk) | [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) | [Source](https://www.legislation.gov.uk/eur/2016/679/contents) |
+| Dependabot options reference: cooldown (default-days, semver-*-days, include, exclude) | GitHub | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Source](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference) |
 
 ## About references
 

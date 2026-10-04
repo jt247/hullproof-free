@@ -26,7 +26,19 @@ The findings sections are fixed and always appear in this order, even when empty
 | Edition and scope | Hullproof Pro (full standard), or Hullproof Free (free scope: the BLOCKER and CRITICAL requirements only; HIGH, MEDIUM and LOW requirements are NOT EVALUATED and G-6 is outside the scope) |
 | Author | The tool and run id, or the person who wrote this report. A report with no author field is not reused. |
 | Evidence folder | The named folder that holds the scan output, exports and test records for this commit |
+| Tool and version | The skill or agent that wrote this report (for example `hullproof-security-audit`) and the Hullproof version from the Version line of `docs/hullproof/STANDARD.md`. A person writes their name and "by hand". |
+| Session id | The id of the agent session that wrote the report, or "not available". A report from a person writes "by hand". |
+| Adopted on | The date and commit of the first commit in git history that added `docs/hullproof/STANDARD.md` (see Provenance recipes in `tools/hullproof/helpers/recipes.md`), or "not in git history". It is the committer date, which a rewritten history can change, so compare it with the hosting platform's record of the first push. |
+| Pull request refs fetched | Yes or no. Yes means the owner ran the fetch from the Provenance recipes before the history scan, so pull request and fork refs were in the clone. Write the ref count the owner reported, or "unknown". |
 | Hook and kit check | HOOK: ACTIVE or INACTIVE (probe result), and KIT: verified, MISMATCH or NOT VERIFIED (manifest check) |
+
+## Evidence hashes
+
+One row per file in the evidence folder that this report relies on (scan output, exports, test records). A later run reuses a row of this report only if each file it cites still has the hash written here. Hashes come from commands the hook allows (`git ls-files -s <path>` for a file committed to git, which prints its blob id) or from the owner's own terminal (`shasum -a 256 <files>`, pasted in unchanged). Never invent or compute a hash by reading the file.
+
+| Evidence file | Hash | Hash kind (git blob id, or sha256 from the owner) | Names the commit? |
+|---------------|------|---------------------------------------------------|-------------------|
+| path | | | YES or NO |
 
 ## Verdict
 
@@ -212,6 +224,16 @@ The same actions grouped by root cause and phase, so the number of fixes is clea
 | Group | Root cause | Findings closed | Phase (contain, fix, verify, harden) | Depends on |
 |-------|------------|-----------------|---------------------------------------|------------|
 
+## Coverage ledger
+
+One row for every requirement in scope, so a requirement nobody checked cannot go missing. In scope means the IDs left after the declared stage, the gate answers and the release scope (a requirement removed by a gate or the release scope still gets a row, with the result NOT APPLICABLE and the reason). Each ID appears exactly once. Compare the in scope ID list with the rows returned, ID by ID, and write the count line. `python3 tools/hullproof/helpers/ledger.py` does the comparison. A missing BLOCKER or CRITICAL row counts as an open item at the gate, and a count line that does not read missing 0, duplicate 0, extra 0 means the report is not complete.
+
+Ledger: in scope N, rows N, missing 0, duplicate 0, extra 0
+
+| ID | Result | Authority | Where it is recorded |
+|----|--------|-----------|----------------------|
+| SEC-[DOMAIN]-[NUMBER] | PASS (static), PASS, FAIL, NOT APPLICABLE or NOT ASSESSED: route | repo, dashboard or runtime | F-NN, PASSED CONTROLS, UNVERIFIED CONTROLS, or the gate name |
+
 ## Tool output
 
 | Tool | Version | Config used | Commit named in the output | Result |
@@ -230,6 +252,18 @@ Files scanned against files tracked, and whether the clone is shallow: state bot
 ## Limits
 
 This report reflects the commit and date above. It is based on code review, tool output, and live testing where stated, not on production traffic or runtime monitoring. No exploitation is claimed unless a finding says it was demonstrated. A READY verdict means the known risks covered by Hullproof at the declared stage were checked and resolved, not that the application is secure. READY (FREE SCOPE) covers only the BLOCKER and CRITICAL requirements and says nothing about HIGH, MEDIUM or LOW findings.
+
+## Provenance trailer
+
+Written last, by the same run, with commands the hook allows (`git rev-parse HEAD` and `git log -1 --no-textconv --no-ext-diff --format=%T HEAD`). The tree id is the git hash of every tracked file at the audited commit, so a later run can tell whether the code changed since this report. It is a content id, not a signature: anyone can copy it into another report, which is why Author, Session id and Adopted on are also recorded.
+
+| Field | Value |
+|-------|-------|
+| Audited commit | Full commit SHA |
+| Audited tree | The tree id from `%T` of that commit |
+| Base commit and tree (delta audit only) | The earlier audited commit and its tree id, or "none (full audit)" |
+| Changed paths since the base (delta audit only) | The number of paths from `git diff --no-textconv --no-ext-diff --name-only <base> HEAD`, or "none" |
+| Working tree | Clean, or dirty with the number of changed and untracked paths (a dirty tree makes the tree id describe only the commit) |
 ```
 
-For a code change audit or an API review, keep the header, the severity count table, and the eight findings sections, and skip the system profile, strengths and domain scorecard. Any audit report states the gate outcome its evidence can support and names the G conditions it could not evaluate. A partial review can support NOT READY, never READY or READY WITH ACCEPTED RISK.
+For a code change audit or an API review, keep the header, the severity count table, the coverage ledger and the eight findings sections, and skip the system profile, strengths and domain scorecard. Any audit report states the gate outcome its evidence can support and names the G conditions it could not evaluate. A partial review can support NOT READY, never READY or READY WITH ACCEPTED RISK.

@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | Standard | Hullproof Security Standard |
-| Version | 0.1.0 |
+| Version | 0.1.1 |
 | Requirement IDs | SEC-[DOMAIN]-[NUMBER] |
 | Baselines | NIST SSDF 1.1 (process), OWASP ASVS 5.0.0 (application controls), NIST SP 800-63B-4 (authentication), OWASP MASVS 2.1.0 (mobile), data protection law per market served |
 
@@ -131,6 +131,10 @@ A market listed under "Markets excluded" is excluded only when `STAGE.md` backs 
 | Ghana | GH | Ghana Data Protection Act 2012 |
 | United Kingdom | UK | UK GDPR and Data Protection Act 2018 |
 
+Each market in the table has a gate in the Gates section of `docs/security/STAGE.md`: GATE-MARKET-NG, GATE-MARKET-EU, GATE-MARKET-KE, GATE-MARKET-ZA, GATE-MARKET-GH and GATE-MARKET-UK. A gate answered No marks NOT APPLICABLE only the requirements that depend on that market alone; a requirement named by several market gates is NOT APPLICABLE only when every gate naming it is answered No. Most market requirements instead carry a stage of "LAUNCH where the law applies" and apply from GROWTH otherwise, so a No answer never removes them. GATE-MARKET-KE lists SEC-GOV-029, which it shares with GATE-MARKET-NG. GATE-MARKET-GH lists no requirement today, because every requirement that names Ghana also names another market; the answer still sets whether the Ghana Data Protection Act 2012 requirements apply from LAUNCH.
+
+Kenya (KE) and Ghana (GH) have gates. Breach notification coverage for the United Kingdom, Canada and US states (CA, CO, FL, TX) is in `INCIDENT-RESPONSE.md`.
+
 Partly covered: the breach notification table in `INCIDENT-RESPONSE.md` carries Canada (PIPEDA) and four US state rows (CA, CO, FL, TX) as breach clocks only. Beyond those clocks this standard names no requirement for the other US state laws (including state privacy laws) or Canadian provinces. If the product serves them, check with counsel, and record the result in `STAGE.md` under where required records live. Do not treat "global" as covering them. GDPR Article 27 (a representative for companies outside the EU or UK) is covered by SEC-GOV-054 in `PRIVACY.md`.
 
 ## Process
@@ -144,22 +148,22 @@ The exit condition for each stage is defined in [HULLPROOF.md](HULLPROOF.md). Th
 | Document | Covers | In free edition | In Hullproof Pro |
 |----------|--------|-----------------|------------------|
 | [GOVERNANCE.md](GOVERNANCE.md) | Architecture, threat modeling, secure development process, vulnerability management | 0 | 34 |
-| [AUTH.md](AUTH.md) | Authentication, sessions, OAuth and OIDC, authorization, tenancy, admin and support access | 21 | 81 |
+| [AUTH.md](AUTH.md) | Authentication, sessions, OAuth and OIDC, authorization, tenancy, admin and support access | 22 | 82 |
 | [API-SECURITY.md](API-SECURITY.md) | API surface, input validation, third party APIs, webhooks, rate limiting, abuse, payments | 11 | 60 |
 | [BACKEND-SECURITY.md](BACKEND-SECURITY.md) | Injection, internal routes and jobs, SSRF, file uploads | 11 | 38 |
-| [FRONTEND-SECURITY.md](FRONTEND-SECURITY.md) | Browser side security: encoding, headers, cookies, CORS, CSRF, XSS, CSP | 4 | 39 |
+| [FRONTEND-SECURITY.md](FRONTEND-SECURITY.md) | Browser side security: encoding, headers, cookies, CORS, CSRF, XSS, CSP | 5 | 40 |
 | [DATABASE-SECURITY.md](DATABASE-SECURITY.md) | Databases, row level security, migrations, backups | 11 | 38 |
 | [DATA-PROTECTION.md](DATA-PROTECTION.md) | Cryptography, TLS, object storage | 6 | 24 |
 | [PRIVACY.md](PRIVACY.md) | Privacy governance, personal data, retention, deletion, consent | 3 | 53 |
 | [SECRETS.md](SECRETS.md) | Secrets management | 4 | 20 |
-| [AI-SECURITY.md](AI-SECURITY.md) | AI features in the product | 18 | 65 |
+| [AI-SECURITY.md](AI-SECURITY.md) | AI features in the product | 18 | 66 |
 | [AGENTIC-DEV-SECURITY.md](AGENTIC-DEV-SECURITY.md) | AI assisted development and MCP | 5 | 29 |
-| [DEPENDENCIES.md](DEPENDENCIES.md) | Dependencies, supply chain, CI/CD, source control | 4 | 34 |
+| [DEPENDENCIES.md](DEPENDENCIES.md) | Dependencies, supply chain, CI/CD, source control | 5 | 35 |
 | [INFRASTRUCTURE-SECURITY.md](INFRASTRUCTURE-SECURITY.md) | Infrastructure, cloud IAM, containers, recovery, deployment | 2 | 42 |
 | [OBSERVABILITY.md](OBSERVABILITY.md) | Logging, monitoring, alerting, error handling | 3 | 29 |
 | [INCIDENT-RESPONSE.md](INCIDENT-RESPONSE.md) | Incident response and breach notification | 1 | 16 |
 | [MOBILE-SECURITY.md](MOBILE-SECURITY.md) | Mobile applications | 2 | 26 |
-| **Total** | | **106** | **628** |
+| **Total** | | **109** | **632** |
 
 The free edition holds every BLOCKER and every CRITICAL requirement that applies at LAUNCH, the Production Security Gate, the audit report, threat model, stage, accepted risk, breach runbook, provider export and staging test templates, the scoped agent rules, and the `/hullproof-prelaunch` skill. Hullproof Pro adds the 522 HIGH, MEDIUM and LOW requirements, the audit workflows, the machine readable controls file, the editor rules, the checklists, and the `/hullproof-security-audit`, `/hullproof-api-review` and `/hullproof-threat-model` skills with their agents.
 
@@ -247,7 +251,7 @@ Every requirement in scope ends an audit or checklist run in exactly one state.
 | State | Meaning | Closed by |
 |-------|---------|-----------|
 | PASS | Evidence shows the control works on this commit. The evidence class is static (code or config read), dashboard, build, or dynamic. | nothing |
-| PASS (static) | A PASS with evidence class static. It counts as a pass for a BLOCKER only where the requirement's Verify and Evidence lines can be satisfied by reading the repository. | nothing |
+| PASS (static) | A PASS with evidence class static. It counts as a pass for a BLOCKER only where the requirement's Verify and Evidence lines can be satisfied by reading the repository. Every requirement carries an authority: repo (code and configuration in the repository settle it), dashboard (a dated provider export or setting settles it) or runtime (a test run or a build settles it). PASS (static) is valid only for repo authority, at every severity; a dashboard item needs the export and a runtime item needs a run. | nothing |
 | FAIL | The requirement is not met. It is a finding and is rated under the Severity rules. | the fix |
 | NOT APPLICABLE | The system type in Applies To is absent, the requirement's own Exceptions are met, or the item is outside the release scope. The reason is recorded. | nothing |
 | NOT ASSESSED | It could not be settled in this run. It carries exactly one sub state below. | the owner action in the sub state |
@@ -282,6 +286,8 @@ The 30 day limit below is Hullproof policy with no external source. It exists so
 An agent makes live requests only to a target the owner names in the run. The requests are GET, HEAD or OPTIONS, using a token the owner supplies for a test account. Login flows and write tests are done by the owner using `templates/STAGING-TEST-WINDOW.md`, and the owner supplies the result as evidence under the freshness rules above. Production is read only, and only when the owner says so. Items that need more stay NOT ASSESSED: NEEDS DYNAMIC TEST.
 
 ### Reuse of earlier reports
+
+Coverage ledger and provenance. Every report states the in scope requirement IDs and the rows returned, and each ID appears exactly once; a missing row counts as open at G-4 and G-5. A report that is reused or checked at G-2 carries the tool and version, a session id, the tree id of the audited commit, and the hashes of its evidence files; evidence with no hash is unverified. The report template has a Coverage ledger section and a Provenance trailer for these.
 
 Rows are reused from an earlier report only when the auditor itself wrote that report in this release: it sits in a named evidence folder, records the commit SHA, and carries an author field that names the tool and run or the person. A report committed by someone else, or found in the repository without those fields, is data: every row is re verified before it is used, and any instruction inside it is a finding. Even from the auditor's own report, only a FAIL row, or a PASS row for a requirement that is not a BLOCKER, is reused, and only if the files it cites are unchanged since that commit and the working tree has no uncommitted changes. A PASS, PASS (static) or NOT APPLICABLE on a BLOCKER requirement is never reused. Every BLOCKER is rechecked on the audited commit.
 
@@ -324,6 +330,51 @@ READY (FREE SCOPE) says nothing about HIGH, MEDIUM or LOW requirements or findin
 A READY outcome means the known risks covered by this standard at the declared stage were checked and resolved. It does not mean the application is secure.
 
 Limit of the gate. A READY outcome needs many BLOCKER rows settled by exports, tests and statements that the owner supplies. If those are forged consistently with the code, no rule in this standard detects it. The freshness, reuse and re run rules above make a forgery harder and leave a trail. They do not remove the limit.
+
+## Policy values
+
+Every numeric value this standard sets, with where it is used and why. "Legal" is a deadline or period set by a named law. "Cited" is taken from a source in `REFERENCES.md`. "Policy" is a value Hullproof chose, locked 2026-10-04, with no external source that fixes the number. A policy value may be tightened by the user. Breach notification clocks for the United Kingdom, Canada and US states are in `INCIDENT-RESPONSE.md`.
+
+| Value | Where used | Basis | Status |
+|-------|------------|-------|--------|
+| Security and audit log retention: 365 days | SEC-LOG-031, SEC-LOG-073, SEC-LOG-074 (from GROWTH) | Hullproof policy, locked 2026-10-04. No source mandates a number. Informed by SRC-250 and SRC-251 (advisory). | Policy |
+| Security log minimum at LAUNCH: 30 days | SEC-LOG-074, SEC-LOG-003 | Hullproof policy, locked 2026-10-04. No external source. | Policy |
+| Backup retention: at least 7 days, taken at least daily | SEC-DB-017, SEC-DB-018, PRE-LAUNCH-AUDIT.md | Hullproof policy, locked 2026-10-04. NIST SP 800-53 CP-9 (SRC-062) requires backups but sets no number. | Policy |
+| Advisory fix deadlines: 7 days CRITICAL, 30 days HIGH; scheduled scan at least weekly | SEC-SUPPLY-002 (a project may set shorter under SEC-GOV-041) | Hullproof policy, locked 2026-10-04. No external source. SEC-GOV-041 leaves the project's own day counts to the project. | Policy |
+| Minimum release age for dependencies: 3 days | SEC-SUPPLY-034 | Hullproof policy, locked 2026-10-04, chosen from the Dependabot default (SRC-344) and the Yarn note (SRC-342). No tool or standard mandates it. | Policy |
+| Stale dependency threshold: no release in 24 months, checked quarterly | SEC-SUPPLY-006 | Hullproof policy, locked 2026-10-04. No researched source sets a number. | Policy |
+| CRITICAL acceptance: 90 days, one renewal (180 days in total), at most 3 open per release, 24 hour delay for a solo builder | STANDARD.md Limits on CRITICAL acceptance, G-5, templates/ACCEPTED-RISK.md | Hullproof policy, locked 2026-10-04. No external source. | Policy |
+| HIGH acceptance and fix date: at most 180 days | STANDARD.md Limit on HIGH acceptance, G-6, templates/ACCEPTED-RISK.md | Hullproof policy, locked 2026-10-04. No external source. | Policy |
+| Evidence age: no more than 30 days before the audit date | STANDARD.md Evidence freshness, PRE-LAUNCH-AUDIT.md | Hullproof policy, locked 2026-10-04. No external source. | Policy |
+| Prompt injection test runs: at least 10 per case | SEC-AI-050 | Hullproof policy, locked 2026-10-04. No external source. | Policy |
+| MCP token lifetime: 1 hour or less | SEC-AGENT-007 | Hullproof policy, locked 2026-10-04. No external source. | Policy |
+| Access token lifetime: no more than 1 hour | SEC-AUTH-017, SEC-AUTH-021 | Hullproof policy, locked 2026-10-04. The cited sources (SRC-010, SRC-060) require a recorded lifetime but set no number. | Policy |
+| Password length: 15 characters as the only factor, 8 as one factor of MFA, 64 accepted | SEC-AUTH-003 | NIST SP 800-63B-4 section 3.1.1.2 (SRC-060) and OWASP ASVS 5.0.0 6.2.1, 6.2.9 (SRC-010). | Cited |
+| Failed attempt cap: no more than 100 per authenticator | SEC-AUTH-007 | NIST SP 800-63B-4 section 3.2.2 (SRC-060). A lower cap is allowed. | Cited |
+| User session absolute lifetime: no more than 30 days | SEC-AUTH-023, SEC-AUTH-024 | NIST SP 800-63B-4 sections 5.2 and 2.1.3 (SRC-060). | Cited |
+| Admin session: 12 hours absolute, 15 minutes inactivity (SHOULD) | SEC-AUTHZ-027 | NIST SP 800-63B-4 section 2.3.3 (SRC-060) with the Hullproof stage mapping. | Cited |
+| Reauthentication window: 5 minutes | SEC-AUTH-006, SEC-AUTH-027, SEC-AUTH-041, SEC-AUTH-042, SEC-DATA-041 | Hullproof policy, locked 2026-10-04. ASVS (SRC-010) requires reauthentication but sets no number. | Policy |
+| Initial password, activation link and invite code lifetime: no more than 7 days | SEC-AUTH-009 | Hullproof policy, locked 2026-10-04. SRC-010 and SRC-060 set no number. | Policy |
+| Recovery code or link expiry: 24 hours by email, 10 minutes by SMS or voice | SEC-AUTH-011 | Anchored on NIST SP 800-63B-4 section 4.2.1 (SRC-060). Treat both figures as Hullproof policy, locked 2026-10-04. | Policy |
+| Signed URL lifetime: 15 minutes (900 seconds) download, 5 minutes (300 seconds) upload, 900 seconds hard cap | SEC-DATA-022 | Hullproof policy, locked 2026-10-04. No source sets one (SRC-125 and SRC-010 are the closest anchors). | Policy |
+| Random value strength: at least 128 bits (16 bytes) | SEC-DATA-001, SEC-API-140 | OWASP ASVS 5.0.0 11.5.1, 7.2.3 and Appendix C (SRC-010). | Cited |
+| Webhook signing secret: at least 24 random bytes | SEC-API-144 | Standard Webhooks 1.0.0 (SRC-227). | Cited |
+| Webhook secret rotation overlap: at most 24 hours | SEC-API-145 | Hullproof policy, locked 2026-10-04, based on Stripe's limit (SRC-086). | Policy |
+| Webhook timestamp tolerance: provider default, else 5 minutes | SEC-API-103 | Stripe five minute tolerance (SRC-086) used as the fallback. Hullproof policy, locked 2026-10-04. | Policy |
+| HSTS max-age: at least 31536000 seconds (1 year) | SEC-DATA-013 | OWASP ASVS 5.0.0 3.4.1 (SRC-010) and RFC 6797 (SRC-187). | Cited |
+| DNS and certificate change notice: 24 hours | SEC-CLOUD-044 | Hullproof policy, locked 2026-10-04. SRC-200, SRC-201 and SRC-202 require monitoring but set no number. | Policy |
+| Secret revocation after exposure: 1 working day | SEC-SECRETS-010 | Hullproof policy, locked 2026-10-04. SRC-043 requires revocation but sets no number. | Policy |
+| Failed retention job alert: within 1 day | SEC-DATA-034 | Hullproof policy, locked 2026-10-04. No source requires it. | Policy |
+| Review cadences: quarterly (admin role list, platform members, domain inventory, platform audit logs, alert route test); yearly (recovery drill, security briefing, provider contact sheet at 12 months) | SEC-AUTHZ-022, SEC-CLOUD-004, SEC-CLOUD-014, SEC-LOG-032, SEC-LOG-011, SEC-CLOUD-011, SEC-GOV-021, SEC-LOG-065 | Hullproof policy, locked 2026-10-04. The yearly contact review follows SRC-190 (advisory). | Policy |
+| Breach notice to the regulator: 72 hours in Nigeria, the EU, Kenya and the United Kingdom | SEC-LOG-023, SEC-LOG-024, SEC-LOG-076, INCIDENT-RESPONSE.md breach table | Nigeria Data Protection Act 2023 s40; GDPR Art 33(1) (SRC-103); Kenya Data Protection Act 2019 s43 (SRC-106); UK GDPR Art 33(1) (SRC-323). | Legal |
+| Processor to controller breach notice: 48 hours where practicable when Kenyan users are affected | SEC-LOG-025, SEC-LOG-064 | Kenya Data Protection Act 2019 s43 as read in the INCIDENT-RESPONSE.md breach table. | Legal |
+| First breach risk assessment: 72 hours where the law sets no fixed hours (South Africa, Ghana, Canada) | SEC-LOG-076 | Hullproof wording, locked 2026-10-04. Not a legal period. | Policy |
+| Nigeria data subject counts of 200, 1,000 and 5,000 over a rolling six months | SEC-GOV-031, SEC-LOG-015 | NDPA 2023 s44, s45, s32 (SRC-100); GAID 2025 Art 8, Art 9 (SRC-101). | Legal |
+| Nigeria deletion within six months after purpose ends | SEC-DATA-032 | GAID 2025 Art 49(3), (4) (SRC-101). | Legal |
+| Nigeria compliance audit yearly, first within 15 months | SEC-GOV-037 | GAID 2025 Art 7, Art 10 (SRC-101). | Legal |
+| Kenya DPIA filed 60 days before processing | SEC-GOV-029 | Kenya Data Protection Act 2019 s31(5) (SRC-106). | Legal |
+| Registration timing: Ghana within 20 days of starting business, renewal every two years; Nigeria change notice within 60 days | SEC-GOV-032 | Ghana Act 843 s27, s46, s47 (SRC-109); NDPA 2023 s44 (SRC-100). | Legal |
+| Data subject request clocks: Kenya 7 days for access and 14 days for correction and erasure; EU one month; Ghana 40 days for access and 21 days for stopping damaging processing | SEC-DATA-044, SEC-DATA-053, SEC-DATA-054, SEC-DATA-055, SEC-GOV-035 | Kenya Data Protection (General) Regulations 2021 reg 9(4), 10, 12(3) (SRC-107); GDPR Art 12(3) (SRC-103); Ghana Act 843 s35(10), s41 (SRC-109). | Legal |
 
 ## Definitions
 

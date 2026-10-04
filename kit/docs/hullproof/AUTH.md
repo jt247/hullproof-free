@@ -12,7 +12,7 @@ NIST SP 800-63B-4 is the normative baseline for authentication. Where it is stri
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 21 of the 81 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 22 of the 82 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
 
 ## Requirement index
 
@@ -39,6 +39,7 @@ NIST SP 800-63B-4 is the normative baseline for authentication. Where it is stri
 | [SEC-AUTHZ-020](#sec-authz-020-admin-functions-guarded-by-a-server-side-admin-role-check) | Admin functions guarded by a server side admin role check | BLOCKER | LAUNCH | SaaS, Web, API, Backend, Serverless |
 | [SEC-AUTHZ-021](#sec-authz-021-mfa-required-for-in-product-admin-accounts) | MFA required for in product admin accounts | CRITICAL | LAUNCH | SaaS, Web, API |
 | [SEC-AUTHZ-031](#sec-authz-031-support-tools-never-hold-an-all-tenant-rls-bypass-key) | Support tools never hold an all tenant RLS bypass key | CRITICAL | LAUNCH | SaaS, Backend, Database (Supabase) |
+| [SEC-AUTHZ-036](#sec-authz-036-realtime-channels-authorize-every-join-broadcast-and-presence-update-per-user-and-tenant) | Realtime channels authorize every join, broadcast and presence update per user and tenant | CRITICAL | LAUNCH | SaaS, Web, API, Backend, Mobile, Database (Supabase) |
 <!-- hullproof:index:end -->
 
 ---
@@ -81,6 +82,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Tenancy and tenant isolation | None | Tenant membership insert | SEC-AUTHZ-012, SEC-AUTHZ-013, SEC-AUTHZ-014, SEC-AUTHZ-015, SEC-AUTHZ-016, SEC-AUTHZ-017, SEC-AUTHZ-018, SEC-AUTHZ-019 |
 | Admin surfaces | None | None | SEC-AUTHZ-022, SEC-AUTHZ-023, SEC-AUTHZ-028 |
 | Support access and impersonation | None | None | SEC-AUTHZ-029, SEC-AUTHZ-030, SEC-AUTHZ-031, SEC-AUTHZ-033, SEC-AUTHZ-035 |
+| Realtime channel authorization | None | Realtime channel authorization | SEC-AUTHZ-036 |
 <!-- hullproof:coverage-map:end -->
 
 <!-- hullproof:gates:start -->
@@ -334,7 +336,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 **Implementation.**
 - Store provider identities keyed on issuer and subject.
 - Offer "connect Google" or similar only from account settings while signed in.
-- Default stack: review and record how your identity provider links identities with the same email, and confirm it matches this rule. Hullproof research did not cover Supabase automatic identity linking.
+- Default stack: review and record how your identity provider links identities with the same email, and confirm it matches this rule.
 - Default stack (checked 2026-10-03): Supabase documents that it links a new OAuth identity to an existing user with the same email address automatically, that it removes other unconfirmed identities on that user when it does, and that manual linking through `linkIdentity()` needs manual linking enabled in the project. Automatic linking by email does not meet the Requirement as written. Record the behaviour and your decision in the security decisions log, and confirm the enabled providers return a verified email and that email confirmation is on (SEC-AUTH-040).
 
 **Verify.**
@@ -664,6 +666,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Apply the scope to list and search endpoints, not only to single record fetches.
 - Enforce the same boundary in the database with SEC-AUTHZ-014.
 - Retrieval and embedding stores follow the tenant rules in AI-SECURITY.md.
+- Owned by SEC-AUTHZ-036 for this root cause (Realtime channel authorization); report one finding. Step 5 still lists the realtime surface.
 
 **Verify.**
 1. Seed tenant X and tenant Y. As an admin of X, call every list, search, export and single record endpoint with Y's IDs and with no filter; no Y data MAY appear.
@@ -858,3 +861,43 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 **References.** OWASP ASVS 5.0.0 v5.0.0-8.4.1 (L2, promoted to LAUNCH) [SRC-010]; Supabase API keys (Secret key bypasses RLS) [SRC-071]; PostgreSQL 18 Row Security Policies (BYPASSRLS) [SRC-077]; NIST SP 800-53 Rev 5 AC-6 [SRC-062].
 
 **AI Agent Instruction.** Do not build support features on an unscoped service role client. If the only way to get the data is to bypass RLS for all tenants, stop and report it.
+
+---
+
+### SEC-AUTHZ-036: Realtime channels authorize every join, broadcast and presence update per user and tenant
+
+| Field | Value |
+|-------|-------|
+| Severity | CRITICAL |
+| Stage | LAUNCH |
+| Applies To | SaaS, Web, API, Backend, Mobile, Database (Supabase) |
+| Automation | PARTIAL |
+| Verification method | AUTOMATED TEST, DYNAMIC TEST, CODE REVIEW |
+
+**Requirement.** Where the product offers realtime channels (WebSocket or similar subscriptions, broadcast, presence, rooms or pub/sub topics) that carry user or tenant data, the server or a database policy MUST authorize each join, each message a client sends and each presence update, per user and per tenant, using the verified identity and the current membership. A channel name, topic or room id MUST NOT act as a secret or as the only check, and no public channel MAY carry user or tenant data. On Supabase, such channels MUST be private (`private: true` on the client) with row level security policies on `realtime.messages` that test membership or ownership of the topic for each operation (receive and send, broadcast and presence), and the project setting that allows public access to channels MUST be off. On Socket.IO or a similar server, a socket MUST join a room only after server code has checked the user's right to that room, and a room name or id sent by the client is an input to that check, not the check. Access MUST end within a stated time after membership is removed. This requirement applies only to products that use realtime channels.
+
+**Why.** A channel named after a tenant id is easy to learn or guess, and a public channel delivers its events to anyone who can connect. A signed in user of one tenant then receives another tenant's live data, or sends forged events into it, while every endpoint and table test still passes because none of them touches the channel. Realtime caches the access decision for the life of the connection, so removing a member does not stop events that are already flowing.
+
+**Implementation.**
+- Supabase: create the policies on `realtime.messages` with `realtime.topic()` compared to a membership or ownership table, one policy for receive (`select`) and one for send (`insert`), and filter on the `extension` column for broadcast and presence. Set `private: true` when the client creates the channel. Turn off the public access setting under Realtime Settings so a client cannot fall back to a public channel [SRC-371].
+- Supabase: the policy result is cached per connection and refreshed when the client connects and subscribes or sends a new JWT. A removed member keeps receiving until the token expires or a new one is sent, so keep the JWT lifetime short and disconnect the user on removal [SRC-371].
+- Supabase Postgres Changes on a table follow that table's row level security, so the table policies of SEC-DB-001 and SEC-DB-002 govern them [SRC-371].
+- Socket.IO and similar: rooms exist only on the server, so a client cannot join one by itself [SRC-372]. Put the membership check in the handler that calls `socket.join`, and do not rely on connection middleware alone, because it runs once per connection [SRC-372]. Derive the room name on the server from the verified user and tenant instead of accepting a name from the client.
+- Check authorization again on each send, because a client that may listen to a channel is not always allowed to publish to it.
+- Keep payloads small. Send ids and let the client fetch the record through an authorized endpoint when the event carries more than the channel's audience may see.
+- Per tenant isolation of endpoints and tables is owned by SEC-AUTHZ-013; this requirement owns the realtime surface.
+
+**Verify.**
+1. List every realtime channel, topic, room and Postgres Changes subscription in the product, with what data it carries and who may join. Record any that carry no user or tenant data.
+2. Seed tenant X and tenant Y. As a member of X, subscribe to Y's topic and to a guessed topic, then send a broadcast and a presence update to each. Expect a rejection or an empty subscription, and no event delivered to Y's members.
+3. Run the positive control: a member of Y subscribes to Y's topic, receives an event sent by the server, and may send only if the policy allows sending.
+4. Remove a member from the tenant while that member's connection is open. Expect events to stop within the stated time, and confirm the stated time in the evidence.
+5. On Supabase, read the policies on `realtime.messages` and confirm each tests the topic against membership or ownership. Try joining the same topic with `private: false`; expect it to fail. Confirm the public access setting is off in Realtime Settings. On Socket.IO, search for every `join` call and confirm a server side check runs before it.
+
+**Evidence.** The channel list, the two tenant test output including the positive control, the removal test result, and the policy or handler listing.
+
+**Exceptions.** A channel that carries only data meant for every visitor, that clients cannot send to, and that is recorded as such in step 1 may be public. Products with no realtime channel record the search that shows it, for example a search for `channel(`, `.subscribe(`, `socket.io`, `WebSocket` and `realtime` over client and server code.
+
+**References.** Supabase Realtime Authorization [SRC-371]; Socket.IO Rooms and Middlewares [SRC-372]; OWASP API Security Top 10 2023 API1:2023 [SRC-021]; OWASP Top 10:2025 A01:2025 [SRC-020].
+
+**AI Agent Instruction.** When you add a realtime channel, make it private, add the membership policy or the server side check in the same change, and write the two tenant test. Never name a channel after a tenant id and treat the name as protection. If a feature asks a client to choose its own room or topic, stop and ask for the server side check.

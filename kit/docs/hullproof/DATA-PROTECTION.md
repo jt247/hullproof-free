@@ -145,7 +145,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Other approved minimums: scrypt N ≥ 2^17 with r = 8 and p = 1 (or the other tabled rows); bcrypt cost ≥ 10; PBKDF2 HMAC-SHA-512 ≥ 210,000 iterations or HMAC-SHA-256 ≥ 600,000 iterations.
 - Take parameters from the tag, never from ASVS master or the `latest` snapshot.
 - Without a recorded SEC-AUTH-001 exception, application code must not hash passwords at all, and this requirement does not apply.
-- Default stack: Supabase Auth owns password storage when the app uses it, so no exception exists and this requirement does not apply. ASSUMPTION: the algorithm Supabase Auth uses was not verified in Hullproof research.
+- Default stack: Supabase Auth owns password storage when the app uses it, so no exception exists and this requirement does not apply. Confirm the hashing algorithm and cost settings in the current Supabase Auth documentation.
 
 **Verify.**
 1. Check the security decisions log for a recorded SEC-AUTH-001 exception. If none exists, confirm under SEC-AUTH-001 that no password write path exists and stop here.
@@ -179,7 +179,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 **Why.** Older TLS versions and invalid certificates let attackers on the network read or change traffic, including session tokens and personal data.
 
 **Implementation.**
-- Default stack: Vercel, Render and Supabase terminate TLS. ASSUMPTION: that their TLS settings meet this requirement is not verified in Hullproof research, so test each host rather than assume it.
+- Default stack: Vercel, Render and Supabase terminate TLS. Test each host rather than assume its TLS settings meet this requirement.
 - Cloudflare R2 custom domains: set the minimum TLS version on the domain (available through the API).
 - Monitor certificate expiry for any certificate the team manages itself. HSTS makes certificate errors fatal for users (RFC 6797 §12.1).
 

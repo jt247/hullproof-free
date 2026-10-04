@@ -10,7 +10,7 @@ This document covers the third party code a project installs, the integrity of w
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 4 of the 34 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
+> **Free edition.** This document contains 5 of the 35 requirements in this domain: every BLOCKER and every CRITICAL requirement that applies at LAUNCH. Requirement IDs mentioned here but not listed are part of Hullproof Pro.
 
 ## Requirement index
 
@@ -18,6 +18,7 @@ This document covers the third party code a project installs, the integrity of w
 |---|---|---|---|---|
 | [SEC-SUPPLY-002](#sec-supply-002-dependency-vulnerability-gate-in-ci) | Dependency vulnerability gate in CI | CRITICAL | LAUNCH | SaaS, Web, API, Backend, Mobile, Serverless |
 | [SEC-SUPPLY-016](#sec-supply-016-pipeline-secrets-only-in-the-ci-secret-store) | Pipeline secrets only in the CI secret store | BLOCKER | LAUNCH | SaaS, Web, API, Backend, Mobile, Serverless |
+| [SEC-SUPPLY-035](#sec-supply-035-no-account-wide-or-organisation-wide-credential-in-ci-or-an-agent-workspace) | No account wide or organisation wide credential in CI or an agent workspace | CRITICAL | LAUNCH | SaaS, Web, API, Backend, Mobile, Serverless, Agentic workflow |
 | [SEC-SUPPLY-032](#sec-supply-032-no-untrusted-event-data-expanded-into-workflow-scripts) | No untrusted event data expanded into workflow scripts | CRITICAL | LAUNCH | SaaS, Web, API, Backend, Mobile, Serverless, Agentic workflow |
 | [SEC-SUPPLY-026](#sec-supply-026-no-source-control-metadata-on-deployed-sites) | No source control metadata on deployed sites | CRITICAL | LAUNCH | SaaS, Web, API, Backend |
 <!-- hullproof:index:end -->
@@ -50,6 +51,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Mobile dependencies and OTA updates | MOBILE-SECURITY.md | None | SEC-SUPPLY-002 |
 | AI model and MCP server supply chain | AI-SECURITY.md, AGENTIC-DEV-SECURITY.md | None | SEC-SUPPLY-012 |
 | Release age delay and registry trust settings | None | Package release age | SEC-SUPPLY-034 |
+| Account wide credentials in CI | SECRETS.md, INFRASTRUCTURE-SECURITY.md, AGENTIC-DEV-SECURITY.md | Account wide credentials in CI | SEC-SUPPLY-035 |
 <!-- hullproof:coverage-map:end -->
 
 ---
@@ -113,6 +115,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 - Never echo a secret or pass it as a command line argument that is printed; rely on the platform's log masking and do not defeat it by transforming the value.
 - Keep production values in a protected deployment environment rather than repository wide secrets. A repository level secret is available to any workflow that can run on any branch or pull request.
 - Leaked secret handling and repository wide secret scanning are in SECRETS.md.
+- Owned by SEC-SUPPLY-035 for this root cause (Account wide credentials in CI); report one finding. Where a pipeline secret reaches more than the one project it serves, rate it there.
 
 **Verify.**
 1. Run Gitleaks over workflow files, build configuration and the full repository history.
@@ -127,6 +130,49 @@ Each requirement in this document is listed in exactly one row. A row with no re
 **References.** OWASP ASVS 5.0.0 v5.0.0-13.3.1 (Level 2, promoted to LAUNCH) [SRC-010]; OWASP Secrets Management Cheat Sheet, section 3.2 Where should a secret be? [SRC-043]; OWASP CI/CD Security Cheat Sheet, Secrets Management [SRC-049].
 
 **AI Agent Instruction.** Never write a secret value into a workflow, configuration file or script. Reference the secret store by name and tell the user which secret to create. If you find a secret in a pipeline file or log, stop, report it as a BLOCKER, and follow the leaked secret procedure in SECRETS.md.
+
+---
+
+### SEC-SUPPLY-035: No account wide or organisation wide credential in CI or an agent workspace
+
+| Field | Value |
+|-------|-------|
+| Severity | CRITICAL |
+| Stage | LAUNCH |
+| Applies To | SaaS, Web, API, Backend, Mobile, Serverless, Agentic workflow |
+| Automation | MANUAL |
+| Verification method | CONFIG REVIEW, DOCUMENT REVIEW |
+
+**Requirement.** A credential stored in a CI secret store, a deploy tool or an agent workspace MUST reach only the one project, repository and environment it serves. It MUST NOT be an account wide, organisation wide or team wide credential, such as a personal access token that carries its owner's full access to every organisation and project (now and in future), or a platform token that can act on projects other than the one being deployed. Where the CI platform and the target provider support OIDC federation, the pipeline MUST use short lived tokens issued by it instead of a stored key. Where they do not, the credential MUST be a scoped token limited to one project with the fewest permissions the job needs, held in a secret scoped to one environment and one repository (SEC-SUPPLY-016). An organisation level CI secret that a production job uses MUST be limited by policy to the named repositories that need it. Staging and production MUST use different credentials (SEC-SECRETS-009). The scope each credential has MUST be recorded when it is created.
+
+**Why.** Anyone who can write to a repository can read every secret stored in it, and a job that runs attacker influenced code can print any secret in its scope. If that secret is an account wide token, one leaked pipeline gives the attacker every project the account can reach, including projects created later. Moving the secret into the secret store (SEC-SUPPLY-016) does not reduce this reach. Only a narrow scope does.
+
+**Implementation.**
+- Prefer OIDC. GitHub Actions can exchange its identity token for a short lived cloud credential, so no long lived cloud secret is stored in GitHub [SRC-154]. Add trust conditions on repository, branch or environment [SRC-154].
+- Supabase personal access tokens come in two kinds. A classic token carries the account's full access on every organisation and project, now and in future. A scoped token carries only the organisations, projects and permissions chosen, and Supabase recommends scoped tokens for AI agents, automation scripts and CI [SRC-151].
+- Keep the Supabase database password out of CI where you can. It is not limited by token scope (SEC-CLOUD-015).
+- Create a machine identity or a service account for the pipeline. Do not use a person's token, because it carries that person's access and ends when the person leaves (SEC-CLOUD-035).
+- GitHub organisation level secrets can be limited by policy to all repositories, to private repositories, or to a named list [SRC-373]. Use the named list for production credentials.
+- GitHub environment secrets are available only to jobs that reference the environment, and the environment's protection rules apply before the job runs or reads them [SRC-373].
+- Do not give a coding agent or an MCP server a credential wider than the task. SEC-AGENT-011 owns production secrets in a coding agent's context. Record any credential that sits in an agent workspace in the same list.
+- Where a provider has no scoped token and no OIDC, use a dedicated account that belongs to that one project only, with the lowest role the job needs, and record the gap in the decisions log with a rotation date. A shared account that also reaches other projects does not meet the Requirement. Check your team's token settings for whether a token can be limited to one project before you rely on it.
+- Expiry, trust policy detail and the credential inventory are owned by SEC-CLOUD-015. This requirement owns the LAUNCH rule on reach. Report one finding for a wide credential, under this ID.
+
+**Verify.**
+1. List every credential the pipeline, the deploy tools and the agent workspace hold: repository secrets, environment secrets, organisation secrets (`gh secret list`, `gh secret list --env <name>` and `gh secret list --org <org>` list names only) and platform variables. For each record the provider, the kind of credential, and the projects it can reach.
+2. In each provider's token settings, confirm the token is a scoped one limited to one project, not a classic or full access token. A Supabase token marked Legacy is a classic token [SRC-151].
+3. Test the reach. With a production deploy token, call the provider's API for a second project in the same account (or a staging project). Expect a denial. Repeat with the staging token against production.
+4. For each organisation level secret used by a production job, read the repository access policy. It must be a named list that holds only the repositories that need it.
+5. Where the provider supports OIDC, read the workflow. It must request an identity token (`id-token: write`) and hold no stored cloud key for that provider. Read the cloud trust policy and confirm at least one condition on repository, branch or environment.
+6. Search the workflow files and settings for tokens that belong to a person (a personal access token under an employee's name) and confirm none is used for deploys.
+
+**Evidence.** The credential list with provider, kind, scope and reach, the cross project denial output, the organisation secret policy, and the trust policy or token settings.
+
+**Exceptions.** None for a credential that reaches more than one project. This is a credentials class requirement, so a finding cannot be accepted. A provider that offers neither OIDC nor a token limited to one project meets the Requirement through a dedicated account that belongs to that one project only, recorded in the decisions log with its role and a rotation date.
+
+**References.** GitHub OpenID Connect, Benefits of using OIDC and trust conditions [SRC-154]; GitHub Using secrets in GitHub Actions and Managing environments for deployment [SRC-373]; GitHub Secure use reference, Principle of least privilege [SRC-220]; Supabase Personal Access Tokens, Classic tokens and Scoped tokens [SRC-151]; OWASP CI/CD Security Cheat Sheet, Least Privilege [SRC-049]; OWASP Secrets Management Cheat Sheet [SRC-043].
+
+**AI Agent Instruction.** Never create, request or store an account wide, organisation wide or classic token for a pipeline or for yourself. Ask for a token limited to the one project and the one environment, or set up OIDC. If the token you were given reaches more than the project you are working on, stop and report it as a CRITICAL finding before you use it.
 
 ---
 

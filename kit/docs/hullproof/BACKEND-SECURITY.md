@@ -92,6 +92,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Treat raw SQL helpers (for example `sql.raw` in drizzle, `$queryRawUnsafe` style functions, `execute` with a built string) as forbidden for user influenced data.
 - Do not rely on manual escaping as the main defense.
 - Default stack: drizzle `sql` tagged templates bind values; `sql.raw` does not. supabase-js filter methods bind values; building PostgREST filter strings from input does not.
+- PostgREST filter grammar [SRC-364]: `or`, `and` and `not` take parenthesised, comma separated conditions such as `or=(age.lt.18,age.gt.21)`, and `not` prefixes any operator. A value that carries a comma, dot or parenthesis can therefore add or change a condition. The documentation says a value that has a reserved character must be wrapped in double quotes. It does not list the reserved characters on that page and does not say how a double quote or backslash inside a quoted value is escaped, so quoting a value by hand is unverified. Use the typed builder, or reject at least those characters.
 
 **Verify.**
 1. Run Semgrep rules for template literals or string concatenation passed to `sql.raw`, `execute`, `query`, `rpc` and similar sinks, and to the filter sinks `.or(`, `.and(`, `.not(`, `.filter(`, `.textSearch(`, `.select(` and `.order(` and to GraphQL query strings. A rule pack that has no pattern for a sink family is not evidence for it; search the source for the sink names as well.
@@ -102,7 +103,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Exceptions.** None. Reach clarification: a filter or query string built from input that only an authenticated staff account can reach is still a finding of this requirement, but the finding is rated HIGH when the code evidence shows that reach limit. Input reachable by any visitor or customer keeps the BLOCKER rating. A role counts as staff only when it is assigned through a server path and appears in the named access list; a role a customer can obtain is not staff. Where signup is open, an authenticated reach limit is not a reach limit.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-1.2.4 [SRC-010]; OWASP SQL Injection Prevention Cheat Sheet, Defense Option 1 and Option 4 [SRC-038]; OWASP Top 10 2025 A05:2025 [SRC-020]; CISA Secure by Design, Parameterized queries [SRC-063].
+**References.** OWASP ASVS 5.0.0 v5.0.0-1.2.4 [SRC-010]; OWASP SQL Injection Prevention Cheat Sheet, Defense Option 1 and Option 4 [SRC-038]; OWASP Top 10 2025 A05:2025 [SRC-020]; CISA Secure by Design, Parameterized queries [SRC-063]; PostgREST Tables and Views, Logical operators [SRC-364].
 
 **AI Agent Instruction.** Never build query text from user input, request data or model output. Use bound parameters or the query builder. If a query seems to need string building, stop and use SEC-API-018, or report why it cannot be parameterized. SQL that a model writes and runs follows SEC-AI-062 in AI-SECURITY.md.
 
@@ -372,26 +373,26 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 | Automation | PARTIAL |
 | Verification method | STATIC ANALYSIS, CODE REVIEW |
 
-**Requirement.** Where the server calls only known services, outbound requests MUST go only to hosts in a server side allowlist, and users MUST NOT be able to supply a full URL, host or port for those calls. A host written as a constant in code or read from server configuration meets this requirement; only a scheme, host or port that originates from a request, stored user content or model output fails it. A request derived value placed in the path or query of a call to a fixed host MUST match a strict identifier pattern (for example 1 to 64 letters, digits, underscore or dash) or pass through URL component encoding, and MUST NOT be able to add a slash, a parent directory segment, a question mark, a fragment, an at sign, a backslash or an encoded slash. A route MUST NOT forward a client supplied path or query to a provider using the server credential. The URL MUST be built with the URL constructor, and the code MUST assert the resulting origin and expected path prefix before sending.
+**Requirement.** Where the server calls only known services, outbound requests MUST go only to hosts in a server side allowlist, and users MUST NOT be able to supply a full URL, host or port for those calls. A host written as a constant in code or read from server configuration meets this requirement; only a scheme, host or port that originates from a request, stored user content or model output fails it. A request derived value placed in the path or query of a call to a fixed host MUST match a strict identifier pattern (for example 1 to 64 letters, digits, underscore or dash) or pass through URL component encoding plus a check that the value is not `.` or `..`, and MUST NOT be able to add a slash, a parent directory segment, a question mark, a fragment, an at sign, a backslash or an encoded slash. A route MUST NOT forward a client supplied path or query to a provider using the server credential. The URL MUST be built with the URL constructor, and the code MUST assert the resulting origin and expected path prefix before sending.
 
 **Why.** If any part of a request target comes from input, an attacker points the server at internal services or cloud metadata endpoints and reads what they return.
 
 **Implementation.**
-- Build outbound URLs from configured base URLs plus validated path segments or IDs. Do not build them by plain concatenation: an at sign in a concatenated value changes the host, and a `startsWith` check on the base string does not see it.
+- Build outbound URLs from configured base URLs plus validated path segments or IDs. Do not build them by plain concatenation. The URL parser reads everything before the last at sign in the authority as credentials, so a value that starts with `@` and is appended to a base that has no path moves the request to another host, and a `startsWith` check on the base string does not see it [SRC-369]. The parser also resolves parent directory segments in a concatenated value, including the encoded form `%2e%2e`. Component encoding such as `encodeURIComponent` leaves `.` and `..` unchanged, and a path segment of `..` resolves to the parent, so check for those two values as well. Checked on Node.js v22.23.2.
 - Keep the allowlist in configuration and check it in the shared HTTP client.
 - Hullproof has no researched source on egress filtering for Vercel Functions, Supabase Edge Functions or Render, so the check lives in code.
 
 **Verify.**
 1. Run Semgrep for `fetch`, `axios` and `got` calls whose URL includes request data.
 2. Confirm each outbound call goes through the shared client with the host allowlist.
-3. Try to change the host through every user controlled field; expect rejection. In each id or path parameter send a slash, a parent directory segment, a question mark, a fragment, an at sign, a backslash and an encoded slash with a mocked client, and assert the outbound URL equals the expected URL or the request is rejected.
+3. Try to change the host through every user controlled field; expect rejection. In each id or path parameter send a slash, a parent directory segment (`../`, `..` alone and `%2e%2e`), a question mark, a fragment, an at sign, a backslash and an encoded slash with a mocked client, and assert the outbound URL equals the expected URL or the request is rejected.
 4. Trace each outbound provider call whose resource identifier (customer id, subscription id, account id) comes from the database, and confirm none is read from a column a client can write (SEC-AUTHZ-004 in AUTH.md). A client writable provider id used in a keyed server call lets a user act on another customer's provider resource.
 
 **Evidence.** Semgrep report; allowlist configuration.
 
 **Exceptions.** Features that must fetch user supplied URLs follow SEC-API-035 instead.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-1.3.6 (L2, promoted to LAUNCH in the Hullproof ASVS stage mapping) [SRC-010]; OWASP SSRF Prevention Cheat Sheet, Case 1 [SRC-045]; OWASP API Security Top 10 2023 API7:2023 [SRC-021]; Escape, State of Security of Vibe Coded Apps (4 confirmed SSRF cases) [SRC-007].
+**References.** OWASP ASVS 5.0.0 v5.0.0-1.3.6 (L2, promoted to LAUNCH in the Hullproof ASVS stage mapping) [SRC-010]; OWASP SSRF Prevention Cheat Sheet, Case 1 [SRC-045]; OWASP API Security Top 10 2023 API7:2023 [SRC-021]; Escape, State of Security of Vibe Coded Apps (4 confirmed SSRF cases) [SRC-007]; WHATWG URL Standard, authority state and path parsing [SRC-369].
 
 **AI Agent Instruction.** Build outbound URLs from configured base URLs only. Never let a request field set the scheme, host or port of a server side call. Route every outbound call through the shared client.
 
@@ -425,11 +426,11 @@ This block list is Hullproof policy built from the IANA special purpose address 
 
 **Implementation.**
 - Put the guard in one shared client used by every URL taking feature, and keep the block list in the Requirement as the only copy.
-- Parse the URL with the standard URL parser, reject credentials in the URL, and pin the connection to the checked IP to stop DNS rebinding.
+- Parse the URL with the standard URL parser and read the host from the parsed result, never from the string: the parser treats everything before the last at sign in the authority as credentials, so `http://allowed.example@127.0.0.1/` has the host 127.0.0.1 [SRC-369]. Reject credentials in the URL, and pin the connection to the checked IP to stop DNS rebinding.
 - Model output and retrieved content count as user supplied for this requirement.
 
 **Verify.**
-1. Unit test the guard with `http://169.254.169.254/`, `http://localhost`, `http://127.1`, `http://2130706433`, `http://[::1]`, `http://[::ffff:127.0.0.1]`, `file:///etc/passwd` and `gopher://` URLs; all must be rejected.
+1. Unit test the guard with `http://169.254.169.254/`, `http://localhost`, `http://127.1`, `http://2130706433`, `http://[::1]`, `http://[::ffff:127.0.0.1]`, `http://allowed.example@127.0.0.1/`, `file:///etc/passwd` and `gopher://` URLs; all must be rejected.
 2. Test a hostname that resolves to a private address; it must be rejected.
 3. Submit the same payloads to every URL taking feature in a deployed non production environment. For a server side renderer, render a document whose images and stylesheets name loopback and a local file, and confirm neither is fetched.
 4. Insert a private URL directly into the table or queue that a delivery worker reads, run the worker, and confirm no connection is made.
@@ -441,7 +442,7 @@ This block list is Hullproof policy built from the IANA special purpose address 
 
 **Exceptions.** None at LAUNCH. A product in which no server code requests a URL, host, path or file chosen by a user, a stored record, an imported file or a model is out of scope; the answer to GATE-URLFETCH records the search that shows it.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-1.3.6 (promoted to LAUNCH in the Hullproof ASVS stage mapping) [SRC-010]; OWASP SSRF Prevention Cheat Sheet, Case 2 [SRC-045]; Standard Webhooks specification 1.0.0, Server side request forgery (SSRF) [SRC-227]; OWASP API Security Top 10 2023 API7:2023 [SRC-021]; OWASP Top 10 2025 A01:2025 [SRC-020]; Escape, State of Security of Vibe Coded Apps [SRC-007].
+**References.** OWASP ASVS 5.0.0 v5.0.0-1.3.6 (promoted to LAUNCH in the Hullproof ASVS stage mapping) [SRC-010]; OWASP SSRF Prevention Cheat Sheet, Case 2 [SRC-045]; Standard Webhooks specification 1.0.0, Server side request forgery (SSRF) [SRC-227]; OWASP API Security Top 10 2023 API7:2023 [SRC-021]; OWASP Top 10 2025 A01:2025 [SRC-020]; Escape, State of Security of Vibe Coded Apps [SRC-007]; WHATWG URL Standard, authority state [SRC-369].
 
 **AI Agent Instruction.** When any feature fetches a URL that came from a user, a stored record, retrieved content or model output, call the shared URL guard first. Never write a new fetch path that skips it. If the guard blocks a legitimate URL, report it; do not loosen the blocked ranges.
 

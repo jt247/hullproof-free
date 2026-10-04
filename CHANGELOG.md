@@ -6,6 +6,17 @@ All notable changes to Hullproof are recorded here. Versions follow semantic ver
 
 Nothing yet.
 
+## [0.1.1] 2026-10-04
+
+The free edition holds 109 requirements (every BLOCKER and every CRITICAL), 155 cited sources and a 109 item pre launch checklist.
+
+### Added
+
+- Three CRITICAL requirements: realtime channel authorization (SEC-AUTHZ-036), isolated frames for generated or supplied HTML (SEC-WEB-044) and no account wide credential in CI or an agent workspace (SEC-SUPPLY-035).
+- An authority tag on every checklist item (repo, dashboard or runtime) that says what kind of evidence settles it.
+- Kenya and Ghana market gates in the stage record, and a Policy values table in the standard that states the basis of every numeric value.
+- A coverage ledger and provenance fields in the audit report template, route and handler enumeration recipes, an SSRF guard test harness, connector evidence recipes and an injection test corpus in the tools.
+
 ## [0.1.0] 2026-10-03
 
 First release of the free edition. It holds 106 requirements: every BLOCKER (43) and every CRITICAL (63) requirement. All 63 CRITICAL requirements apply at the LAUNCH stage. The release checklist has 106 items and REFERENCES.md lists 133 cited sources.

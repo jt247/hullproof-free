@@ -162,12 +162,13 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Requirement.** Default privileges in every exposed schema MUST NOT grant table, sequence or function privileges to `anon` or `authenticated` automatically, so each new object is reachable only after an explicit grant in a migration.
 
-**Why.** On existing Supabase projects every new table and function in `public` is granted to `anon` and `authenticated` the moment it is created. A table an AI agent creates without a policy is exposed before anyone reviews it.
+**Why.** On existing Supabase projects a new table in `public` receives `select`, `insert`, `update` and `delete` for `anon`, `authenticated` and `service_role` the moment it is created, and a new function receives `execute` [SRC-072]. Plain Postgres differs: a new table is usable only by its owner until privileges are granted [SRC-362], so the exposure comes from the platform's default privilege entries. A table an AI agent creates without a policy is exposed before anyone reviews it.
 
 **Implementation.**
 - Add a migration that runs `alter default privileges in schema public revoke all on tables from anon, authenticated;` and the same for sequences and functions, for the roles that create objects (for example `postgres`).
 - Grant access explicitly per table in the migration that creates it (SEC-DB-004).
-- Default stack: Supabase has said it is moving to opt in exposure for new projects. Its rollout status is unconfirmed, so check the project rather than assuming.
+- Postgres also grants `execute` on new functions to `public` by default [SRC-362], so revoke that too: `alter default privileges for role postgres in schema public revoke execute on functions from public;` [SRC-072].
+- Default stack: Supabase documents that it is changing the platform default so that exposure becomes opt in, and its Row Level Security guide says not every project grants these automatically [SRC-072, SRC-070]. Neither page gives dates or says which projects are on the new default, so check `pg_default_acl` on the project rather than assuming.
 
 **Verify.**
 1. Query `pg_default_acl` for each exposed schema and confirm no entry grants privileges to `anon` or `authenticated`.
@@ -178,7 +179,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 
 **Exceptions.** Projects where the Data API is disabled (SEC-DB-005) may skip this. Record that the Data API is off.
 
-**References.** OWASP ASVS 5.0.0 v5.0.0-8.2.2 [SRC-010]; NIST SSDF 1.1 PW.9.1 [SRC-050]; NIST SP 800-53 Rev. 5 AC-6 (ADVISORY) [SRC-062]; Supabase Securing your API [SRC-072]; Supabase Row Level Security [SRC-070].
+**References.** OWASP ASVS 5.0.0 v5.0.0-8.2.2 [SRC-010]; NIST SSDF 1.1 PW.9.1 [SRC-050]; NIST SP 800-53 Rev. 5 AC-6 (ADVISORY) [SRC-062]; Supabase Securing your API [SRC-072]; Supabase Row Level Security [SRC-070]; PostgreSQL 18 Privileges [SRC-362].
 
 **AI Agent Instruction.** Before adding tables to a Supabase project, check `pg_default_acl`. If default privileges still grant to `anon` or `authenticated`, report it and propose the revoke migration. Never rely on default grants for access a feature needs; grant it explicitly.
 
