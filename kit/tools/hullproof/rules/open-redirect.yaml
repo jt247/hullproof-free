@@ -1,0 +1,35 @@
+rules:
+  - id: hullproof-open-redirect
+    mode: taint
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      A redirect target comes from the request. Check it against an allowlist of paths or hosts
+      before redirecting.
+    pattern-sources:
+      - pattern: $REQ.query.$P
+      - pattern: $REQ.body.$P
+      - pattern: $REQ.nextUrl.searchParams.get(...)
+      - pattern: $U.searchParams.get(...)
+      - pattern: searchParams.get(...)
+    pattern-sanitizers:
+      - patterns:
+          - pattern: $F(...)
+          - metavariable-regex:
+              metavariable: $F
+              regex: (?i).*(safe|allow|valid|sanitize|isLocal|internalPath).*
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: $RES.redirect(...)
+              - pattern: redirect(...)
+              - pattern: permanentRedirect(...)
+              - pattern: NextResponse.redirect(...)
+              - pattern: Response.redirect(...)
+              - pattern: window.location = ...
+              - pattern: window.location.href = ...
+              - pattern: location.href = ...
+    metadata:
+      sec_ids: [SEC-AUTH-039, SEC-AUTH-030]
+      severity_hint: MEDIUM
+      confidence: MEDIUM

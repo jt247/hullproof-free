@@ -1,0 +1,100 @@
+rules:
+  - id: hullproof-handlebars-unescaped
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      Unescaped output in a Handlebars or Mustache template (triple braces or an ampersand tag).
+      Every value printed this way is inserted as raw HTML. Use double braces unless the value is
+      sanitized markup, and list the exception in the raw HTML inventory.
+    paths:
+      include: ["*.hbs", "*.handlebars", "*.mustache"]
+    pattern-either:
+      - pattern-regex: '\{\{\{\s*[^}\s][^}]*\}\}\}'
+      - pattern-regex: '\{\{\s*&\s*[^}\s][^}]*\}\}'
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-031]
+      severity_hint: HIGH
+      confidence: MEDIUM
+  - id: hullproof-jinja-unescaped
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      Autoescape is bypassed in a Jinja, Nunjucks or Twig template (the safe filter or autoescape
+      turned off). The value is inserted as raw HTML. Escape it, or sanitize it first and list the
+      exception in the raw HTML inventory.
+    paths:
+      include: ["*.j2", "*.jinja", "*.jinja2", "*.njk", "*.twig", "*.html"]
+    pattern-either:
+      - pattern-regex: '\{\{[^}]*\|\s*safe\b[^}]*\}\}'
+      - pattern-regex: '\{\{[^}]*\|\s*raw\b[^}]*\}\}'
+      - pattern-regex: '\{%-?\s*autoescape\s+(?:false|off)\b'
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-031]
+      severity_hint: HIGH
+      confidence: MEDIUM
+  - id: hullproof-ejs-pug-unescaped
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      Unescaped output in an EJS or Pug template. The value is inserted as raw HTML. Use the escaped
+      form unless the value is sanitized markup.
+    paths:
+      include: ["*.ejs", "*.pug", "*.jade"]
+    pattern-either:
+      - pattern-regex: '<%-\s*[^%\s]'
+      - pattern-regex: '(?m)^\s*[\w.#-]*(?:\([^)\n]*\))?\s*!=\s*\S'
+      - pattern-regex: '!\{[^}]+\}'
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-031]
+      severity_hint: HIGH
+      confidence: MEDIUM
+  - id: hullproof-template-engine-escape-off
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: >-
+      Output escaping is turned off for a template engine, or a value is marked as safe HTML. Anything
+      printed through it is inserted unescaped.
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: new Handlebars.SafeString($V)
+                  - pattern: new $H.SafeString($V)
+              - metavariable-pattern:
+                  metavariable: $V
+                  patterns:
+                    - pattern: $Z
+                    - pattern-not: '"..."'
+                    - pattern-not: "`...`"
+          - pattern: '$E.compile($T, {..., noEscape: true, ...})'
+          - pattern: '$E.configure($P, {..., autoescape: false, ...})'
+          - pattern: '$E.configure({..., autoescape: false, ...})'
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-031]
+      severity_hint: HIGH
+      confidence: LOW
+  - id: hullproof-python-safe-markup
+    languages: [python]
+    severity: WARNING
+    message: >-
+      A value is marked as safe HTML, or a template is compiled from a string. Marking text safe skips
+      escaping, and a template built from user text runs expressions on the server. Escape the value, or
+      render a fixed template file with the value as data.
+    patterns:
+      - pattern-either:
+          - pattern: markupsafe.Markup($V)
+          - pattern: Markup($V)
+          - pattern: mark_safe($V)
+          - pattern: django.utils.safestring.mark_safe($V)
+          - pattern: render_template_string($V, ...)
+          - pattern: jinja2.Template($V, ...)
+          - pattern: Template($V).render(...)
+      - metavariable-pattern:
+          metavariable: $V
+          patterns:
+            - pattern: $Z
+            - pattern-not: '"..."'
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-031, SEC-API-021]
+      severity_hint: HIGH
+      confidence: LOW

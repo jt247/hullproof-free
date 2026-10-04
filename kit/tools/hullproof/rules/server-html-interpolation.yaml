@@ -1,0 +1,21 @@
+rules:
+  - id: hullproof-server-html-interpolation
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      A template literal builds HTML with an interpolated value that is not passed through an
+      escape function. In email or response code this is HTML injection. Encode for HTML context.
+    paths:
+      include: ["*.ts", "*.tsx", "*.js", "*.jsx", "*.mjs"]
+    # To use your own escape function, replace the names in the final group with its name. Keep the list
+    # short and name only the project's registered escape function. A helper that only trims or
+    # lowercases must not be on it.
+    pattern-regex: '(?s)(?<![\w$])`(?=[^`]*<\/?(?:a|abbr|article|aside|audio|b|base|blockquote|body|br|button|caption|center|code|dd|div|dl|dt|em|embed|figure|font|footer|form|h[1-6]|head|header|hr|html|i|iframe|img|input|label|li|link|main|meta|nav|object|ol|option|p|pre|script|section|select|small|source|span|strong|style|sub|sup|svg|table|tbody|td|textarea|tfoot|th|thead|title|tr|u|ul|video)[\s>/])[^`]*?\$\{(?!\s*(?:escapeHtml|escapeHTML|htmlEscape|esc|he\.encode|he\.escape|encodeURIComponent|DOMPurify\.sanitize|sanitizeHtml)\()'
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-001, SEC-WEB-031]
+      severity_hint: HIGH
+      confidence: LOW
+      note: >-
+        Regex based. Run on server and email code. Client JSX is not a template literal and is not
+        matched. Tagged templates such as html`...` are skipped because the tag function escapes.
+        A helper with a sanitizer sounding name is not exempt: only the names listed in the rule are.

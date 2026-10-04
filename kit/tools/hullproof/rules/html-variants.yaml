@@ -1,0 +1,81 @@
+rules:
+  - id: hullproof-html-concat
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: >-
+      A string with HTML markup is joined to a value by concatenation, and the value is not passed
+      through an escape function. This is the same HTML injection as an interpolated template.
+    patterns:
+      - pattern-either:
+          - pattern: $L + $Y
+          - pattern: $Y + $L
+      - metavariable-pattern:
+          metavariable: $L
+          pattern: '"..."'
+      - metavariable-regex:
+          metavariable: $L
+          regex: (?is).*?<\/?(?:a|b|br|button|code|div|em|form|h[1-6]|hr|i|iframe|img|input|label|li|ol|p|pre|script|span|strong|style|svg|table|tbody|td|textarea|th|thead|title|tr|u|ul)[\s>/"']
+      - metavariable-regex:
+          metavariable: $Y
+          regex: (?s)^(?!["'`])(?!\s*(?:escapeHtml|escapeHTML|htmlEscape|esc|he\.encode|he\.escape|encodeURIComponent|DOMPurify\.sanitize|sanitizeHtml)\s*\()
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-001]
+      severity_hint: HIGH
+      confidence: MEDIUM
+      note: >-
+        Replace the escape names with the project's single registered escape function. A helper with a
+        sanitizer sounding name that only trims is not an escape function.
+  - id: hullproof-html-response-body
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: >-
+      A response is sent as HTML with a body that is not a constant. Every dynamic value in that body
+      must pass through an escape function for HTML context. Check the template that builds it.
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: 'new Response($B, {..., headers: {..., $K: $CT, ...}, ...})'
+                  - pattern: 'new NextResponse($B, {..., headers: {..., $K: $CT, ...}, ...})'
+                  - pattern: 'new Response($B, {..., headers: new Headers({..., $K: $CT, ...}), ...})'
+                  - pattern: 'new NextResponse($B, {..., headers: new Headers({..., $K: $CT, ...}), ...})'
+              - metavariable-regex:
+                  metavariable: $K
+                  regex: (?i)^["']?content-type["']?$
+              - metavariable-regex:
+                  metavariable: $CT
+                  regex: (?is).*text/html.*
+          - pattern: $R.type("html").send($B)
+          - pattern: $R.type("text/html").send($B)
+          - pattern: $R.html($B, ...)
+          - patterns:
+              - pattern-either:
+                  - pattern: |
+                      $R.setHeader($K, $CT);
+                      ...
+                      $R.send($B);
+                  - pattern: |
+                      $R.setHeader($K, $CT);
+                      ...
+                      $R.end($B);
+                  - pattern: |
+                      $R.set($K, $CT);
+                      ...
+                      $R.send($B);
+              - metavariable-regex:
+                  metavariable: $K
+                  regex: (?i)^["']?content-type["']?$
+              - metavariable-regex:
+                  metavariable: $CT
+                  regex: (?is).*text/html.*
+      - metavariable-pattern:
+          metavariable: $B
+          patterns:
+            - pattern: $Z
+            - pattern-not: '"..."'
+            - pattern-not: "`...`"
+    metadata:
+      sec_ids: [SEC-API-147, SEC-WEB-001]
+      severity_hint: HIGH
+      confidence: LOW
+      note: Lead only. A body returned by a trusted renderer or read from a static file is a false positive.

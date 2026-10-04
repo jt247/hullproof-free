@@ -1,0 +1,29 @@
+# Changelog
+
+All notable changes to Hullproof are recorded here. Versions follow semantic versioning: a major version changes or removes requirements, a minor version adds requirements, and a patch fixes wording.
+
+## [Unreleased]
+
+Nothing yet.
+
+## [0.1.0] 2026-10-03
+
+First release of the free edition. It holds 106 requirements: every BLOCKER (43) and every CRITICAL (63) requirement. All 63 CRITICAL requirements apply at the LAUNCH stage. The release checklist has 106 items and REFERENCES.md lists 133 cited sources.
+
+### Added
+
+- Security standard: a master standard, `docs/hullproof/STANDARD.md`, with severity rules, stages, risk acceptance and the Production Security Gate, plus domain standards for authentication and authorization, APIs, backend services, frontend, databases, secrets, data protection, privacy, AI features, agentic development, dependencies and CI, infrastructure, observability, incident response, governance and mobile apps.
+- Requirements with a stable ID, a severity, a stage, verification steps, an evidence line and an instruction for AI agents. Cited sources are listed in `REFERENCES.md` with their licenses.
+- The `/hullproof-prelaunch` skill and the `hullproof-pre-launch-auditor` agent, which check the release checklist in parallel, read only, and write a results file.
+- A read only shell hook that fails closed, checks flags, schemes, hosts and paths, and ships with a self test and a kit manifest.
+- Pre launch checklist results with routed NOT ASSESSED states (NEEDS DASHBOARD, NEEDS BUILD, NEEDS DYNAMIC TEST, ASK OWNER, ATTESTATION, UNKNOWN) and an owner action for each.
+- The READY (FREE SCOPE) verdict. It means the free scope of the gate was met for the 106 BLOCKER and CRITICAL requirements (G-1, G-2, G-3, G-4, G-5, G-7 and G-8). G-6 is outside the free scope, and the label says nothing about HIGH, MEDIUM or LOW findings.
+- Twelve applicability gates with evidence of absence, a solo builder path and an ordered set of severity rules.
+- Evidence freshness limits and limits on accepting a CRITICAL finding, labelled Hullproof policy.
+- Findings under a named BLOCKER requirement are never rated below CRITICAL. A rating of CRITICAL instead of BLOCKER stands only with code evidence and a reviewer who is independent of the author.
+- The auditor derives the stage from repository evidence and never lowers a declared stage. A market can be excluded only with a technical block or a zero count by country.
+- Scanner rules: Semgrep rules with fixtures, a SQL policy helper and a Gitleaks configuration.
+- Templates for the audit report, stage record, accepted risk, threat model, breach runbook, provider exports and staging test window.
+- Scoped agent rules for authentication, API, database, AI, client code, infrastructure, payments and file storage.
+- Licensing, notices and security: LICENSE (Apache License 2.0 for code), LICENSE-DOCS.md (CC BY-SA 4.0 for documentation), LICENSING.md, NOTICE.md with source credits and a not affiliated statement, SECURITY.md (GitHub private vulnerability reporting), and a License column in REFERENCES.md.
+- All kit files sit under `docs/hullproof/`, `.claude/rules/hullproof/` and `hullproof-` names, so installing never overwrites your own files.

@@ -1,0 +1,27 @@
+rules:
+  - id: hullproof-server-action-no-auth
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      Exported function in a file with a top level "use server" directive has no auth or
+      authorization call. Every export is a public endpoint. Call the shared auth helper first.
+    patterns:
+      - pattern-inside: |
+          "use server";
+          ...
+      - pattern-either:
+          - pattern: export async function $F(...) { ... }
+          - pattern: export const $F = async (...) => { ... }
+      - pattern-not:
+          patterns:
+            - pattern-either:
+                - pattern: export async function $F(...) { ... $CALL(...); ... }
+                - pattern: export const $F = async (...) => { ... $CALL(...); ... }
+            - metavariable-regex:
+                metavariable: $CALL
+                regex: (?i)(auth|getUser|getSession|requireUser|currentUser|session|assertAdmin|requireAdmin|authorize|requireRole|checkPermission)
+    metadata:
+      sec_ids: [SEC-AUTHZ-002, SEC-API-001]
+      severity_hint: HIGH
+      confidence: MEDIUM
+      note: The helper name regex is a convention guess. Adjust it to the project's auth helper.

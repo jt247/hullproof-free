@@ -1,0 +1,44 @@
+rules:
+  - id: hullproof-dangerous-inner-html
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      Raw HTML sink fed by a non literal value. Sanitize with a vetted library, or render as text,
+      and record the sink in the raw HTML inventory.
+    patterns:
+      - pattern-either:
+          - pattern: '<$EL dangerouslySetInnerHTML={{__html: $V}} />'
+          - pattern: '<$EL ... dangerouslySetInnerHTML={{__html: $V}} ... />'
+          - pattern: '<$EL ... srcDoc={$V} ... />'
+          - pattern: '<$EL ... srcdoc={$V} ... />'
+          - pattern: $E.innerHTML = $V
+          - pattern: $E.innerHTML += $V
+          - pattern: $E.outerHTML = $V
+          - pattern: $E.srcdoc = $V
+          - pattern: $E.srcDoc = $V
+          - pattern: $E.insertAdjacentHTML($P, $V)
+          - pattern: $E.setHTMLUnsafe($V)
+          - pattern: $E.createContextualFragment($V)
+          - pattern: document.write($V)
+          - pattern: document.writeln($V)
+      - pattern-not: '<$EL ... dangerouslySetInnerHTML={{__html: "..."}} ... />'
+      - pattern-not: '<$EL ... srcDoc={"..."} ... />'
+      - pattern-not: '<$EL ... srcdoc={"..."} ... />'
+      - pattern-not: '<$EL ... srcDoc={`...`} ... />'
+      - pattern-not: $E.innerHTML = "..."
+      - pattern-not: $E.innerHTML += "..."
+      - pattern-not: '<$EL ... dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(...)}} ... />'
+      - pattern-not: '<$EL ... srcDoc={DOMPurify.sanitize(...)} ... />'
+      - pattern-not: $E.innerHTML = DOMPurify.sanitize(...)
+      - pattern-not: $E.innerHTML += DOMPurify.sanitize(...)
+      - pattern-not: $E.outerHTML = DOMPurify.sanitize(...)
+      - pattern-not: $E.insertAdjacentHTML($P, DOMPurify.sanitize(...))
+      - pattern-not: $E.setHTMLUnsafe(DOMPurify.sanitize(...))
+    metadata:
+      sec_ids: [SEC-WEB-031, SEC-WEB-001]
+      severity_hint: HIGH
+      confidence: MEDIUM
+      note: >-
+        Covers React raw HTML props, srcDoc, the DOM string sinks and the document write calls. A data script
+        block that holds JSON from the project's registered encoder is constant markup under SEC-WEB-031 and
+        still has to be listed in the inventory.

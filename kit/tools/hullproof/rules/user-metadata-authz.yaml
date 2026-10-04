@@ -1,0 +1,18 @@
+rules:
+  - id: hullproof-user-metadata-authz
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      user_metadata is editable by the signed in user. Do not read it in an authorization decision.
+      Use app_metadata or a server owned table.
+    pattern-either:
+      - pattern: if (<... $U.user_metadata ...>) $S
+      - pattern: $U.user_metadata.$F === $V
+      - pattern: $U.user_metadata.$F == $V
+      - pattern: $U.user_metadata.$F !== $V
+      - pattern: $U.user_metadata.$F != $V
+      - pattern: '$C ? <... $U.user_metadata ...> : $E'
+    metadata:
+      sec_ids: [SEC-DB-006, SEC-AUTHZ-005]
+      severity_hint: CRITICAL
+      confidence: MEDIUM

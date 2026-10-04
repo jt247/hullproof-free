@@ -1,0 +1,25 @@
+rules:
+  - id: hullproof-module-scope-auth-client
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      A cookie bound auth client is created at module scope. It is shared across requests and can
+      leak one user's session to another. Create it inside the request handler.
+    patterns:
+      - pattern-either:
+          - pattern: const $C = createServerClient(...)
+          - pattern: let $C = createServerClient(...)
+          - pattern: const $C = createRouteHandlerClient(...)
+          - pattern: const $C = createServerComponentClient(...)
+          - pattern: const $C = createServerSupabaseClient(...)
+      - pattern-not-inside: function $F(...) { ... }
+      - pattern-not-inside: function (...) { ... }
+      - pattern-not-inside: (...) => { ... }
+      - pattern-not-inside: async (...) => { ... }
+      - pattern-not-inside: async function $F(...) { ... }
+      - pattern-not-inside: |
+          class $K { ... }
+    metadata:
+      sec_ids: [SEC-AUTH-026]
+      severity_hint: HIGH
+      confidence: HIGH
