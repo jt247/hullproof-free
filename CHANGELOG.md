@@ -1,10 +1,27 @@
 # Changelog
 
-All notable changes to Hullproof are recorded here. Versions follow semantic versioning: a major version changes or removes requirements, a minor version adds requirements, and a patch fixes wording.
+All notable changes to Hullproof are recorded here. Versions follow semantic versioning: a major version changes or removes requirements, a minor version adds requirements or a new audit capability, and a patch fixes wording.
 
 ## [Unreleased]
 
 Nothing yet.
+
+## [0.2.0] 2026-10-06
+
+The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist. No requirement was added or changed.
+
+### Added
+
+- Finding classes in `STANDARD.md`. A failed requirement can now say what evidence backs it: a traced path to harm (FINDING), a required control or record that is absent (MISSING CONTROL RECORD), or another layer that prevents the harm, shown as code (HARDENING NOTE). A class never changes the result of a requirement or the gate, and a HARDENING NOTE is never allowed under a BLOCKER requirement.
+- A Class row in each finding of the audit report template, and an optional HARDENING NOTES section.
+- An Update section in the README, with the commands to move to a newer release without keeping old files by mistake.
+
+### Changed
+
+- Gate condition G-2 says that a report that is incomplete, or that covers only part of the scope, can support NOT READY only.
+- The absence searches in `STANDARD.md` leave out the kit's own folders, which name every term and so could never return a count of zero.
+- The README describes what Hullproof Pro is and links the waitlist. It no longer carries purchase terms, which are in the Pro package. LICENSING.md has the same change.
+- The package check fails the build if any file of this edition names a Pro only skill, agent or file.
 
 ## [0.1.3] 2026-10-05
 

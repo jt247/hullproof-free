@@ -195,7 +195,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Default stack: local `.env.local` holds development Supabase, Stripe test mode, Paystack test and similar keys only; production values live in Vercel and Render environment settings; the Supabase service role key for production is never on a laptop.
 - From GROWTH, use a separate Supabase organization for production so development roles cannot read the production service role key.
 - Owned by a Pro edition requirement in SECRETS.md for this root cause (Environment credential separation); report one finding.
-- Agent settings, instruction and MCP files are places where keys end up (an approved command can leave a key in a local settings file). a Pro edition requirement owns the scan of those locations and reports counts and line numbers only; a production value found there is reported here.
+- Agent settings, instruction and MCP files are places where keys end up (an approved command can leave a key in a local settings file). A Pro edition requirement owns the scan of those locations and reports counts and line numbers only; a production value found there is reported here.
 - Solo builder separation recipe (one machine, one linked project): (1) create a staging project and keep only its keys in local `.env.local`; (2) keep production keys only in the host environment store (Vercel, Render) and the password manager; (3) link every CLI on the machine, including the Supabase CLI, to the staging project, and unlink production before an agent session if it was linked for a task; (4) run production migrations from CI after merge. Record the staging and production project identifiers in `docs/security/STAGE.md`.
 
 **Verify.**

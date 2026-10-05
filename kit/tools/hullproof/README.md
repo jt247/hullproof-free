@@ -53,9 +53,17 @@ A person runs `run_rules.sh` and `policy_set.py`. The skills and agents never ru
 
 ## The read only hook
 
-`.claude/hooks/hullproof-readonly-bash.mjs` has three profiles. `reviewer` allows read only helpers. (The code can also decide a Write call for new report files under that profile, but no shipped skill or agent attaches the hook to Write, so the agents cannot write.) `auditor` adds redacted gitleaks scans and `curl` to the confirmed live target. `skill` is the auditor profile plus exactly these commands: `date +%Y-%m-%d`, `git check-ignore -q <path>`, `git ls-files --others --exclude-standard`, `command -v gitleaks` (or `semgrep`, or `osv-scanner`), `semgrep --version`, `node --version` and `gitleaks version`. The skills attach it themselves with a `hooks` block in their frontmatter (matcher `Bash|Read|Grep|Glob`; Write is not matched because the skills write their own report). The `hullproof-threat-modeler` agent has no Bash tool, so it has no hook and its protection of secret files is an instruction only. If the skill's hook does not load, register it in the project `.claude/settings.json` for the main session, otherwise the skill reports HOOK: INACTIVE and runs without Bash. Check it with `node .claude/hooks/hullproof-readonly-bash.mjs --selftest`.
+`.claude/hooks/hullproof-readonly-bash.mjs` has three profiles.
 
-What it guards beyond secret file names: `CLAUDE.md`, `AGENTS.md`, `docs/security/notes*` and `.md` or `.txt` files in a folder named `notes` allow Grep count and files_with_matches modes and `grep -c`, `grep -l`, but not Read or content output. `.env.example`, `.env.sample` and `.env.template` (exact names) allow only `grep -o` or `grep -c` with the key name pattern `'^[A-Za-z_][A-Za-z0-9_]*=' <file>` and Grep in files_with_matches or count mode, never Read.
+1. `reviewer` allows read only helpers. The code can also decide a Write call for new report files under that profile, but no shipped agent has a Write tool.
+2. `auditor` adds redacted gitleaks scans and `curl` to the confirmed live target.
+3. `skill` is the auditor profile plus exactly these commands: `date +%Y-%m-%d`, `git check-ignore -q <path>`, `git ls-files --others --exclude-standard`, `command -v gitleaks` (or `semgrep`, or `osv-scanner`), `semgrep --version`, `node --version` and `gitleaks version`.
+
+The skills attach the hook themselves with a `hooks` block in their frontmatter. The `skill` profile also decides each Write call by path: a plain Markdown file in the reports folder (and the threat models folder), and never the hook, the agents, the skills, the standards or the settings.
+
+If the skill's hook does not load, register it in the project `.claude/settings.json` for the main session, otherwise the skill reports HOOK: INACTIVE and runs without Bash. Check it with `node .claude/hooks/hullproof-readonly-bash.mjs --selftest`.
+
+What it guards beyond secret file names: `.git/config` and `.git/config.worktree` (a remote URL can hold a token) cannot be read or searched in content mode in any profile, and a count or file list is allowed. `CLAUDE.md`, `AGENTS.md`, `docs/security/notes*` and `.md` or `.txt` files in a folder named `notes` allow Grep count and files_with_matches modes and `grep -c`, `grep -l`, but not Read or content output. `.env.example`, `.env.sample` and `.env.template` (exact names) allow only `grep -o` or `grep -c` with the key name pattern `'^[A-Za-z_][A-Za-z0-9_]*=' <file>` and Grep in files_with_matches or count mode, never Read.
 
 ## Hook limits
 
@@ -65,7 +73,8 @@ What the hook cannot do:
 2. A recursive search (`grep -r`, Grep content mode on a folder) over a folder that holds `CLAUDE.md` or a notes folder is not blocked, because blocking it would stop most source searches. Name exact folders.
 3. It cannot filter output. `ls`, `find`, `git ls-files` and Glob print file names as they are, so a file name that is itself a secret reaches the model. The skills tell the model to report such a name as `<kind>-shaped name` plus its folder. That is a text rule only.
 4. Reads outside the project are blocked, so agent settings at user level (`~/.claude/`) cannot be inspected by the skills or agents. The owner supplies them.
-5. When the hook is inactive there is no guard on Read, Grep or Glob. The skill text then tells the model never to Read `.env*`, `.mcp.json`, `settings*.json`, key files or credential files.
+5. A Write call is limited by path and by a secret scan, never by the rest of its content. A Write that an `allowed-tools` line pre approves with no path scope is only as safe as the hook, so the skills pre approve only the reports folder (and the threat models folder for the threat model skill), and an instruction planted in your code can still make a skill write misleading text into a report.
+6. When the hook is inactive there is no guard on Read, Grep or Glob. The skill text then tells the model never to Read `.env*`, `.mcp.json`, `settings*.json`, key files or credential files.
 
 `policy_set.py` assumes the Supabase platform grants on new public tables and functions (anon, authenticated, service_role). Pass `--no-platform-defaults` when your migrations revoke those first or you run plain Postgres. Output holds object names and counts only. No expressions, no row data. Names come from the SQL files and are printed as written, so a name that someone built to look like a secret would be printed too (LOW).
 
@@ -86,15 +95,15 @@ Severity hint is the severity a finding of this kind usually deserves before con
 |---------|---------|---------------|------------|---------------|
 | `hullproof-webhook-parse-before-verify` | SEC-API-101 | HIGH | MEDIUM | JSON body parsed before the signature is verified. |
 | `hullproof-webhook-empty-secret-fallback` | SEC-API-101 | CRITICAL | MEDIUM | A signing secret that falls back to an empty string or the text "undefined". An HMAC with an empty key is valid, so anyone can sign. |
-| `hullproof-secret-compare-env` | SEC-API-101, a Pro edition requirement | HIGH | MEDIUM | A request value compared to an environment secret with a plain comparison, including the "Bearer undefined" case. |
+| `hullproof-secret-compare-env` | SEC-API-101 and a Pro edition requirement | HIGH | MEDIUM | A request value compared to an environment secret with a plain comparison, including the "Bearer undefined" case. |
 | `hullproof-server-action-no-auth` | SEC-AUTHZ-002, SEC-API-001 | HIGH | MEDIUM | Server action with no auth call. |
-| `hullproof-module-scope-auth-client` | a Pro edition requirement | HIGH | HIGH | Cookie bound auth client created at module scope. |
-| `hullproof-server-html-interpolation` | Pro edition requirements, SEC-WEB-031 | HIGH | LOW | Template literal with HTML and an interpolated value that is not wrapped by a listed escape function. Name based exemptions were removed: a helper that only trims is not an escape function. |
+| `hullproof-module-scope-auth-client` | A Pro edition requirement | HIGH | HIGH | Cookie bound auth client created at module scope. |
+| `hullproof-server-html-interpolation` | SEC-WEB-031 and Pro edition requirements | HIGH | LOW | Template literal with HTML and an interpolated value that is not wrapped by a listed escape function. Name based exemptions were removed: a helper that only trims is not an escape function. |
 | `hullproof-html-concat` | Pro edition requirements | HIGH | MEDIUM | HTML string joined to a value by `+`. |
 | `hullproof-html-response-body` | Pro edition requirements | HIGH | LOW | A response sent as HTML (`text/html`, `res.type("html")`, `c.html`) with a body that is not a constant. |
-| `hullproof-dangerous-inner-html` | SEC-WEB-031, a Pro edition requirement | HIGH | MEDIUM | `dangerouslySetInnerHTML`, `srcDoc`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write` and `writeln`, `createContextualFragment`, `setHTMLUnsafe` with a non literal value. |
-| `hullproof-handlebars-unescaped`, `hullproof-jinja-unescaped`, `hullproof-ejs-pug-unescaped` | a Pro edition requirement, SEC-WEB-031 | HIGH | MEDIUM | Triple stash, `\| safe`, `autoescape off`, `<%-`, `!=` in template files. |
-| `hullproof-template-engine-escape-off`, `hullproof-python-safe-markup` | a Pro edition requirement, SEC-WEB-031, SEC-API-021 | HIGH | LOW | `SafeString`, `noEscape`, `autoescape: false`, `Markup`, `mark_safe`, `render_template_string` with non literal values. |
+| `hullproof-dangerous-inner-html` | SEC-WEB-031 and a Pro edition requirement | HIGH | MEDIUM | `dangerouslySetInnerHTML`, `srcDoc`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write` and `writeln`, `createContextualFragment`, `setHTMLUnsafe` with a non literal value. |
+| `hullproof-handlebars-unescaped`, `hullproof-jinja-unescaped`, `hullproof-ejs-pug-unescaped` | SEC-WEB-031 and a Pro edition requirement | HIGH | MEDIUM | Triple stash, `\| safe`, `autoescape off`, `<%-`, `!=` in template files. |
+| `hullproof-template-engine-escape-off`, `hullproof-python-safe-markup` | SEC-WEB-031, SEC-API-021 and a Pro edition requirement | HIGH | LOW | `SafeString`, `noEscape`, `autoescape: false`, `Markup`, `mark_safe`, `render_template_string` with non literal values. |
 | `hullproof-raw-sql-concat` | SEC-API-017 | CRITICAL | HIGH | Query call whose string is built by template, `+`, `.concat` or `.join`. Covers `query`, `execute`, `raw`, `unsafe`, the `*Raw` family and the Prisma unsafe calls. |
 | `hullproof-sql-raw-non-literal` | SEC-API-017 | HIGH | MEDIUM | `sql.raw(x)`, `Prisma.raw(x)`, knex and sequelize raw helpers with a non constant argument. |
 | `hullproof-sql-tagged-template-misuse` | SEC-API-017 | CRITICAL | MEDIUM | A tagged template function called as an ordinary function with an interpolated string, or a raw helper inside a tagged template. |
@@ -117,8 +126,8 @@ Severity hint is the severity a finding of this kind usually deserves before con
 | `hullproof-user-metadata-authz` | SEC-DB-006, SEC-AUTHZ-005 | CRITICAL | MEDIUM | Authorization decision based on user editable metadata. |
 | `hullproof-math-random-token` | SEC-DATA-001, SEC-AUTH-001 | HIGH | MEDIUM | `Math.random` used for a token or secret. |
 | `hullproof-cors-reflect-origin`, `hullproof-cors-origin-true` | SEC-WEB-022 | HIGH | MEDIUM, HIGH | Reflected or open CORS origin. |
-| `hullproof-token-in-browser-storage`, `hullproof-token-value-in-browser-storage` | Pro edition requirements, SEC-MOBILE-002 | HIGH | MEDIUM | Token written to browser storage. |
-| `hullproof-open-redirect` | a Pro edition requirement, SEC-AUTH-030 | MEDIUM | MEDIUM | Redirect target taken from the request. |
+| `hullproof-token-in-browser-storage`, `hullproof-token-value-in-browser-storage` | SEC-MOBILE-002 and Pro edition requirements | HIGH | MEDIUM | Token written to browser storage. |
+| `hullproof-open-redirect` | SEC-AUTH-030 and a Pro edition requirement | MEDIUM | MEDIUM | Redirect target taken from the request. |
 
 Rules that need a name list read it from the rule itself, so a project edits one regex: the escape function names in `server-html-interpolation.yaml` and `html-variants.yaml`, the guard call names in the sanitizer of `ssrf-unguarded-url.yaml`, the admin client names in `tool-endpoint-admin-client.yaml`, and the auth helper names in `server-action-no-auth.yaml`.
 
@@ -221,8 +230,8 @@ Rules and helpers beyond the core set of request data taint, SQL, eval and serve
 | `RLS_NOT_ENABLED` | CRITICAL when client roles hold grants, otherwise HIGH | SEC-DB-001 | Table created in a migration with RLS never enabled. |
 | `POLICY_NO_ROLE` | MEDIUM | SEC-DB-002 | Policy without a TO clause applies to PUBLIC, including anon. |
 | `UPDATE_NO_WITH_CHECK` | LOW | SEC-DB-002 | Hygiene only. Postgres reuses USING when WITH CHECK is absent, so the row cannot move outside the USING test. |
-| `CLIENT_WRITABLE_SENSITIVE_COLUMNS` | CRITICAL for role, plan, credit, admin, verified, stripe, paddle, tier, balance named columns, otherwise HIGH | a Pro edition requirement, SEC-AUTHZ-004 | A permissive client INSERT or UPDATE policy exists on a table with sensitive named columns, and the client role holds a table level or column level write grant that covers them. |
-| `DEFINER_NO_SEARCH_PATH` | HIGH | a Pro edition requirement | Security definer function without `set search_path`. |
+| `CLIENT_WRITABLE_SENSITIVE_COLUMNS` | CRITICAL for role, plan, credit, admin, verified, stripe, paddle, tier, balance named columns, otherwise HIGH | SEC-AUTHZ-004 and a Pro edition requirement | A permissive client INSERT or UPDATE policy exists on a table with sensitive named columns, and the client role holds a table level or column level write grant that covers them. |
+| `DEFINER_NO_SEARCH_PATH` | HIGH | A Pro edition requirement | Security definer function without `set search_path`. |
 | `DEFINER_EXEC_ANON_OR_PUBLIC` | HIGH | SEC-DB-008 | Security definer function that anon or PUBLIC can execute. |
 | `DEFINER_EXEC_AUTHENTICATED` | INFO | SEC-DB-008 | Executable by authenticated. Confirm identity comes from the session, not a parameter. |
 | `POLICY_USES_USER_METADATA` | CRITICAL | SEC-DB-006 | Policy text reads user editable claims. |
@@ -236,16 +245,16 @@ Use this to say which requirement a scanner result belongs to, and which require
 | Scanner family | What it reports | SEC IDs | Command or setting |
 |----------------|-----------------|---------|--------------------|
 | Semgrep rule pack | Code patterns in the rule pack table | See the rule pack table | `helpers/run_rules.sh` |
-| Policy helper | Final RLS, function and grant state | SEC-DB-001, SEC-DB-002, a Pro edition requirement, SEC-DB-006, SEC-DB-008, a Pro edition requirement, SEC-AUTHZ-004 | `helpers/policy_set.py` |
-| Trust policy (registry trust level must not drop) | A package whose publish trust level fell against earlier releases | a Pro edition requirement | pnpm `trustPolicy: no-downgrade` in `pnpm-workspace.yaml` |
+| Policy helper | Final RLS, function and grant state | SEC-DB-001, SEC-DB-002, SEC-DB-006, SEC-DB-008, SEC-AUTHZ-004 and Pro edition requirements | `helpers/policy_set.py` |
+| Trust policy (registry trust level must not drop) | A package whose publish trust level fell against earlier releases | A Pro edition requirement | pnpm `trustPolicy: no-downgrade` in `pnpm-workspace.yaml` |
 | Minimum release age | Versions younger than the cooldown are not installed | Pro edition requirements | pnpm `minimumReleaseAge` (minutes) in `pnpm-workspace.yaml` |
 | Exotic dependencies | Transitive packages fetched from git or tarball URLs | Pro edition requirements | pnpm `blockExoticSubdeps: true`, or `grep -cE 'tarball:|git\+|github:' pnpm-lock.yaml` |
-| Missing integrity | Lockfile entries with no integrity hash, and CDN scripts with no `integrity` attribute | a Pro edition requirement for lockfiles, a Pro edition requirement for browser scripts | `grep -c 'resolution:' pnpm-lock.yaml` against `grep -c 'integrity:' pnpm-lock.yaml`, and `sgx -L 'integrity=' .` on HTML |
-| Gitleaks, working tree and history | Committed secrets, found with the Hullproof config | SEC-SECRETS-004, Pro edition requirements | `gitleaks dir` and `gitleaks git` with `--redact --config tools/hullproof/gitleaks.toml --ignore-gitleaks-allow` (see recipes) |
-| Gitleaks hit in local env or agent settings | A live secret within reach of a coding agent | SEC-AGENT-011, Pro edition requirements | Route here, not to SEC-SECRETS-004 |
+| Missing integrity | Lockfile entries with no integrity hash, and CDN scripts with no `integrity` attribute | A Pro edition requirement for lockfiles, a Pro edition requirement for browser scripts | `grep -c 'resolution:' pnpm-lock.yaml` against `grep -c 'integrity:' pnpm-lock.yaml`, and `sgx -L 'integrity=' .` on HTML |
+| Gitleaks, working tree and history | Committed secrets, found with the Hullproof config | SEC-SECRETS-004 and Pro edition requirements | `gitleaks dir` and `gitleaks git` with `--redact --config tools/hullproof/gitleaks.toml --ignore-gitleaks-allow` (see recipes) |
+| Gitleaks hit in local env or agent settings | A live secret within reach of a coding agent | SEC-AGENT-011 and Pro edition requirements | Route here, not to SEC-SECRETS-004 |
 | Gitleaks on build output | Secrets in the shipped bundle | SEC-SECRETS-001 | Same command on `.next/static` or the Expo export. The config has no path allowlist, so the folder is scanned. If the summary says `scanned ~0 bytes`, the scan did nothing: NOT ASSESSED |
 | OSV Scanner | Known advisories in direct and transitive packages | SEC-SUPPLY-002 | `osv-scanner scan source -r` then classify with the lockfile recipes in `helpers/recipes.md` |
-| OSV on abandoned or vendored code | Not detected by OSV | a Pro edition requirement | Manual vendored copy review |
+| OSV on abandoned or vendored code | Not detected by OSV | A Pro edition requirement | Manual vendored copy review |
 
 Gaps. No requirement in `DEPENDENCIES.md` names release age, trust policy or exotic sources directly. They are mapped to the closest existing IDs above, and a dedicated ID would be cleaner.
 

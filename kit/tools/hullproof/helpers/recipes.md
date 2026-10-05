@@ -49,7 +49,7 @@ semgrep scan --config p/default --metrics=off --quiet --json --output "$OUT/semg
 jq -r '[.results[] | .check_id | split(".") | last] | group_by(.) | map("\(.[0]) \(length)") | .[]' "$OUT/semgrep-registry.json"
 ```
 
-## Secret scans: working tree and history (SEC-SECRETS-004, a Pro edition requirement)
+## Secret scans: working tree and history (SEC-SECRETS-004 and a Pro edition requirement)
 
 Run both with the Hullproof config and no other. The repository's own `.gitleaks.toml` and `gitleaks:allow` comments can hide findings, so name the config and turn the comments off. Run both: a clean history says nothing about the files you have now, and the reverse.
 
@@ -112,7 +112,7 @@ The kit ships a checksum list. Run it from the repository root before you rely o
 shasum -a 256 -c docs/hullproof/.kit-manifest
 ```
 
-## Dependency scan and reachability (SEC-SUPPLY-002, a Pro edition requirement)
+## Dependency scan and reachability (SEC-SUPPLY-002 and a Pro edition requirement)
 
 ```bash
 osv-scanner scan source -r --format json --output-file "$OUT/osv.json" .
@@ -127,7 +127,7 @@ Classify each name into one of three classes before assigning severity. Most hit
 |-------|-------------|-------------------|
 | Direct runtime | The name is under `dependencies` of a shipped workspace package. See the package.json recipe below. | Full advisory severity. |
 | Transitive runtime | A lockfile recipe below reaches the name from a `dependencies` entry of a shipped workspace package. | Full severity when the vulnerable code path is used, otherwise one level lower with the reason recorded. |
-| Dev and build only | A lockfile recipe below reaches the name only from `devDependencies`. | Record as dev only, with a one line decisions log entry, as the standard says. If the package runs in CI with secrets (SEC-SUPPLY-016, a Pro edition requirement), treat it as runtime. |
+| Dev and build only | A lockfile recipe below reaches the name only from `devDependencies`. | Record as dev only, with a one line decisions log entry, as the standard says. If the package runs in CI with secrets (SEC-SUPPLY-016 and a Pro edition requirement), treat it as runtime. |
 
 The recipes read the lockfile as text. They do not run the package manager, install anything, execute a script or contact a registry. Set `NAME` to the package name first.
 
@@ -304,7 +304,7 @@ Each line says what a hit means. `sgx -L` lists files that lack the call, which 
 - **Pro edition**: Headers built from data.
   `sgn '(setHeader|headers\.set)\(.*(req|request|params|searchParams|body)' .`
 
-- **a Pro edition requirement, SEC-LOG-001**: Logger calls that receive request bodies or secret named values.
+- **SEC-LOG-001 and a Pro edition requirement**: Logger calls that receive request bodies or secret named values.
   `sgx -c '(console|logger|log)\.[a-z]+\(.*(req\.body|headers|token|secret|password|authorization)' .`
 
 - **Pro edition**: `postMessage` with a wildcard, message listeners.

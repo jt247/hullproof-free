@@ -80,7 +80,7 @@ done
 
 ## One list, with totals
 
-Run the setup block and the four recipes above, then count by kind. Compare the totals with the access matrix and with the log inventory. A handler in this list and not in the matrix is the finding for a Pro edition requirement and SEC-AUTHZ-002, and a handler with no denial record is the finding for SEC-LOG-003.
+Run the setup block and the four recipes above, then count by kind. Compare the totals with the access matrix and with the log inventory. A handler in this list and not in the matrix is the finding for SEC-AUTHZ-002 and a Pro edition requirement, and a handler with no denial record is the finding for SEC-LOG-003.
 
 <!-- recipe:enum-totals -->
 ```bash

@@ -1,14 +1,21 @@
 #!/usr/bin/env node
 // Hullproof PreToolUse hook for read only subagents (a Pro edition requirement).
 // Agent frontmatter: node "$CLAUDE_PROJECT_DIR/.claude/hooks/hullproof-readonly-bash.mjs" reviewer|auditor
-// Matcher: Bash|Read|Grep|Glob, as every shipped skill and agent attaches it. The code also decides a Write call (reviewer profile only), for a custom setup; no shipped skill or agent attaches the hook to Write.   Self test: node hullproof-readonly-bash.mjs --selftest
+// Matcher: Bash|Read|Grep|Glob|Write for the skills (the Write rule is decided by profile, see below), Bash|Read|Grep|Glob for agents with Bash, Read|Grep|Glob for agents without it. Self test: node hullproof-readonly-bash.mjs --selftest
 // Probe: the Bash command `hullproof-hook-probe` is always blocked with the text HULLPROOF HOOK ACTIVE, so a skill can tell an
 // active hook from a missing one (a missing hook gives "command not found" or a non blocking hook error).
 //
 // Fail closed: every problem exits 2 (exit 1 is a non blocking error in Claude Code, so no path may exit 1).
-// Profiles: reviewer = read only helpers (and, if you attach the hook to Write yourself, new report files only). auditor = reviewer helpers (no Write) plus gitleaks and curl.
+// Profiles: reviewer = read only helpers (and, if you attach the hook to Write yourself, new files in docs/security/reports only). auditor = reviewer helpers (no Write) plus gitleaks and curl.
 //   skill = auditor plus exactly: date +%Y-%m-%d, git check-ignore -q <path>, git ls-files --others --exclude-standard, command -v <tool>,
-//   semgrep --version, node --version, gitleaks version. The skills attach it with a hooks block in their frontmatter (matcher Bash|Read|Grep|Glob, no Write).
+//   semgrep --version, node --version, gitleaks version. The skills attach it with a hooks block in their frontmatter.
+// Write: the skill profile may write a plain .md file in docs/security/reports or docs/security/threat-models (a replace is allowed, because a skill archives
+//   the old file first) and nothing else. It never writes the hook, agents, skills, standards, settings, STAGE.md, .gitignore or source files, and the secret scan
+//   stays on, except that a 64 hex sha256 passes. WRITE RISK: an allowed-tools line that lists Write pre approves Write for any path, with no prompt. Only this
+//   hook limits the path, and Claude Code treats a hook that is missing or fails to run as a non blocking error. A skill that lists Write must attach this hook
+//   to Write (matcher Bash|Read|Grep|Glob|Write) and the owner must keep the hook file and settings intact. The hook limits the path, never the content
+//   beyond the secret scan, so an instruction planted in the audited code can still make a skill write misleading text into a report.
+// .git/config: Read and content mode are blocked in every profile (a remote URL can hold a token). Ask with Grep in count or files_with_matches mode.
 // Shell rule: a command is split into words by this file, never by a shell trick. Outside quotes these are blocked:
 //   ; & | < > ` $ \ ( ) { } [ ] * ? ~ ! # and newline. Inside single quotes everything is literal (a $ or a backslash is fine there).
 //   Inside double quotes $ ` and backslash are blocked. Characters outside printable ASCII are blocked everywhere.
@@ -26,6 +33,7 @@ const MAX_CMD = 4000;
 const MAX_REPORT = 200_000;
 const MAX_WALK = 50_000;
 const REPORT_DIR = 'docs/security/reports';
+const THREAT_DIR = 'docs/security/threat-models';
 const STAGE_FILE = 'docs/security/STAGE.md';
 const PROBE = 'HULLPROOF HOOK ACTIVE (hook probe, nothing was run)';
 const HELP = 'Use Read, Grep or Glob on non secret files instead, or report the step as NEEDS DASHBOARD, NEEDS BUILD, NEEDS DYNAMIC TEST or UNKNOWN as fits.';
@@ -82,9 +90,11 @@ const CONTENT_RES = [
   /(^|\/)(CLAUDE|AGENTS)(\.[\w-]+)?\.md$/i,
   /(^|\/)docs\/security\/notes[^/]*$/i,
   /(^|\/)notes\/.*\.(md|mdx|txt|rst)$/i,
+  /(^|\/)\.git\/config(\.worktree)?$/i, // remote URLs in this file often carry a token: ask with Grep count or files_with_matches
 ];
 function contentReason(p) {
   const s = p.split(sep).join('/');
+  if (/(^|\/)\.git\/config(\.worktree)?$/i.test(s)) return 'git config file (a remote URL can hold a token), content protected: use count or files_with_matches mode';
   return CONTENT_RES.some((re) => re.test(s)) ? 'notes or agent instruction file, content protected: use count or files_with_matches mode' : null;
 }
 // Placeholder env files hold placeholders by rule. Only key names may be listed from them, never read.
@@ -150,7 +160,7 @@ function pathsProblem(list, secret = true) {
   return null;
 }
 
-const CONTENT_SAMPLES = ['CLAUDE.md', 'AGENTS.md', 'CLAUDE.local.md', 'docs/security/notes.md', 'notes/a.md'];
+const CONTENT_SAMPLES = ['CLAUDE.md', 'AGENTS.md', 'CLAUDE.local.md', 'docs/security/notes.md', 'notes/a.md', '.git/config'];
 function globContent(g) {
   if (contentReason(g)) return true;
   const re = /[*?[{]/.test(g) ? globToRegExp(g) : null;
@@ -645,9 +655,10 @@ const SHAPES = [
   ['JWT', /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]*/],
   ['URL with user info', /\b[a-z][a-z0-9+.-]*:\/\/[^\s/@?#]+@/i],
 ];
-function secretShape(text) {
+// sha256Ok: a record may hold the sha256 of owner evidence (64 hex characters), so the skill profile lets that one length through.
+function secretShape(text, sha256Ok = false) {
   for (const [kind, re] of SHAPES) if (re.test(text)) return kind;
-  for (const m of text.matchAll(/(?<![0-9A-Za-z])[0-9a-fA-F]{32,}(?![0-9A-Za-z])/g)) if (m[0].length !== 40) return 'long hex string';
+  for (const m of text.matchAll(/(?<![0-9A-Za-z])[0-9a-fA-F]{32,}(?![0-9A-Za-z])/g)) if (m[0].length !== 40 && !(sha256Ok && m[0].length === 64)) return 'long hex string';
   for (const m of text.matchAll(/[A-Za-z0-9+/_-]{40,}={0,2}/g)) {
     const s = m[0];
     const seps = (s.match(/[/_-]/g) ?? []).length;
@@ -655,21 +666,35 @@ function secretShape(text) {
   }
   return null;
 }
+// Write rules. reviewer: new report files only, in docs/security/reports. skill: files in docs/security/reports and docs/security/threat-models,
+// a plain .md name, a replace is allowed because a skill archives the old file first and then writes the new one at the same path.
+// Neither profile ever writes the hook, agents, skills, standards, settings, STAGE.md, .gitignore or source files.
+const PROTECTED_WRITE = /^(\.claude|\.git|docs\/hullproof|tools\/hullproof|editors|prompts)(\/|$)/i;
+const WRITE_DIRS = { reviewer: [REPORT_DIR], skill: [REPORT_DIR, THREAT_DIR] };
 function checkWrite(filePath, content, profile) {
-  if (profile !== 'reviewer') return 'this agent may not write files';
+  const dirs = WRITE_DIRS[profile];
+  if (!dirs) return 'this agent may not write files';
   if (typeof filePath !== 'string' || !filePath) return 'could not read the file path';
   if (typeof content !== 'string') return 'could not read the file content';
   if (filePath.includes('\0') || filePath.startsWith('~') || filePath.split('/').includes('..') || filePath.endsWith('/')) return 'path has a null byte, ~, a .. segment or a trailing slash';
   if (content.length > MAX_REPORT) return `report is larger than ${MAX_REPORT} characters`;
   if (content.includes('\0')) return 'report contains a null byte';
   const target = resolve(P.dir, filePath);
-  if (!/^[A-Za-z0-9][\w .+-]*\.md$/.test(basename(target))) return `writes are limited to ${REPORT_DIR}/*.md with a plain file name`;
-  const reports = join(P.real, REPORT_DIR);
-  if (realResolve(join(P.dir, REPORT_DIR)) !== reports) return `${REPORT_DIR} is a symlink or points outside the project; ask the user to make it a real folder`;
+  const shown = dirs.map((d) => `${d}/*.md`).join(' and ');
+  const relReal = relative(P.real, realResolve(target)).split(sep).join('/');
+  const relLex = relative(P.dir, target).split(sep).join('/');
+  if ([relReal, relLex].some((r) => PROTECTED_WRITE.test(r))) return 'the hook, agent, skill and standards files and the agent settings are never written by a run';
+  if (!/^[A-Za-z0-9][\w .+-]*\.md$/.test(basename(target))) return `writes are limited to ${shown} with a plain file name`;
   const real = realResolve(target);
-  if (!real.startsWith(reports + sep)) return `writes are limited to ${REPORT_DIR}/*.md (symlinks are resolved)`;
-  try { lstatSync(target); return 'the report file already exists; reports are create only, pick a new name'; } catch { /* does not exist: good */ }
-  const kind = secretShape(content);
+  const dir = dirs.find((d) => real.startsWith(join(P.real, d) + sep));
+  if (!dir) return `writes are limited to ${shown} (symlinks are resolved)`;
+  if (realResolve(join(P.dir, dir)) !== join(P.real, dir)) return `${dir} is a symlink or points outside the project; ask the user to make it a real folder`;
+  try {
+    const st = lstatSync(target);
+    if (profile === 'reviewer') return 'the report file already exists; reports are create only, pick a new name';
+    if (!st.isFile()) return 'the target is a link or not a regular file';
+  } catch { /* does not exist: good */ }
+  const kind = secretShape(content, profile === 'skill');
   if (kind) return `the report text looks like it holds a secret (${kind}). Redact it (file:line and secret type only) and write again`;
   return null;
 }
@@ -741,16 +766,19 @@ function decide(payload, profile, projectDir) {
 
 // ---------- selftest ----------
 function selftest() {
+  // Files of the kinds that skills and agents read or write: a skill phase file, a guide, a schema, a helper readme, and companion files beside a report.
+  const NEW_KIND_FILES = ['.claude/skills/example-skill/PHASE.md', 'docs/hullproof/guides/CARD-A.md', 'docs/hullproof/schemas/records.schema.json', 'tools/hullproof/helpers/cards/README.md', 'docs/security/reports/a.part.md', 'docs/security/reports/a.ledger.md'];
   const root = mkdtempSync(join(tmpdir(), 'hullproof-hook-'));
   const projects = {};
   const mk = (key, stage) => {
     const d = join(root, key);
-    for (const sub of ['src', 'links', 'docs/security/reports', 'notes', '.claude', '.aws', 'node_modules/x']) mkdirSync(join(d, sub), { recursive: true });
+    for (const sub of ['src', 'links', 'docs/security/reports', 'notes', '.claude', '.aws', 'node_modules/x', '.claude/skills/example-skill', 'docs/hullproof/guides', 'docs/hullproof/schemas', 'tools/hullproof/helpers/cards']) mkdirSync(join(d, sub), { recursive: true });
     for (const f of ['src/a.ts', 'src/b.ts', 'package.json', 'README.md', 'x.json', 'a.txt', 'notes.md', 'prog.awk']) writeFileSync(join(d, f), 'x\n');
     for (const f of ['.env', '.env.local', '.env.example', '.env.sample', '.env.template', '.mcp.json', '.claude/settings.local.json', '.claude/settings.json', '.npmrc', '.aws/credentials', 'server.pem', 'node_modules/x/credentials']) writeFileSync(join(d, f), 'S=1\n');
     for (const f of ['CLAUDE.md', 'AGENTS.md', 'docs/security/notes.md', 'notes/a.md']) writeFileSync(join(d, f), 'x\n');
     symlinkSync(join(d, '.env'), join(d, 'links/linkexample'));
     writeFileSync(join(d, 'docs/security/reports/old.md'), 'old\n');
+    for (const f of NEW_KIND_FILES) writeFileSync(join(d, f), 'x\n');
     if (stage) writeFileSync(join(d, STAGE_FILE), stage);
     symlinkSync(join(d, '.env'), join(d, 'links/linkenv'));
     symlinkSync('/etc', join(d, 'links/linketc'));
@@ -1290,6 +1318,12 @@ function selftest() {
     ['Glob', { pattern: '**/*.ts' }, 1], ['Glob', { pattern: 'src/*.ts', path: 'src' }, 1], ['Glob', { pattern: '.env*' }, 1], ['Glob', { pattern: '**/.env*', path: '.' }, 1], ['Glob', { pattern: '../*' }, 0], ['Glob', { pattern: 'src/../../*' }, 0],
     ['Glob', { pattern: '/etc/*' }, 0], ['Glob', { pattern: '/etc/**' }, 0], ['Glob', { pattern: '~/*' }, 0], ['Glob', { pattern: '*', path: '/etc' }, 0], ['Glob', { pattern: '*', path: '.aws' }, 0], ['Glob', { pattern: '*', path: '..' }, 0],
     ['Glob', { pattern: '*', path: 'links/linketc' }, 0], ['Glob', { pattern: join(projects.main, 'src/*.ts') }, 1], ['Glob', { pattern: '' }, 0], ['Glob', { pattern: '*', path: '.ssh' }, 0], ['Glob', { pattern: '*', path: join(root, 'outside') }, 0],
+    // new file kinds: readable in every profile, and the notes rule still holds
+    ...NEW_KIND_FILES.map((f) => ['Read', { file_path: f }, 1]),
+    ['Read', { file_path: 'docs/security/notes/x.part.md' }, 0], ['Read', { file_path: join(projects.main, 'docs/hullproof/guides/CARD-A.md') }, 1],
+    ['Glob', { pattern: 'docs/hullproof/guides/*.md' }, 1], ['Glob', { pattern: '*.md', path: 'docs/hullproof/guides' }, 1], ['Glob', { pattern: '.claude/skills/*/*.md' }, 1],
+    ['Grep', { pattern: 'x', path: 'docs/hullproof/guides', output_mode: 'files_with_matches' }, 1], ['Grep', { pattern: 'x', path: 'docs/hullproof/guides', output_mode: 'count' }, 1],
+    ['Grep', { pattern: 'x', path: 'docs/hullproof/guides', output_mode: 'content' }, 1],
   ];
   function homedirSample(rel) { return join(process.env.HOME || '/home/u', rel); }
   for (const [tool, input, allowed] of TOOLS) {
@@ -1314,11 +1348,18 @@ function selftest() {
     ['docs/security/reports/s10.md', 'hex ' + '0123456789abcdef0123456789abcdef', 0], ['docs/security/reports/s11.md', 'hex ' + 'a'.repeat(64), 0], ['docs/security/reports/s12.md', 'b64 ' + 'dGhpcyBpcyBhIHNlY3JldCBrZXkgMTIzNDU2Nzg5MEFCQ0RFRg9Z', 0],
     ['docs/security/reports/s13.md', 'ant ' + 'sk-ant-api03-' + 'abcdefghijklmnopqrstuvwx', 0], ['docs/security/reports/s14.md', 'google ' + 'AIza' + 'SyA1234567890abcdefghijklmnopqrstu', 0], ['docs/security/reports/s15.md', 'whsec ' + 'whsec_' + 'abcdefgh12345678', 0],
     ['docs/security/reports/p1.md', 'prefix class sk_live_ and ghp_ and AKIA and xoxb- and eyJ are named, no values. postgres:// is mentioned. sha 0123456789abcdef0123456789abcdef01234567.', 1],
+    ['docs/security/reports/SECURITY-AUDIT-REPORT.part.md', OKTXT, 1], ['docs/security/reports/SECURITY-AUDIT-REPORT.ledger.md', OKTXT, 1], ['docs/security/reports/x/../y.part.md', OKTXT, 0],
+    ['docs/security/reports/c1.part.md', 'commit 0123456789abcdef0123456789abcdef01234567 tree 89abcdef0123456789abcdef0123456789abcdef', 1], ['docs/security/reports/c2.part.md', 'hash ' + '0123456789abcdef'.repeat(4), 0],
     ['docs/security/reports/p2.md', 'path docs/security/reports/SECURITY-AUDIT-REPORT-2026-10-03-main-abcdef0.md and src/app/api/webhooks/stripe/route.ts:42 and SEC-WEB-026 FAIL', 1],
   ];
   for (const [fp, content, allowed] of WRITES) {
     const reason = run('Write', 'reviewer', { file_path: fp, content });
     hit(`write reviewer "${fp.slice(0, 50)}" -> ${reason}`, (reason === null) === Boolean(allowed));
+  }
+  // Profile guard: a profile that has no self test rows must not be accepted by accident.
+  for (const unknown of ['verifier', 'hunter', 'critic', 'record']) {
+    hit(`unknown profile ${unknown} blocks Read`, run('Read', unknown, { file_path: 'src/a.ts' }) !== null);
+    hit(`unknown profile ${unknown} blocks Bash`, run('Bash', unknown, { command: 'ls src' }) !== null);
   }
   hit('write auditor blocked', run('Write', 'auditor', { file_path: 'docs/security/reports/z.md', content: 'x' }) !== null);
   hit('write via symlinked reports folder', run('Write', 'reviewer', { file_path: 'docs/security/reports/x.md', content: 'x' }, 'symrep') !== null);
@@ -1326,6 +1367,64 @@ function selftest() {
   hit('write when reports folder does not exist yet (Write creates it, parents are real)', run('Write', 'reviewer', { file_path: 'docs/security/reports/x.md', content: 'x' }, 'noreports') === null);
   hit('write into symlink inside reports', (() => { symlinkSync(projects.main, join(projects.main, 'docs/security/reports/escape')); return run('Write', 'reviewer', { file_path: 'docs/security/reports/escape/CLAUDE.md', content: 'x' }) !== null; })());
   hit('write dangling symlink target', (() => { symlinkSync(join(root, 'nowhere.md'), join(projects.main, 'docs/security/reports/dangling.md')); return run('Write', 'reviewer', { file_path: 'docs/security/reports/dangling.md', content: 'x' }) !== null; })());
+
+  // Write under the skill profile: reports and threat models only, replace allowed, the hook, agents, skills and standards never.
+  const SKILL_WRITES = [
+    ['docs/security/reports/audit-1.md', OKTXT, 1], ['docs/security/reports/old.md', OKTXT, 1], ['docs/security/reports/SECURITY-AUDIT-REPORT.findings.md', OKTXT, 1],
+    ['docs/security/reports/SECURITY-AUDIT-REPORT-0123456-2026-10-05.surface-ledger.md', OKTXT, 1], ['docs/security/threat-models/2026-10-05-checkout.md', OKTXT, 1],
+    [join(projects.main, 'docs/security/threat-models/abs.md'), OKTXT, 1],
+    ['.claude/hooks/hullproof-readonly-bash.mjs', OKTXT, 0], ['.claude/hooks/a.md', OKTXT, 0], ['.claude/agents/hullproof-surface-hunter.md', OKTXT, 0], ['.claude/skills/example-skill/SKILL.md', OKTXT, 0],
+    ['.claude/skills/example-skill/PHASE.md', OKTXT, 0], ['.claude/settings.json', OKTXT, 0], ['.claude/settings.local.json', OKTXT, 0], ['docs/hullproof/STANDARD.md', OKTXT, 0],
+    ['docs/hullproof/guides/CARD-A.md', OKTXT, 0], ['tools/hullproof/helpers/cards/README.md', OKTXT, 0], ['tools/hullproof/ci/x.md', OKTXT, 0], ['docs/security/STAGE.md', OKTXT, 0],
+    ['.gitignore', OKTXT, 0], ['CLAUDE.md', OKTXT, 0], ['README.md', OKTXT, 0], ['src/app.ts', OKTXT, 0], ['.git/config', OKTXT, 0], ['editors/a.md', OKTXT, 0], ['prompts/a.md', OKTXT, 0],
+    ['docs/security/reports/a.ts', OKTXT, 0], ['docs/security/reports/a.sh', OKTXT, 0], ['docs/security/threat-models/a.ts', OKTXT, 0], ['docs/security/threat-models/.hidden.md', OKTXT, 0],
+    ['docs/security/reports/../../../.claude/hooks/a.md', OKTXT, 0], ['docs/security/reports/../x.md', OKTXT, 0], ['docs/security/threat-models/../STAGE.md', OKTXT, 0], ['docs/security/other/a.md', OKTXT, 0],
+    ['/etc/x.md', OKTXT, 0], ['~/x.md', OKTXT, 0], ['', OKTXT, 0], ['docs/security/reports/', OKTXT, 0], ['DOCS/SECURITY/REPORTS/c.md', OKTXT, 0],
+    ['docs/security/reports/n.md', 'x'.repeat(MAX_REPORT + 1), 0], ['docs/security/reports/n3.md', 'ok\0bad', 0],
+    ['docs/security/reports/h64.md', 'sha256 ' + '0123456789abcdef'.repeat(4), 1], ['docs/security/reports/h40.md', 'blob 0123456789abcdef0123456789abcdef01234567', 1],
+    ['docs/security/reports/h32.md', 'hex ' + '0123456789abcdef0123456789abcdef', 0], ['docs/security/reports/h65.md', 'hex ' + '0123456789abcdef'.repeat(4) + 'a', 0], ['docs/security/reports/h128.md', 'hex ' + '0123456789abcdef'.repeat(8), 0],
+    ['docs/security/reports/s1.md', 'key sk_live_' + 'a1B2c3D4e5F6g7H8', 0], ['docs/security/reports/s3.md', '-----BEGIN RSA PRIVATE KEY-----\nMII', 0], ['docs/security/reports/s4.md', 'token ' + 'gh' + 'p_' + 'a1B2c3D4e5F6g7H8i9J0k1L2', 0],
+    ['docs/security/reports/s5.md', 'aws ' + 'AKIA' + 'ABCDEFGHIJKLMNOP', 0], ['docs/security/reports/s7.md', 'url ' + 'postgres://app' + ':' + 'hunter2' + '@db.example.com:5432/x', 0],
+    ['docs/security/threat-models/s1.md', 'key sk_live_' + 'a1B2c3D4e5F6g7H8', 0], ['docs/security/reports/s12.md', 'b64 ' + 'dGhpcyBpcyBhIHNlY3JldCBrZXkgMTIzNDU2Nzg5MEFCQ0RFRg9Z', 0],
+  ];
+  for (const [fp, content, allowed] of SKILL_WRITES) {
+    const reason = run('Write', 'skill', { file_path: fp, content });
+    hit(`write skill "${fp.slice(0, 60)}" -> ${reason}`, (reason === null) === Boolean(allowed));
+  }
+  hit('write skill protected path message', String(run('Write', 'skill', { file_path: '.claude/hooks/hullproof-readonly-bash.mjs', content: OKTXT })).includes('never written'));
+  hit('write skill settings message', String(run('Write', 'skill', { file_path: '.claude/settings.json', content: OKTXT })).includes('never written'));
+  hit('write reviewer still create only', run('Write', 'reviewer', { file_path: 'docs/security/reports/old.md', content: OKTXT }) !== null);
+  hit('write reviewer not in threat models', run('Write', 'reviewer', { file_path: 'docs/security/threat-models/a.md', content: OKTXT }) !== null);
+  hit('write reviewer blocks the 64 hex string the skill allows', run('Write', 'reviewer', { file_path: 'docs/security/reports/h64.md', content: 'sha ' + '0123456789abcdef'.repeat(4) }) !== null);
+  hit('write skill missing content', run('Write', 'skill', { file_path: 'docs/security/reports/n.md' }) !== null);
+  hit('write skill via symlinked reports folder', run('Write', 'skill', { file_path: 'docs/security/reports/x.md', content: 'x' }, 'symrep') !== null);
+  hit('write skill via symlinked docs folder', run('Write', 'skill', { file_path: 'docs/security/reports/x.md', content: 'x' }, 'symdocs') !== null);
+  hit('write skill via symlinked docs folder to threat models', run('Write', 'skill', { file_path: 'docs/security/threat-models/x.md', content: 'x' }, 'symdocs') !== null);
+  hit('write skill when the folders do not exist yet', run('Write', 'skill', { file_path: 'docs/security/reports/x.md', content: 'x' }, 'noreports') === null);
+  hit('write skill replace of a symlink in reports', (() => { symlinkSync(join(projects.main, 'src/a.ts'), join(projects.main, 'docs/security/reports/lnk.md')); return run('Write', 'skill', { file_path: 'docs/security/reports/lnk.md', content: 'x' }) !== null; })());
+  hit('write skill into a symlinked folder inside reports', (() => { symlinkSync(join(projects.main, 'src'), join(projects.main, 'docs/security/reports/up')); return run('Write', 'skill', { file_path: 'docs/security/reports/up/x.md', content: 'x' }) !== null; })());
+  hit('write skill into a symlink that points at .claude', (() => { symlinkSync(join(projects.main, '.claude'), join(projects.main, 'docs/security/reports/cl')); return run('Write', 'skill', { file_path: 'docs/security/reports/cl/x.md', content: 'x' }) !== null; })());
+  hit('write auditor still blocked in threat models', run('Write', 'auditor', { file_path: 'docs/security/threat-models/z.md', content: 'x' }) !== null);
+
+  // .git/config can hold a remote URL with a token: no Read and no content mode in any profile, count and files_with_matches stay allowed.
+  const GC = [
+    ['Read', { file_path: '.git/config' }, 0], ['Read', { file_path: '.git/config.worktree' }, 0], ['Read', { file_path: './.git/config' }, 0], ['Read', { file_path: join(projects.gitclean, '.git/config') }, 0],
+    ['Read', { file_path: '.git/HEAD' }, 1],
+    ['Grep', { pattern: 'fsmonitor', path: '.git/config', output_mode: 'content' }, 0], ['Grep', { pattern: 'x', glob: '.git/config', output_mode: 'content' }, 0], ['Grep', { pattern: 'x', glob: '**/config', output_mode: 'content' }, 0],
+    ['Grep', { pattern: 'fsmonitor|sshCommand|hooksPath', path: '.git/config', output_mode: 'files_with_matches' }, 1], ['Grep', { pattern: '://[^/ ]*@', path: '.git/config', output_mode: 'count' }, 1],
+    ['Grep', { pattern: 'x', path: '.git/config' }, 1],
+  ];
+  for (const [tool, input, allowed] of GC) {
+    for (const p of ['reviewer', 'auditor', 'skill']) {
+      const reason = run(tool, p, input, 'gitclean');
+      hit(`${p} ${tool} ${JSON.stringify(input)} on .git/config -> ${reason}`, (reason === null) === Boolean(allowed));
+    }
+  }
+  for (const p of ['reviewer', 'auditor', 'skill']) {
+    hit(`${p} grep -c on .git/config allowed`, run('Bash', p, { command: 'grep -c fsmonitor .git/config' }, 'gitclean') === null);
+    hit(`${p} grep -n on .git/config blocked`, run('Bash', p, { command: 'grep -n url .git/config' }, 'gitclean') !== null);
+    hit(`${p} sed on .git/config blocked`, run('Bash', p, { command: "sed -n 1,5p .git/config" }, 'gitclean') !== null);
+  }
 
   // process level cases: stdin handling and exit codes
   const self = process.argv[1];

@@ -48,7 +48,7 @@ How to read the numbers:
 
 | Count | Meaning | Next step |
 |-------|---------|-----------|
-| Authorized at a provider, not in the inventory | A connector exists that nobody listed. An agent may already use it. | List the names (`comm -13 a.sorted p.sorted`). Add each to the inventory with its scope, or revoke it. a Pro edition requirement stays open until the count is 0. |
+| Authorized at a provider, not in the inventory | A connector exists that nobody listed. An agent may already use it. | List the names (`comm -13 a.sorted p.sorted`). Add each to the inventory with its scope, or revoke it. A Pro edition requirement stays open until the count is 0. |
 | In the inventory, not authorized at a provider | The inventory is stale, or the connector uses a different account than the one you exported. | Find which account it acts as. Remove the line or add the missing export. |
 | Grants with write or admin scope | Each one lets an agent change the provider's data. | For every one on a production resource, record the reason, or reduce the scope to read only (SEC-AGENT-011, SEC-AGENT-014). Production write access reached through a connector is treated as an agent credential. |
 

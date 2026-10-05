@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | Standard | Hullproof Security Standard |
-| Version | 0.1.3 |
+| Version | 0.2.0 |
 | Requirement IDs | SEC-[DOMAIN]-[NUMBER] |
 | Baselines | NIST SSDF 1.1 (process), OWASP ASVS 5.0.0 (application controls), NIST SP 800-63B-4 (authentication), OWASP MASVS 2.1.0 (mobile), data protection law per market served. See Framework coverage below for what this does and does not claim. |
 
@@ -17,7 +17,8 @@ This standard reduces risk and makes security verifiable. It does not make any a
 
 ## Framework coverage
 
-Hullproof is built from published frameworks. It is not a conformance claim to any of them. The crosswalk from requirement IDs to framework items is in `docs/hullproof/FRAMEWORK-COVERAGE.md` (Hullproof Pro).
+Hullproof is built from published frameworks. It is not a conformance claim to any of them.
+
 
 | Baseline | Used for | Stage guide |
 |----------|----------|-------------|
@@ -112,7 +113,7 @@ A requirement carries a severity. A finding is a specific failure in a specific 
 6. **Rating floor for BLOCKER requirements (Hullproof policy).** A finding under a named BLOCKER requirement is rated BLOCKER or CRITICAL, never lower.
    1. A different defect found on the side belongs under its own requirement ID, the closest non BLOCKER ID, or `gap in standard`. It is never tagged with a BLOCKER ID to give it a lower rating.
    2. "Latent", "no current consumer" and "unreachable today because of another defect" are not reasons to lower.
-   3. Rating CRITICAL instead of BLOCKER is a lowering. It stands only when all three hold: (a) the code evidence of rule 2 is written in the finding, (b) the finding has a row in the mandatory "Lowered BLOCKER requirements" table of the audit report (see `templates/AUDIT-REPORT.md`), and (c) that row names an independent reviewer, meaning a person or an agent session that did not write the code under review and did not write the rating. A lowering that lacks any of the three does not stand, and the finding is a BLOCKER.
+   3. Rating CRITICAL instead of BLOCKER is a lowering. It stands only when all three hold: (a) the code evidence of rule 2 is written in the finding, (b) the finding has a row in the mandatory "Lowered BLOCKER requirements" table of the audit report (see `templates/AUDIT-REPORT.md`), and (c) that row names an independent reviewer, meaning a person or an agent session that did not write the code under review and did not write the rating. A lowering that lacks any of the three does not stand, and the finding is a BLOCKER. A fresh agent call that rated the finding without seeing the earlier rating, and reached the same lowered rating from code evidence, counts as the independent reviewer. It never reviews a lowering that it proposed itself. It is a separate call with a fresh context, in the same session and on the same model, and it is not a person, so the row names it as a verifier call. Without such a call or a person, the row stays PENDING and counts as a BLOCKER.
    4. "Cannot be waived" governs acceptance, not rating. A lowering never opens the gate: a FAIL under a BLOCKER requirement keeps G-3 and G-4 open at any rating, so a lowering changes report counts and fix order only. A BLOCKER finding, and a finding lowered from one, is never accepted or waived.
 7. A merge of duplicate findings takes the highest assessed severity among them. A finding that maps to no requirement stays a finding, tagged `gap in standard`. It is not moved to next actions.
 8. A required record that is missing while the practice behind it is absent is MEDIUM. A required record that is missing while the practice is present and unsafe takes the requirement's severity. Example: no breach runbook and no one has ever handled a breach is MEDIUM; no access matrix while staff roles hold broad data access is the requirement's severity.
@@ -124,6 +125,27 @@ Calibration examples, for rules 2 and 3:
 |------|--------|
 | A library default fails open after a timeout, so a request passes unauthenticated when the auth service is slow or down. The attacker does not control the timeout. | Keep the requirement's severity. A precondition the attacker does not control still occurs in production (load, outage, a slow dependency), and it can be waited for. Lower only with code evidence that the failing path cannot be reached. |
 | A handler has no in handler authorization check, but a working proxy or middleware denies the request first, and code shows every route to the handler goes through it. | Lower one level with the proxy evidence written in the finding. The missing check is defense in depth, but it becomes the requirement's severity again as soon as any route reaches the handler without the proxy. For a BLOCKER requirement the floor in rule 6 applies, and the lowering needs its table row and an independent reviewer. |
+
+### Finding classes
+
+A finding has a class. The class says what evidence stands behind a failed requirement. It never changes the result state of the requirement, and it never changes the gate: G-3 to G-6 read the FAIL rows exactly as before, whatever the class. Only a FAIL carries a class.
+
+| Class | What it means | What it must carry |
+|-------|---------------|--------------------|
+| FINDING | A requirement is unmet and a lower trust principal can cross a boundary through a traced path, with no preventing layer found. | A boundary statement of six parts (who, through what input, which control was meant to stop it, what is crossed, what is affected, and the result), a trace from entry point to sink with file and line, and an impact statement. |
+| MISSING CONTROL RECORD | The standard requires a control, a configuration or a record, and it is absent or incomplete. No attack path is claimed. | The requirement, the search that shows the absence (the command or the Glob and Grep description, the files searched and the count found), whether the practice behind the record is absent or present and unsafe, and an impact statement. |
+| HARDENING NOTE | The requirement is unmet at this layer, and another named layer prevents the effect on every path. | The preventing layer shown as code (file and line), an enumeration showing that every path to the effect passes through it (how many paths and how they were found), an expiry condition (the change that turns it into a FINDING), and a check by someone other than its author, meaning a person or a fresh agent call that did not write the note. |
+
+How each class is rated:
+
+1. A FINDING is rated by the rules above, in order.
+2. A MISSING CONTROL RECORD is rated at the severity of the requirement, or MEDIUM when the practice behind the record is absent (rule 8).
+3. A HARDENING NOTE is rated one level below the highest requirement it names (LOW stays LOW). A rating further below needs the code evidence of rule 2.
+4. A HARDENING NOTE is never allowed under a BLOCKER requirement. A BLOCKER requirement that has a real preventing layer is a FINDING (or a MISSING CONTROL RECORD) rated CRITICAL, through the Lowered BLOCKER requirements table and the independent reviewer of rule 6.
+
+A HARDENING NOTE is still a FAIL. On a CRITICAL requirement it keeps G-5 open, and when it is rated HIGH it counts at G-6. A comment, a document or a note that says "reviewed" or "safe" is never a preventing layer. Only code, configuration and migration text counts.
+
+An observation that sits outside every requirement and shows no boundary result is a HARDENING NOTE with no gate effect. An observation that shows a boundary result and fits no requirement is a FINDING tagged `gap in standard`.
 
 ### Dependency advisories
 
@@ -264,23 +286,25 @@ NOT APPLICABLE is allowed when the system or feature in a requirement's Applies 
 A domain document carries Applicability gates under its coverage map when a gate names one of its requirements. A gate is one yes or no question with a list of IDs. One recorded answer in the Gates section of `docs/security/STAGE.md` marks every listed ID NOT APPLICABLE, with the gate name as the reason, so a product with plain model calls records one answer instead of seventeen. A gate that lists no BLOCKER is backed by one recorded search or by the owner's dated, written answer. A gate whose list holds a BLOCKER follows a stricter rule, because a bare statement must never clear a BLOCKER:
 
 1. The record in `STAGE.md` names the commit searched, the exact search patterns (the literal `grep` command), and the result counts.
-2. The auditor re runs that search itself, in the audit session, over every tracked file except dependency folders, whenever a gate whose list holds a BLOCKER is answered No. The re run uses at least two independent patterns (a library name and a protocol term, as in item 4). Every path the search names must exist, and a search of a folder that does not exist is no search. The command, the files searched and the count are saved in the report.
+2. The auditor re runs that search itself, in the audit session, over every tracked file except dependency folders and the kit's own folders (see What the searches leave out), whenever a gate whose list holds a BLOCKER is answered No. The re run uses at least two independent patterns (a library name and a protocol term, as in item 4). Every path the search names must exist, and a search of a folder that does not exist is no search. The command, the files searched and the count are saved in the report.
 3. The owner's statement alone never clears a BLOCKER. An owner statement counts only for facts no repository can show (for example who holds a staff role), signed and dated.
 4. Searches must look for hand rolled endpoints as well as library names, with at least two independent patterns (one library name and one protocol term). A library name finds code that uses the library, and misses a JSON RPC or webhook handler written by hand. Use protocol terms and route patterns too, such as `tools/call`, `tools/list`, `jsonrpc`, a route that dispatches on a `method` field, signature header names, or a `multipart` parser.
 5. If either pattern of the re run finds the capability, the gate answer is rejected, its IDs stay in scope, and the contradiction is a finding.
 
-If a gate is unanswered or answered Yes, its IDs stay in scope. An ID named by more than one gate is NOT APPLICABLE only when every gate naming it is answered No.
+If a gate is unanswered or answered Yes, its IDs stay in scope. An unanswered gate does not clear anything by itself. The ID can still be marked NOT APPLICABLE through its own Applies To line, with the recorded search that this section asks for, and a BLOCKER needs that search. Without it the row is NOT ASSESSED with the sub state ASK OWNER. An ID named by more than one gate is NOT APPLICABLE only when every gate naming it is answered No.
 
-Example searches, run over the whole repository and the dependency list (not one folder), with the command and the result saved as the evidence. Each row gives two independent searches, one for a library or provider name and one for a protocol term or route pattern. Run both. The forms below are the ones the read only hook allows for the auditor: recursive `grep` with `-l` (file names) or `-c` (counts), `-E` patterns in single quotes, and `.` or named folders that exist. Add `--exclude-dir` for each dependency folder your stack uses (`node_modules` and `.git` are shown). The Grep tool in content mode is not used on files that may hold secrets (env files, `CLAUDE.md`, notes); to see a hit, read the exact source file it names.
+**What the searches leave out.** The kit's own folders hold text that names almost every term this section asks you to search for, so a search over them could never reach a count of zero. Every absence search leaves out `docs/hullproof/`, `tools/hullproof/`, `.claude/`, `editors/` and `prompts/`. It also discards hits under `docs/security/`, which holds your own records, including the saved search itself. The saved record says that these paths were left out. Nothing else is left out, so application code is always searched, whatever its folder is called.
+
+Example searches, run over the whole repository and the dependency list (not one folder), with the command and the result saved as the evidence. Each row gives two independent searches, one for a library or provider name and one for a protocol term or route pattern. Run both. The forms below are the ones the read only hook allows for the auditor: recursive `grep` with `-l` (file names) or `-c` (counts), `-E` patterns in single quotes, and `.` or named folders that exist. Add `--exclude-dir` for each dependency folder your stack uses (`node_modules` and `.git` are shown, together with the kit folders named above). The Grep tool in content mode is not used on files that may hold secrets (env files, `CLAUDE.md`, notes); to see a hit, read the exact source file it names.
 
 | Absent system | Search 1 (library or name) | Search 2 (protocol term or route pattern) |
 |---------------|----------------------------|-------------------------------------------|
-| Containers | `find . -not -path './node_modules/*' -not -path './.git/*' -iname 'Dockerfile*'` | `find . -not -path './node_modules/*' -not -path './.git/*' -iname '*compose*.y*ml'`, and a read of the CI workflow files for image builds and registry pushes |
+| Containers | `find . -not -path './node_modules/*' -not -path './.git/*' -not -path './.claude/*' -not -path './docs/hullproof/*' -not -path './tools/hullproof/*' -not -path './editors/*' -not -path './prompts/*' -iname 'Dockerfile*'` | `find . -not -path './node_modules/*' -not -path './.git/*' -not -path './.claude/*' -not -path './docs/hullproof/*' -not -path './tools/hullproof/*' -not -path './editors/*' -not -path './prompts/*' -iname '*compose*.y*ml'`, and a read of the CI workflow files for image builds and registry pushes |
 | Mobile | `ls app.json eas.json ios android` | `grep -lE '"(expo\|react-native)"' package.json` |
-| MCP server | `grep -rlE '@modelcontextprotocol/sdk\|McpServer\|mcp-handler' --exclude-dir=node_modules --exclude-dir=.git .` | `grep -rlE 'tools/call\|tools/list\|jsonrpc' --exclude-dir=node_modules --exclude-dir=.git .`, plus a read of any route handler that dispatches on a `method` field |
-| Outbound webhooks | `grep -rlE 'svix\|webhook_endpoints\|webhook_url\|callback_url' --exclude-dir=node_modules --exclude-dir=.git .` | `grep -rlE 'x-[a-z-]*signature' --exclude-dir=node_modules --exclude-dir=.git .` |
-| Tools given to a model | `grep -lE '"(ai\|openai\|@anthropic-ai/sdk\|langchain\|@langchain/core)"' package.json` | `grep -rlE 'bind_tools\|tool_choice\|tool_use\|function_call' --exclude-dir=node_modules --exclude-dir=.git .` |
-| Payments | `grep -lE 'paystack\|paddle\|stripe\|revenuecat\|flutterwave' package.json` | `grep -rlE 'charge\.success\|entitlement\|x-[a-z-]*signature' --exclude-dir=node_modules --exclude-dir=.git .` |
+| MCP server | `grep -rlE '@modelcontextprotocol/sdk\|McpServer\|mcp-handler' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=hullproof --exclude-dir=.claude --exclude-dir=editors --exclude-dir=prompts .` | `grep -rlE 'tools/call\|tools/list\|jsonrpc' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=hullproof --exclude-dir=.claude --exclude-dir=editors --exclude-dir=prompts .`, plus a read of any route handler that dispatches on a `method` field |
+| Outbound webhooks | `grep -rlE 'svix\|webhook_endpoints\|webhook_url\|callback_url' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=hullproof --exclude-dir=.claude --exclude-dir=editors --exclude-dir=prompts .` | `grep -rlE 'x-[a-z-]*signature' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=hullproof --exclude-dir=.claude --exclude-dir=editors --exclude-dir=prompts .` |
+| Tools given to a model | `grep -lE '"(ai\|openai\|@anthropic-ai/sdk\|langchain\|@langchain/core)"' package.json` | `grep -rlE 'bind_tools\|tool_choice\|tool_use\|function_call' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=hullproof --exclude-dir=.claude --exclude-dir=editors --exclude-dir=prompts .` |
+| Payments | `grep -lE 'paystack\|paddle\|stripe\|revenuecat\|flutterwave' package.json` | `grep -rlE 'charge\.success\|entitlement\|x-[a-z-]*signature' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=hullproof --exclude-dir=.claude --exclude-dir=editors --exclude-dir=prompts .` |
 
 In a markdown table the pipes in each pattern are written `\|`. Type them as plain `|` inside the single quotes.
 
@@ -325,7 +349,7 @@ The report names the exact owner action that closes every NOT ASSESSED item. In 
 
 A static run reads code and configuration only. It cannot end READY while any BLOCKER or CRITICAL requirement sits in a NOT ASSESSED sub state, because provider settings, builds and two user tests lie outside the repository. An unsettled BLOCKER or CRITICAL requirement counts as open at the gate (G-4 and G-5). An unsettled HIGH requirement stays in UNVERIFIED CONTROLS with its owner action and does not by itself hold the gate.
 
-**What a release needs.** Most BLOCKER and CRITICAL requirements have dashboard or runtime authority, so a coding agent alone cannot reach READY. For each release the owner supplies dated provider exports (`templates/PROVIDER-EXPORTS.md`), a staging test session (`templates/STAGING-TEST-WINDOW.md`), a production build scanned for secrets, and signed statements where a requirement asks for one. The Authority tag on each item of `PRE-LAUNCH-AUDIT.md` shows what settles it, and `security-controls.json` (Pro) shows it for every requirement. A requirement with dashboard or runtime authority can never be PASS (static), whatever its severity.
+**What a release needs.** Most BLOCKER and CRITICAL requirements have dashboard or runtime authority, so a coding agent alone cannot reach READY. For each release the owner supplies dated provider exports (`templates/PROVIDER-EXPORTS.md`), a staging test session (`templates/STAGING-TEST-WINDOW.md`), a production build scanned for secrets, and signed statements where a requirement asks for one. The Authority tag on each item of `PRE-LAUNCH-AUDIT.md` shows what settles it, and the machine readable controls file in Hullproof Pro shows it for every requirement. A requirement with dashboard or runtime authority can never be PASS (static), whatever its severity.
 
 ### Evidence freshness (Hullproof policy)
 
@@ -359,7 +383,7 @@ Rules for reusing a row from an earlier report:
 | # | Condition |
 |---|-----------|
 | G-1 | The project's stage (LAUNCH, GROWTH, or SCALE) is declared and recorded in `docs/security/STAGE.md` with the file and its date. The report lists the stage triggers found in the repository, and the declared stage is not lower than the stage derived from them (see How the stage is set). A stage that is only claimed, with no file, does not satisfy G-1. |
-| G-2 | A security audit report in the `templates/AUDIT-REPORT.md` format exists for this commit, or for an earlier commit with no security relevant changes since, as stated in the report. The report is the auditor's own output for this release (see Reuse of earlier reports). A report that is still in progress for this commit, with no verdict yet, does not satisfy G-2. |
+| G-2 | A security audit report in the `templates/AUDIT-REPORT.md` format exists for this commit, or for an earlier commit with no security relevant changes since, as stated in the report. The report is the auditor's own output for this release (see Reuse of earlier reports). A report that is still in progress for this commit, with no verdict yet, does not satisfy G-2. A report that says it is incomplete, or that covers only part of the scope, can support NOT READY only. |
 | G-3 | **No unresolved BLOCKER finding remains, verified or suspected, counted at its assessed severity.** A finding under a BLOCKER requirement counts as open until it is fixed, whatever rating it carries: a lowered FAIL is not a pass and never satisfies G-3 or G-4 (it changes report counts and fix order only). The Lowered BLOCKER requirements table has been reviewed, and every lowering in it rests on code evidence that holds and names an independent reviewer. A lowering whose evidence does not hold, or that has no independent reviewer, counts as a BLOCKER finding. An unsettled BLOCKER (NOT ASSESSED) counts as open under G-4. Production deployment cannot be considered security ready while any BLOCKER finding is open. |
 | G-4 | Every BLOCKER requirement at the declared stage is settled as PASS or NOT APPLICABLE. A BLOCKER requirement that is FAIL at any rating, or in any NOT ASSESSED sub state (or listed under UNVERIFIED CONTROLS in an audit report), counts as open, and the release is NOT READY. The report names the owner action that closes it. When both an audit report and a pre launch checklist exist for this commit, compare them on every BLOCKER requirement. The worse status stands until evidence settles the difference. |
 | G-5 | Every CRITICAL requirement at the declared stage is settled as PASS or NOT APPLICABLE, or, when it is FAIL or in a NOT ASSESSED sub state, it is resolved or, outside the protected classes, has explicit, current, written risk acceptance with a named owner, an independent approver (or, for a solo builder, the route in item 5 of the limits on CRITICAL acceptance), a compensating control, and an expiry date, within the limits on CRITICAL acceptance. In a protected class it is resolved or settled, never accepted. An unsettled CRITICAL requirement counts as open exactly like a failed one. |
@@ -384,7 +408,7 @@ READY (FREE SCOPE) says nothing about HIGH, MEDIUM or LOW requirements or findin
 | Condition | In the free scope |
 |-----------|-------------------|
 | G-1 | As written. The stage is declared and recorded in `docs/security/STAGE.md` with the file and its date, and is not lower than the stage derived from the repository. |
-| G-2 | A report in the `templates/AUDIT-REPORT.md` format that covers every BLOCKER and CRITICAL requirement at the declared stage. It can be written by hand or by a reviewer, meaning a person or an agent session independent of the code author. The free prelaunch results table plus a filled AUDIT-REPORT template satisfies G-2. The `/hullproof-security-audit` skill in Hullproof Pro can write such a report, and it is optional. |
+| G-2 | A report in the `templates/AUDIT-REPORT.md` format that covers every BLOCKER and CRITICAL requirement at the declared stage. It can be written by hand or by a reviewer, meaning a person or an agent session independent of the code author. The free prelaunch results table plus a filled AUDIT-REPORT template satisfies G-2. The audit skill that comes with Hullproof Pro can write such a report too, and it is optional. |
 | G-3, G-4, G-5 | As written, for the BLOCKER and CRITICAL requirements. |
 | G-6 | Outside the free scope. Free READY (FREE SCOPE) does not evaluate HIGH findings. |
 | G-7 | As written. The `/hullproof-prelaunch` skill runs gitleaks with the kit configuration (`tools/hullproof/gitleaks.toml`). The owner runs Semgrep with the kit rules and OSV Scanner in their own terminal and attaches the output files. A scan that was not run is listed, and G-7 is not met until it is. |
@@ -413,7 +437,7 @@ Every numeric value this standard sets, with where it is used and why. "Legal" i
 
 ## Versioning
 
-This standard follows semantic versioning. A major version changes or removes requirements, a minor version adds requirements, and a patch fixes wording. Requirement IDs are never reused. A withdrawn or merged ID keeps its number and is listed with its reason in the `withdrawn` list of `security-controls.json` (Pro), so a report that cites an old ID such as SEC-API-022 (merged into SEC-API-021) can still be read. Changes are recorded in the CHANGELOG.
+This standard follows semantic versioning. A major version changes or removes requirements, a minor version adds requirements or a new audit capability, and a patch fixes wording. Requirement IDs are never reused. A withdrawn or merged ID keeps its number and is listed with its reason in the withdrawn list of the machine readable controls file in Hullproof Pro, so a report that cites an old ID such as SEC-API-022 (merged into SEC-API-021) can still be read. Changes are recorded in the CHANGELOG.
 
 ## References
 

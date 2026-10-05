@@ -2,7 +2,7 @@
 
 Use this template for every FULL threat model required by a Pro edition requirement in [GOVERNANCE.md](../GOVERNANCE.md). Write the model before major architecture work or a security sensitive feature is implemented, and revisit it when the design changes. A model written after the code exists is still useful, but mark it RETROSPECTIVE in the header.
 
-Save each model in the project as `docs/security/threat-models/YYYY-MM-DD-<slug>.md`. The `/hullproof-threat-model` skill (Hullproof Pro) drafts one from this template. If the feature calls a model, uses tools, retrieval or agent memory, also complete [AI-THREAT-MODEL.md](AI-THREAT-MODEL.md) in the same file.
+Save each model in the project as `docs/security/threat-models/YYYY-MM-DD-<slug>.md`. Hullproof Pro has a threat model skill that drafts one from this template. If the feature calls a model, uses tools, retrieval or agent memory, also complete [AI-THREAT-MODEL.md](AI-THREAT-MODEL.md) in the same file.
 
 Requirement IDs in this template that have no entry in your `docs/hullproof` folder are Hullproof Pro requirements; cite them by ID as written.
 
@@ -195,7 +195,7 @@ Ticked by the human owner, not only the agent that drafted the model.
 
 ## Requirements this template serves
 
-a Pro edition requirement (FULL model before merge), a Pro edition requirement (DELTA notes point to this model), a Pro edition requirement (diagram, STRIDE walk, one response per threat, SEC ID and test per mitigation, exit check), a Pro edition requirement (AI section, through AI-THREAT-MODEL.md), a Pro edition requirement (accepted risk record), a Pro edition requirement (abuse cases and limits), a Pro edition requirement (resource heavy functions), a Pro edition requirement (independent review), a Pro edition requirement (refresh after new evidence) and a Pro edition requirement (threat model entry for every AI feature).
+A Pro edition requirement (FULL model before merge), a Pro edition requirement (DELTA notes point to this model), a Pro edition requirement (diagram, STRIDE walk, one response per threat, SEC ID and test per mitigation, exit check), a Pro edition requirement (AI section, through AI-THREAT-MODEL.md), a Pro edition requirement (accepted risk record), a Pro edition requirement (abuse cases and limits), a Pro edition requirement (resource heavy functions), a Pro edition requirement (independent review), a Pro edition requirement (refresh after new evidence) and a Pro edition requirement (threat model entry for every AI feature).
 
 ## Sources
 

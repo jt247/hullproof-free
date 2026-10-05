@@ -302,7 +302,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Prefer moving billing, entitlement, verification, role and credential state to a table with no client write grant, written only by server code. Supabase calls column level privileges an advanced feature and recommends row level policies plus a dedicated table for user roles [SRC-302].
 - Read the privileged value from that server written table or from `app_metadata` (SEC-AUTHZ-005), never from a column the client can update.
 - For each table with a client write policy, add a short record to the migration comment or the security decisions log: columns a user can change, privileged columns, and the server code that reads each privileged column.
-- Owns the root cause Client writable privileged columns. SEC-AUTHZ-004 (request body allowlists), SEC-AUTHZ-005, SEC-API-126 (entitlement writes), SEC-DB-002, Pro edition requirements point here; report one finding.
+- Owns the root cause Client writable privileged columns. SEC-AUTHZ-004 (request body allowlists), SEC-AUTHZ-005, SEC-API-126 (entitlement writes), SEC-DB-002 and Pro edition requirements point here; report one finding.
 - Default stack: rebuild the final grant and policy set by reading `supabase/migrations` in order (the Hullproof helper `tools/hullproof/helpers/policy_set.py` does this and flags client writable sensitive columns by name, where it is installed). The rebuilt set is a map to check against the live catalog, not proof.
 
 **Verify.**

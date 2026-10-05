@@ -1,8 +1,8 @@
 # Hullproof
 
-A secure software development standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
+A software security standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.1.3. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.2.0. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What Hullproof is
 
@@ -36,18 +36,16 @@ Hullproof Pro is the paid edition. It holds 655 requirements and uses the same r
 | Area | Free edition | Hullproof Pro |
 |------|--------------|---------------|
 | Requirements | Every BLOCKER and every CRITICAL requirement (110 in all, 44 of them BLOCKER) | All 655 requirements: the free set plus every HIGH, MEDIUM and LOW requirement |
-| Release audit | `/hullproof-prelaunch` runs the release checklist and writes a results file | A full security audit skill that writes the audit report with evidence, and a verdict that includes HIGH findings |
-| API review | The API requirements that are BLOCKER or CRITICAL | A skill that reviews your endpoints against the whole API standard |
-| Threat model | A threat model template you fill in yourself | A skill that builds the threat model with you from your repository |
-| Reviewer agents | A read only pre launch auditor | The auditor plus a security reviewer and a threat modeler |
-| Controls file | None | A machine readable `security-controls.json` for your own tooling |
+| Release audit | `/hullproof-prelaunch` runs the release checklist and writes a results file | A full security audit that writes the audit report with evidence, and a verdict that includes HIGH findings |
+| API review | The API requirements that are BLOCKER or CRITICAL | A review of your endpoints against the whole API standard |
+| Threat model | A threat model template you fill in yourself | A threat model built with you from your repository |
+| Reviewer agents | A read only pre launch auditor | The auditor plus further agents that review, hunt, check coverage and try to disprove findings |
+| Machine readable requirements | None | A file of every requirement for your own tooling |
 | CI gate | None | A CI gate example that reads the results table and blocks a release on open items |
 | Editor rules | Scoped rules for Claude Code | Rule files for Cursor, Windsurf, Codex and GitHub Copilot, and an AI agent security prompt |
 | Templates and checklists | Audit report, stage record, accepted risk, threat models, breach runbook, provider exports and staging test window | The same, plus further templates for incident response, ownership, inventories and policies, and the SaaS, API and AI checklists |
 
-## Get notified when Pro launches
-
-Hullproof Pro is not on sale yet. To hear when it launches, [join the waitlist](https://forms.gle/1Jfv7qj9h8QwXgq36). The launch price is for the first 500 buyers.
+To ask for access to Hullproof Pro, [join the waitlist](https://forms.gle/1Jfv7qj9h8QwXgq36). Purchase terms, licensing and support for Pro are in the Pro package.
 
 ## How Hullproof relates to bug hunting tools
 
@@ -64,7 +62,7 @@ The free scope is the BLOCKER and CRITICAL requirements. The Production Security
 | Condition | In the free scope |
 |-----------|-------------------|
 | G-1 | The stage is declared and recorded in `docs/security/STAGE.md` with the file and its date. |
-| G-2 | An audit report in the `docs/hullproof/templates/AUDIT-REPORT.md` format that covers every BLOCKER and CRITICAL requirement. You can write it by hand or have a reviewer (a person, or an agent session independent of the code author) write it. `/hullproof-prelaunch` does not write this report. You fill in the template from its results table, and the two together satisfy G-2. The Pro `/hullproof-security-audit` skill can also write the report, and it is optional. |
+| G-2 | An audit report in the `docs/hullproof/templates/AUDIT-REPORT.md` format that covers every BLOCKER and CRITICAL requirement. You can write it by hand or have a reviewer (a person, or an agent session independent of the code author) write it. `/hullproof-prelaunch` does not write this report. You fill in the template from its results table, and the two together satisfy G-2. The Pro edition has an audit skill that can also write the report, and it is optional. |
 | G-3, G-4, G-5 | No BLOCKER is open. Every BLOCKER is PASS or NOT APPLICABLE. Every CRITICAL is settled, or accepted in writing where the standard allows it. |
 | G-6 | Outside the free scope. |
 | G-7 | Secret, static and dependency scans ran on this commit. `/hullproof-prelaunch` runs gitleaks with the kit configuration. You run Semgrep with the kit rules and OSV Scanner in your own terminal and attach the output files. |
@@ -89,18 +87,18 @@ Requirements:
 
 Steps:
 
-1. Get the kit. Clone this repository, or unzip `hullproof-free-0.1.3.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.1.3/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.1.3.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
-2. From the root of your project, copy the kit in. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
+1. Get the kit. Clone this repository, or unzip `hullproof-free-0.2.0.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.2.0/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.2.0.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
+2. From the root of your project, copy the kit in. This command is for a project that has no Hullproof files yet. If you installed Hullproof before, follow Update below instead. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
 
    ```bash
-   cp -Rn path/to/hullproof-free-0.1.3/kit/. .
+   cp -Rn path/to/hullproof-free-0.2.0/kit/. .
    ```
 
    Then copy the license files in. This step is required, because the license texts must travel with the files you copied:
 
    ```bash
    mkdir -p docs/hullproof/licence
-   cp path/to/hullproof-free-0.1.3/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
+   cp path/to/hullproof-free-0.2.0/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
    ```
 
 3. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
@@ -115,7 +113,36 @@ Steps:
 7. Run `/hullproof-prelaunch`. It asks for the stage, the markets you serve and what it may run, then writes `docs/security/reports/PRE-LAUNCH-RESULTS-<date>.md`. Keep that folder out of any public repository, because the report lists exploitable failures.
 8. Fill in `docs/hullproof/templates/AUDIT-REPORT.md` from the results table. Without that report gate condition G-2 is not met and the verdict stays NOT READY.
 
-To update, copy the kit again without `-n`. Files under `docs/hullproof/`, `.claude/rules/hullproof/`, `.claude/skills/hullproof-*`, `.claude/agents/hullproof-*`, `.claude/hooks/hullproof-*` and `tools/hullproof/` are replaced, and any local edit to them is lost. Files that a newer release no longer ships are not deleted. Nothing else is touched.
+## Update
+
+Use this to move to a newer release of the free edition. Do not use `cp -Rn` for it, because `-n` keeps every file that already exists and your old files would win silently.
+
+1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.2.0/` for this release.
+2. From the root of your project, save a copy of the current Hullproof files, outside the project:
+
+   ```bash
+   mkdir -p ../hullproof-old/skills ../hullproof-old/agents ../hullproof-old/hooks ../hullproof-old/rules
+   cp -R docs/hullproof tools/hullproof ../hullproof-old/
+   cp -R .claude/skills/hullproof-* ../hullproof-old/skills/
+   cp -R .claude/agents/hullproof-* ../hullproof-old/agents/
+   cp -R .claude/hooks/hullproof-* ../hullproof-old/hooks/
+   cp -R .claude/rules/hullproof ../hullproof-old/rules/
+   ```
+
+3. Copy the new files over them. These are the only paths this command touches. Any local edit to a file in them is replaced, so merge your edits from the saved copy afterwards.
+
+   ```bash
+   KIT=path/to/hullproof-free-0.2.0/kit
+   mkdir -p docs tools .claude/skills .claude/agents .claude/hooks .claude/rules
+   cp -R "$KIT/docs/hullproof" docs/
+   cp -R "$KIT/tools/hullproof" tools/
+   cp -R "$KIT"/.claude/skills/hullproof-* .claude/skills/
+   cp -R "$KIT"/.claude/agents/hullproof-* .claude/agents/
+   cp -R "$KIT"/.claude/hooks/hullproof-* .claude/hooks/
+   cp -R "$KIT/.claude/rules/hullproof" .claude/rules/
+   ```
+
+4. Check the result with `shasum -a 256 -c docs/hullproof/.kit-manifest`. Every line must say OK. Files that a newer release no longer ships are not deleted. They stay in your folders and are not in the manifest. Then copy the license files again as in Install step 2. Nothing else is touched.
 
 ## What to keep
 
@@ -155,13 +182,13 @@ The auditor agent reads your repository. The skill writes one results file. Neit
 
 What the hook does. The hook checks every shell command the agent tries to run. It allows a short list of read only commands (git history commands, `ls`, `wc`, `grep`, `find` without `-exec` or `-delete`, `sed -n`, `awk` without `system()` or redirection, `jq`, redacted `gitleaks`, and read only `curl` for the auditor). It blocks command chaining, redirection, command substitution, interpreters, package installs and anything else off the list. If the hook cannot read its input or fails, it blocks the command. It is attached to the skill and to the agent, and the skill's `allowed-tools` line pre approves only the exact forms it lists, so other allowed forms may ask you for permission.
 
-What the hook does not do. It limits writes made through the shell. It is not attached to the Write tool in the skill, so the rule that the skill writes only new `.md` files in `docs/security/reports/` is an instruction in the skill, not something the hook enforces. The agent has no Write tool.
+What the hook does not do. It limits writes made through the shell and the path of each Write call the skill makes. The skill's `allowed-tools` line pre approves Write only for Markdown files in `docs/security/reports/`, and the hook refuses a write to the hook, the agent, the skill, the standards, the settings or source files. It scans the text for secret shaped values and does not judge the rest of it, so an instruction planted in your code could still make the skill write misleading text into a report. The agent has no Write tool.
 
 Before its first real command the auditor runs a probe that a working hook blocks. It prints `HOOK: ACTIVE` or `HOOK: INACTIVE` as the first line of its output, and makes no shell call after `INACTIVE`. Treat `HOOK: INACTIVE` as a stop. The auditor then checks the kit files against the manifest in `docs/hullproof/.kit-manifest` and prints `KIT: verified`, `KIT: MISMATCH` or `KIT: NOT VERIFIED`. The manifest detects accidental or hostile edits to the kit. It cannot protect against someone who edits both a file and its manifest line.
 
 ## Limits
 
-1. The hook is the only enforced control. The rules written in the agent and skill files are instructions that a model can ignore. The hook controls which commands run, not what the agent reads or which file the skill writes, so review each report before you share it and run the agents only on repositories you trust.
+1. The hook is the only enforced control. The rules written in the agent and skill files are instructions that a model can ignore. The hook controls which commands run, blocks reads of secret file names and limits the path of the skill's Write call, but it does not control the rest of what the agent reads or what a report says, so review each report before you share it and run the agents only on repositories you trust.
 2. READY (FREE SCOPE) covers the BLOCKER and CRITICAL requirements at the declared stage and nothing else. It is evidence that a defined set of checks was done on one commit. It is not a certification and not proof that a product is secure.
 3. Static analysis and scans cannot settle items that live in a provider dashboard, a build or a running system, and scans find only what their rules know. Those items stay NOT ASSESSED until the owner supplies evidence.
 4. The requirements were validated on products built on the default stack: Next.js, TypeScript, Supabase and Vercel. Other stacks have not been validated.
@@ -180,11 +207,7 @@ Every requirement has an ID in the format `SEC-[DOMAIN]-[NUMBER]` and the same f
 
 ## Support
 
-Ask questions and report problems with the kit as GitHub issues on this repository, https://github.com/jt247/hullproof-free/issues. Issues are public, so do not paste secrets or private project details. Hullproof Pro buyers use the same route and must not paste Pro files.
-
-## Hullproof Pro terms in short
-
-Pro is delivered as a download from the checkout provider. Buyers keep access to the latest version through the provider's customer portal, using the same email they bought with. Updates are announced on the Releases page of this repository. All sales are final and not refundable once the download has been delivered, subject to the checkout provider's rules and applicable law. The full terms are in the Pro package, in LICENSE-PRO.md and LICENSING.md.
+Ask questions and report problems with the kit as GitHub issues on this repository, https://github.com/jt247/hullproof-free/issues. Issues are public, so do not paste secrets or private project details.
 
 ## Reporting a vulnerability in Hullproof
 

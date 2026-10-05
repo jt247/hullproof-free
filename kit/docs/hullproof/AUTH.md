@@ -258,7 +258,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Default stack: Supabase `signOut()` deletes the session row, but an issued access JWT still verifies until `exp`. On sensitive actions, check the JWT `session_id` against `auth.sessions` or call `getUser()`. Keep the JWT expiry at the 1 hour default or lower.
 - Default stack: pass the sign out `scope` explicitly and record the choice in the session policy (a Pro edition requirement). The JavaScript client used by Next.js and Expo defaults to `global`, so a plain logout on a phone also ends the user's web sessions; the Dart and Kotlin clients default to `local`. Use `local` for an ordinary logout that should end only this device.
 - Default stack (checked 2026-10-03): Supabase documents that `signOut()` removes the affected sessions and destroys their refresh tokens, that access tokens of revoked sessions stay valid until their `exp` claim, that the JavaScript client defaults to the `global` scope, and that checking the JWT `session_id` claim against `auth.sessions` shows whether the user signed out. Test the access token replay step with these facts in mind.
-- A product with no server side logout at all is a finding under this requirement. a Pro edition requirement covers only whether an existing logout can be reached.
+- A product with no server side logout at all is a finding under this requirement. A Pro edition requirement covers only whether an existing logout can be reached.
 
 **Verify.**
 1. Capture an access token and refresh token, log out, then replay both with curl directly against the API (WSTG-v42-SESS-06 method); the refresh must fail.

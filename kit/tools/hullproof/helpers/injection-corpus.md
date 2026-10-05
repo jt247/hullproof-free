@@ -4,8 +4,8 @@ Two different test inputs are needed, and no single corpus supplies both.
 
 | Need | Requirement | Input | Source |
 |------|-------------|-------|--------|
-| Attack phrasing that a model may follow: instruction overrides, role play, encoded instructions, instructions hidden in a document | a Pro edition requirement (and a Pro edition requirement for agents) | A maintained, named corpus run through the real feature | NVIDIA garak probes, below |
-| Text that closes the feature's own delimiter and starts a new instruction | a Pro edition requirement | The prompt template's own delimiters, which no outside corpus can know | `tests/fixtures/injection-delimiters.txt`, shipped in this kit |
+| Attack phrasing that a model may follow: instruction overrides, role play, encoded instructions, instructions hidden in a document | A Pro edition requirement (and a Pro edition requirement for agents) | A maintained, named corpus run through the real feature | NVIDIA garak probes, below |
+| Text that closes the feature's own delimiter and starts a new instruction | A Pro edition requirement | The prompt template's own delimiters, which no outside corpus can know | `tests/fixtures/injection-delimiters.txt`, shipped in this kit |
 
 ## Decision: garak for the attack phrasing corpus
 

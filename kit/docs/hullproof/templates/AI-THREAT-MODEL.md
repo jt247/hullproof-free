@@ -10,14 +10,14 @@ Requirement IDs in this extension that have no entry in your `docs/hullproof` fo
 
 | Asset | Check against |
 |-------|---------------|
-| System prompt and hidden context | SEC-AI-042, a Pro edition requirement |
-| Tool definitions and the credentials each tool runs under | SEC-AI-020, a Pro edition requirement |
-| Retrieved content and the documents behind it | SEC-AI-029, a Pro edition requirement, SEC-AI-031 |
-| Vector store and embeddings | SEC-AI-034, SEC-AI-035, Pro edition requirements |
-| Conversation history and agent memory | SEC-AI-045, a Pro edition requirement |
-| Model provider account, keys and data settings | SEC-AI-041, Pro edition requirements |
+| System prompt and hidden context | SEC-AI-042 and a Pro edition requirement |
+| Tool definitions and the credentials each tool runs under | SEC-AI-020 and a Pro edition requirement |
+| Retrieved content and the documents behind it | SEC-AI-029, SEC-AI-031 and a Pro edition requirement |
+| Vector store and embeddings | SEC-AI-034, SEC-AI-035 and Pro edition requirements |
+| Conversation history and agent memory | SEC-AI-045 and a Pro edition requirement |
+| Model provider account, keys and data settings | SEC-AI-041 and Pro edition requirements |
 | Prompt and output logs | Pro edition requirements |
-| AI spend budget | SEC-AI-002, a Pro edition requirement |
+| AI spend budget | SEC-AI-002 and a Pro edition requirement |
 
 ## Extra actors to list in section 2
 

@@ -332,7 +332,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 **Why.** A job endpoint is a public URL that runs privileged work. Inngest documents that its TypeScript SDK skips signature verification when `INNGEST_DEV=1` or `isDev: true` is set; copied into a deployed environment, that lets anyone send a forged event and run any function. QStash warns that whoever holds the signing keys can send requests that look like QStash, and that verifying against a re-serialized body fails or invites shortcuts.
 
 **Implementation.**
-- Vercel Cron: compare the `Authorization` header with `Bearer ` plus `CRON_SECRET` in constant time (SEC-API-001, a Pro edition requirement in [API-SECURITY.md](API-SECURITY.md)).
+- Vercel Cron: compare the `Authorization` header with `Bearer ` plus `CRON_SECRET` in constant time (SEC-API-001 and a Pro edition requirement in [API-SECURITY.md](API-SECURITY.md)).
 - Inngest: set `INNGEST_SIGNING_KEY` in each deployed environment, and `INNGEST_SIGNING_KEY_FALLBACK` during rotation. Set `INNGEST_DEV` only in local `.env` files, never in Vercel or Render settings, and never hardcode `isDev: true`.
 - QStash: use the SDK `Receiver` with the current and next signing keys, pass the raw body string, and check the `sub` claim matches the endpoint URL.
 - Store signing keys as secrets (a Pro edition requirement in [SECRETS.md](SECRETS.md)).

@@ -1,6 +1,9 @@
 # Security Audit Report Template
 
-Every Hullproof audit, whether run by an agent or a person, produces a report in this format. In the free edition you can fill it in by hand, or have a reviewer fill it in, from the `/hullproof-prelaunch` results table; that report satisfies G-2 when it covers every BLOCKER and CRITICAL requirement. The `/hullproof-security-audit` skill writes it to `docs/security/reports/SECURITY-AUDIT-REPORT.md` unless the user names another path. A report lists exploitable findings, so keep its folder out of any public repo (add it to `.gitignore`); the skill warns when the path is not ignored. Keep earlier reports: a re run after fixes is a new report for the new commit, never an edit of the old one. A report is never overwritten. Before a new report replaces an existing one, the old one is copied unchanged to `docs/security/reports/<name>-<sha7>-<date>.md` (a name that already exists gets a counter, and an old report that holds a secret value is not copied: stop and ask the owner to scrub it). The report text is checked for secret values before it is written, and it quotes no commit message (give the commit hash only).
+Every Hullproof audit, whether run by an agent or a person, produces a report in this format. In the free edition you can fill it in by hand, or have a reviewer fill it in, from the `/hullproof-prelaunch` results table; that report satisfies G-2 when it covers every BLOCKER and CRITICAL requirement. An audit run writes it to `docs/security/reports/SECURITY-AUDIT-REPORT.md` unless the user names another path. A report lists exploitable findings, so keep its folder out of any public repo (add it to `.gitignore`); the skill warns when the path is not ignored. Keep earlier reports: a re run after fixes is a new report for the new commit, never an edit of the old one. A report is never overwritten. If the report path is already taken, the old files stay where they are as the archive and the new report is written under a run suffix, `<name>-run2.md`, then `-run3.md` and so on (an old report that holds a secret value is not rerun over: stop and ask the owner to scrub it). The report text is checked for secret values before it is written, and it quotes no commit message (give the commit hash only).
+
+Every finding carries a class that says what evidence backs it: FINDING, MISSING CONTROL RECORD or HARDENING NOTE (the definitions are in the Finding classes section of `docs/hullproof/STANDARD.md`). A class never changes a result state and never changes the gate: a requirement that is FAIL stays FAIL whatever the class of its finding.
+
 
 The findings sections are fixed and always appear in this order, even when empty (write "None."): BLOCKERS, CRITICAL, HIGH, MEDIUM, LOW, PASSED CONTROLS, UNVERIFIED CONTROLS, RECOMMENDED NEXT ACTIONS. Sections marked optional appear only when they apply. A large audit (more than about 30 findings) should use them, because a flat list cannot be planned from.
 
@@ -26,11 +29,12 @@ The findings sections are fixed and always appear in this order, even when empty
 | Edition and scope | Hullproof Pro (full standard), or Hullproof Free (free scope: the BLOCKER and CRITICAL requirements only; HIGH, MEDIUM and LOW requirements are outside the scope and not scored, and G-6 is outside the scope) |
 | Author | The tool and run id, or the person who wrote this report. A report with no author field is not reused. |
 | Evidence folder | The named folder that holds the scan output, exports and test records for this commit |
-| Tool and version | The skill or agent that wrote this report (for example `hullproof-security-audit`) and the Hullproof version from the Version line of `docs/hullproof/STANDARD.md`. A person writes their name and "by hand". |
+| Tool and version | The skill or agent that wrote this report (for example `hullproof-prelaunch`) and the Hullproof version from the Version line of `docs/hullproof/STANDARD.md`. A person writes their name and "by hand". |
 | Session id | The id of the agent session that wrote the report, or "not available". A report from a person writes "by hand". |
 | Adopted on | The date and commit of the first commit in git history that added `docs/hullproof/STANDARD.md` (see Provenance recipes in `tools/hullproof/helpers/recipes.md`), or "not in git history". It is the committer date, which a rewritten history can change, so compare it with the hosting platform's record of the first push. |
 | Pull request refs fetched | Yes or no. Yes means the owner ran the fetch from the Provenance recipes before the history scan, so pull request and fork refs were in the clone. Write the ref count the owner reported, or "unknown". |
 | Hook and kit check | HOOK: ACTIVE or INACTIVE (probe result), and KIT: verified, MISMATCH or NOT VERIFIED (manifest check) |
+
 
 ## Evidence hashes
 
@@ -147,6 +151,7 @@ How findings were combined, so a reader can trace a finding back to its sources.
 
 "Cannot be waived" governs acceptance, not rating (Severity rule 6 in `docs/hullproof/STANDARD.md`). A finding under a BLOCKER requirement is never rated below CRITICAL. Every finding rated CRITICAL instead of BLOCKER is listed here so the gate (G-3) can review it, with an independent reviewer: a person or an agent session that did not write the code and did not write the rating. A row with no reviewer, or with evidence that does not hold, counts as a BLOCKER. A lowered finding never satisfies G-3 or G-4 and is never accepted. "None." if there are none.
 
+
 | Finding | Requirement | Requirement severity | Rating given (CRITICAL at the lowest) | Code evidence for the lower rating | Independent reviewer (name or session, and date; PENDING if none) |
 |---------|-------------|----------------------|----------------------------------------|-------------------------------------|---------------------------------------------------------------------|
 | F-NN | SEC-[DOMAIN]-[NUMBER] | BLOCKER | | file:line and the reach or impact limit it shows. An identifier precondition alone is never enough. | |
@@ -185,11 +190,13 @@ Each finding uses the block below. Order within a section by how easily it can b
 | Root cause | Short label. Findings with one cause share it, so the number of fixes is visible. |
 | Raised by | Reviewers and tools that reported it (optional) |
 | Severity | BLOCKER, CRITICAL, HIGH, MEDIUM or LOW, from the ordered rules in the Severity section of `docs/hullproof/STANDARD.md`. If it differs from the requirement's own severity, say why. Below a BLOCKER requirement: also list it in Lowered BLOCKER requirements. |
+| Class | FINDING (a lower trust principal crosses a boundary through a traced path), MISSING CONTROL RECORD (a required control or record is absent, no exploit path claimed) or HARDENING NOTE (the requirement is unmet at this layer while another named layer prevents the effect on every path; never under a BLOCKER requirement). A class never changes the result or the gate. |
 | Confidence | VERIFIED (reproduced, or proven from code) or SUSPECTED (pattern match, not confirmed) |
 | Location | file:line, endpoint, or setting |
 | Exploitability | Who can trigger it, what they need, and what they gain. Say "demonstrated" only if it was actually reproduced in this audit. |
 | Remediation | The change needed, specific to this codebase, and how to confirm the fix |
 | Evidence | Code excerpt, tool output, or probe result. Never include secret values: give location and type only. |
+
 
 ## CRITICAL
 
@@ -198,6 +205,14 @@ Each finding uses the block below. Order within a section by how easily it can b
 ## MEDIUM
 
 ## LOW
+
+## HARDENING NOTES (optional)
+
+Items whose requirement is unmet at one layer while another layer, shown as code, prevents the effect on every path, and remarks outside any requirement. A layered HARDENING NOTE is rated one level below the requirement it names, and is never filed under a BLOCKER requirement. A HARDENING NOTE on a CRITICAL requirement still holds G-5, and one rated HIGH counts at G-6. A comment, a document or a statement that something was reviewed is never the preventing layer.
+
+| Item | Kind | Requirement | Rating | Preventing layer (file:line) | Becomes a FINDING when |
+|------|------|-------------|--------|-------------------------------|-------------------------|
+| F-NN or a short title | Layered, or observation (no requirement) | SEC-[DOMAIN]-[NUMBER], or none | | file:line and what it does | The condition that removes the preventing layer |
 
 ## PASSED CONTROLS
 
@@ -215,7 +230,7 @@ Every requirement in scope that could not be settled, and why. This is what `doc
 
 ## RECOMMENDED NEXT ACTIONS
 
-Numbered, in the order they should be done. Severity order is the default: fix BLOCKERS first, then close UNVERIFIED BLOCKER requirements, then CRITICAL and HIGH. Dependency order is allowed and preferred where it matters, for example containing exposed secrets before anything else, or locking down the data API before fixing individual routes; say when an action sits above its severity for that reason. Name the finding or requirement each action closes.
+Numbered, in the order they should be done. Severity order is the default: fix BLOCKERS first, then close the BLOCKER requirements listed in UNVERIFIED CONTROLS, then CRITICAL and HIGH. Dependency order is allowed and preferred where it matters, for example containing exposed secrets before anything else, or locking down the data API before fixing individual routes; say when an action sits above its severity for that reason. Name the finding or requirement each action closes.
 
 ### Remediation groups (optional)
 
@@ -224,15 +239,17 @@ The same actions grouped by root cause and phase, so the number of fixes is clea
 | Group | Root cause | Findings closed | Phase (contain, fix, verify, harden) | Depends on |
 |-------|------------|-----------------|---------------------------------------|------------|
 
+
 ## Coverage ledger
 
-One row for every requirement in scope, so a requirement nobody checked cannot go missing. In scope means the IDs left after the declared stage, the gate answers and the release scope (a requirement removed by a gate or the release scope still gets a row, with the result NOT APPLICABLE and the reason). Each ID appears exactly once. Compare the in scope ID list with the rows returned, ID by ID, and write the count line. `python3 tools/hullproof/helpers/ledger.py` does the comparison. A missing BLOCKER or CRITICAL row counts as an open item at the gate, and a count line that does not read missing 0, duplicate 0, extra 0 means the report is not complete.
+One row for every requirement in scope, so a requirement nobody checked cannot go missing. In scope means the IDs left after the declared stage, the gate answers and the release scope (a requirement removed by a gate or the release scope still gets a row, with the result NOT APPLICABLE and the reason). Each ID appears exactly once. Compare the in scope ID list with the rows returned, ID by ID, and write the count line. An unsettled row reads `NOT ASSESSED: <state>`, for example `NOT ASSESSED: NEEDS DASHBOARD`, because the gate reads the result column. `tools/hullproof/helpers/ledger.py` repeats the comparison for the requirements that the checklists you give it list. A missing BLOCKER or CRITICAL row counts as an open item at the gate, and a count line that does not read missing 0, duplicate 0, extra 0 means the report is not complete.
 
 Ledger: in scope N, rows N, missing 0, duplicate 0, extra 0
 
 | ID | Result | Authority | Where it is recorded |
 |----|--------|-----------|----------------------|
 | SEC-[DOMAIN]-[NUMBER] | PASS (static), PASS, FAIL, NOT APPLICABLE or NOT ASSESSED: route | repo, dashboard or runtime | F-NN, PASSED CONTROLS, UNVERIFIED CONTROLS, or the gate name |
+
 
 ## Tool output
 
@@ -253,6 +270,7 @@ Files scanned against files tracked, and whether the clone is shallow: state bot
 
 This report reflects the commit and date above. It is based on code review, tool output, and live testing where stated, not on production traffic or runtime monitoring. No exploitation is claimed unless a finding says it was demonstrated. A READY verdict means the known risks covered by Hullproof at the declared stage were checked and resolved, not that the application is secure. READY (FREE SCOPE) covers only the BLOCKER and CRITICAL requirements and says nothing about HIGH, MEDIUM or LOW findings.
 
+
 ## Provenance trailer
 
 Written last, by the same run, with commands the hook allows (`git rev-parse HEAD` and `git log -1 --no-textconv --no-ext-diff --format=%T HEAD`). The tree id is the git hash of every tracked file at the audited commit, so a later run can tell whether the code changed since this report. It is a content id, not a signature: anyone can copy it into another report, which is why Author, Session id and Adopted on are also recorded.
@@ -266,6 +284,6 @@ Written last, by the same run, with commands the hook allows (`git rev-parse HEA
 | Working tree | Clean, or dirty with the number of changed and untracked paths (a dirty tree makes the tree id describe only the commit) |
 ```
 
-For a code change audit or an API review, keep the header, the severity count table, the coverage ledger and the eight findings sections, and skip the system profile, strengths and domain scorecard. Any audit report states the gate outcome its evidence can support and names the G conditions it could not evaluate. A partial review can support NOT READY, never READY or READY WITH ACCEPTED RISK.
+For a code change audit or an API review, keep the header, the severity count table, the coverage ledger and the eight findings sections, and skip the system profile, strengths and domain scorecard. Any audit report states the gate outcome its evidence can support and names the G conditions it could not evaluate. A partial review can support NOT READY, never READY or READY WITH ACCEPTED RISK. A review that covers only part of the scope, or stops before its planned work is done, says so in its header and counts as partial.
 
 This report covers the Hullproof Free requirements (every BLOCKER and CRITICAL). The Pro edition checks 545 further requirements (HIGH, MEDIUM and LOW) in the same run.

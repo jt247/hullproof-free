@@ -106,7 +106,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 - For JSON APIs, require `Content-Type: application/json` or a custom header and reject requests without it.
 - Do not use the naive (unsigned) double submit cookie pattern.
 - Token based APIs that never read ambient cookies are out of scope, but still follow a Pro edition requirement.
-- a Pro edition requirement is the second, framework independent layer for the same failure: it rejects the cross site and same site request by its Fetch Metadata or Origin. A route that fails both is one finding against this requirement.
+- A Pro edition requirement is the second, framework independent layer for the same failure: it rejects the cross site and same site request by its Fetch Metadata or Origin. A route that fails both is one finding against this requirement.
 
 **Verify.**
 1. List every state changing route handler and exported Server Action from the framework route table (not from memory). From a page on another origin, submit each as a form post and as a `fetch` with `credentials: 'include'`, while signed in; every one must fail, and the same request from the app's own origin must succeed (positive control).
@@ -115,7 +115,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 
 **Evidence.** Cross origin test record or automated test results.
 
-**Exceptions.** Does not apply to a route that authenticates only with an `Authorization` bearer token and never reads an ambient cookie. Webhook routes that verify a provider signature over the raw body (SEC-API-101; a Pro edition requirement in FRONTEND-SECURITY.md) are exempt. No acceptance is available for any other case: a finding here is in the authentication class under Protected classes in STANDARD.md, and the fix is a CSRF token, an origin check or a SameSite setting that the route's tests confirm.
+**Exceptions.** Does not apply to a route that authenticates only with an `Authorization` bearer token and never reads an ambient cookie. Webhook routes that verify a provider signature over the raw body (SEC-API-101 and a Pro edition requirement in FRONTEND-SECURITY.md) are exempt. No acceptance is available for any other case: a finding here is in the authentication class under Protected classes in STANDARD.md, and the fix is a CSRF token, an origin check or a SameSite setting that the route's tests confirm.
 
 **References.** OWASP ASVS 5.0.0 v5.0.0-3.5.1, v5.0.0-3.5.2 [SRC-010]; OWASP WSTG 4.2 WSTG-v42-SESS-05 [SRC-186]; OWASP Cross-Site Request Forgery Prevention Cheat Sheet, sections Token-Based Mitigation and Employing Custom Request Headers for AJAX/API [SRC-040]; OWASP Top 10:2025 A01:2025 (CWE-352) [SRC-020]; Next.js Data Security guide, section CSRF [SRC-078].
 
