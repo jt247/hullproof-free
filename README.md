@@ -47,7 +47,7 @@ Hullproof Pro is the paid edition. It holds 655 requirements and uses the same r
 
 ## Get notified when Pro launches
 
-Hullproof Pro is not on sale yet. To hear when it launches, [join the waitlist](WAITLIST_FORM_URL_PLACEHOLDER). The launch price is for the first 500 buyers.
+Hullproof Pro is not on sale yet. To hear when it launches, [join the waitlist](https://forms.gle/1Jfv7qj9h8QwXgq36). The launch price is for the first 500 buyers.
 
 ## How Hullproof relates to bug hunting tools
 
