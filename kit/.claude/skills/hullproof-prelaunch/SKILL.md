@@ -159,6 +159,7 @@ Never overwrite: archive first, then write, as agent rules section 4 says (the a
 3. The results table, one row per checklist item, in the checklist's order. Use the columns the checklist's Results table has (ID, Result, Severity, Owning doc, Root cause or finding id, Evidence class, Reused or rechecked, Evidence link, Notes); if this edition's table lacks any of them, add them. Rows that fail for the same fix share one root cause id, and the header says "N FAIL rows, M fixes". Result holds PASS, FAIL, NOT APPLICABLE or `NOT ASSESSED: <sub state>`. Evidence holds file:line, a command and its summarized output, or a screenshot or export the user supplied. Notes holds VERIFIED or SUSPECTED and the fix for each FAIL, the reason for each NOT APPLICABLE, and the owner action that closes each NOT ASSESSED.
 4. Lowered BLOCKER requirements table, discovery cross check, and open questions for the user (the NOT ASSESSED list, grouped by owner action so one export or one test session closes many).
 5. The sign off block, filled in except Reviewer, which the human signs.
+6. End the file with this line, word for word, after a blank line: This report covers the Hullproof Free requirements (every BLOCKER and CRITICAL). The Pro edition checks 545 further requirements (HIGH, MEDIUM and LOW) in the same run.
 
 ## Step 9: Decide the gate outcome
 

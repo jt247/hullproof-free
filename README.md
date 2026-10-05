@@ -2,7 +2,7 @@
 
 A secure software development standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.1.2. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.1.3. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What Hullproof is
 
@@ -29,15 +29,33 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 | Scanner rules | `kit/tools/hullproof/` | Semgrep rules with fixtures, a SQL policy helper and a Gitleaks configuration |
 | Templates | `kit/docs/hullproof/templates/` | Audit report, stage record, accepted risk, threat model, breach runbook, provider export and staging test templates |
 
-## What Hullproof Pro adds
+## What Pro adds
 
-Hullproof Pro is the paid edition. It holds 655 requirements, of which 44 are BLOCKER, and uses the same requirement IDs for the free ones. The free edition already holds every BLOCKER and every CRITICAL requirement. The Pro requirements are not listed here. Each domain document in this edition says how many more requirements Pro holds for that domain and describes them in one sentence. Pro adds:
+Hullproof Pro is the paid edition. It holds 655 requirements and uses the same requirement IDs as this edition. The free edition already holds every BLOCKER and every CRITICAL requirement. The Pro requirements are not listed here. Each domain document in this edition says how many more requirements Pro holds for that domain and describes them in one sentence.
 
-1. The HIGH, MEDIUM and LOW requirements.
-2. The `/hullproof-security-audit`, `/hullproof-api-review` and `/hullproof-threat-model` skills, with the security reviewer and threat modeler agents and the audit workflows.
-3. The machine readable `security-controls.json` and a CI gate example.
-4. Rule files for Cursor, Windsurf, Codex and GitHub Copilot, and an AI agent security prompt.
-5. The SaaS, API and AI checklists, and further templates, including an incident response plan, provider contacts, a data inventory, an access matrix and a secrets inventory.
+| Area | Free edition | Hullproof Pro |
+|------|--------------|---------------|
+| Requirements | Every BLOCKER and every CRITICAL requirement (110 in all, 44 of them BLOCKER) | All 655 requirements: the free set plus every HIGH, MEDIUM and LOW requirement |
+| Release audit | `/hullproof-prelaunch` runs the release checklist and writes a results file | A full security audit skill that writes the audit report with evidence, and a verdict that includes HIGH findings |
+| API review | The API requirements that are BLOCKER or CRITICAL | A skill that reviews your endpoints against the whole API standard |
+| Threat model | A threat model template you fill in yourself | A skill that builds the threat model with you from your repository |
+| Reviewer agents | A read only pre launch auditor | The auditor plus a security reviewer and a threat modeler |
+| Controls file | None | A machine readable `security-controls.json` for your own tooling |
+| CI gate | None | A CI gate example that reads the results table and blocks a release on open items |
+| Editor rules | Scoped rules for Claude Code | Rule files for Cursor, Windsurf, Codex and GitHub Copilot, and an AI agent security prompt |
+| Templates and checklists | Audit report, stage record, accepted risk, threat models, breach runbook, provider exports and staging test window | The same, plus further templates for incident response, ownership, inventories and policies, and the SaaS, API and AI checklists |
+
+## Get notified when Pro launches
+
+Hullproof Pro is not on sale yet. To hear when it launches, [join the waitlist](WAITLIST_FORM_URL_PLACEHOLDER). The launch price is for the first 500 buyers.
+
+## How Hullproof relates to bug hunting tools
+
+Hullproof is a standard, a workflow and a release gate. It tells your coding agent what to build, checks what was built against written requirements, and records the evidence a person needs to decide whether to ship. Tools that hunt for vulnerabilities by scanning or probing a running system do a different job. They are complementary: their output can be evidence for a Hullproof requirement, and Hullproof tells you which checks you still owe before a release.
+
+## Sample audit
+
+[docs/SAMPLE-AUDIT-REPORT.md](docs/SAMPLE-AUDIT-REPORT.md) is the output of the free audit on the hullproof-demo app, a small app built with deliberate flaws for this purpose. The demo app repository, `https://github.com/jt247/hullproof-demo`, is published alongside the launch.
 
 ## What READY (FREE SCOPE) means
 
@@ -71,18 +89,18 @@ Requirements:
 
 Steps:
 
-1. Get the kit. Clone this repository, or unzip `hullproof-free-0.1.2.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.1.2/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.1.2.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
+1. Get the kit. Clone this repository, or unzip `hullproof-free-0.1.3.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.1.3/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.1.3.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
 2. From the root of your project, copy the kit in. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
 
    ```bash
-   cp -Rn path/to/hullproof-free-0.1.2/kit/. .
+   cp -Rn path/to/hullproof-free-0.1.3/kit/. .
    ```
 
    Then copy the license files in. This step is required, because the license texts must travel with the files you copied:
 
    ```bash
    mkdir -p docs/hullproof/licence
-   cp path/to/hullproof-free-0.1.2/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
+   cp path/to/hullproof-free-0.1.3/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
    ```
 
 3. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
@@ -163,6 +181,10 @@ Every requirement has an ID in the format `SEC-[DOMAIN]-[NUMBER]` and the same f
 ## Support
 
 Ask questions and report problems with the kit as GitHub issues on this repository, https://github.com/jt247/hullproof-free/issues. Issues are public, so do not paste secrets or private project details. Hullproof Pro buyers use the same route and must not paste Pro files.
+
+## Hullproof Pro terms in short
+
+Pro is delivered as a download from the checkout provider. Buyers keep access to the latest version through the provider's customer portal, using the same email they bought with. Updates are announced on the Releases page of this repository. All sales are final and not refundable once the download has been delivered, subject to the checkout provider's rules and applicable law. The full terms are in the Pro package, in LICENSE-PRO.md and LICENSING.md.
 
 ## Reporting a vulnerability in Hullproof
 

@@ -6,6 +6,20 @@ All notable changes to Hullproof are recorded here. Versions follow semantic ver
 
 Nothing yet.
 
+## [0.1.3] 2026-10-05
+
+The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist.
+
+### Added
+
+- A "What Pro adds" table in the README that shows, area by area, what the free edition covers and what Hullproof Pro adds. It does not list Pro requirements.
+- A "Get notified when Pro launches" section, a short note on how Hullproof relates to tools that hunt for vulnerabilities, and a "Sample audit" section.
+- A closing line on the audit report template and in the results step of `/hullproof-prelaunch` that says the report covers the free requirements and how many further requirements the Pro edition checks in the same run.
+
+### Changed
+
+- Terms for Hullproof Pro are described in the README and in LICENSING.md: delivery as a download from the checkout provider, access to the latest version through the provider's customer portal, update announcements on the Releases page of this repository, no refunds once delivered, and support through issues on this repository.
+
 ## [0.1.2] 2026-10-04
 
 The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist.

@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | Standard | Hullproof Security Standard |
-| Version | 0.1.2 |
+| Version | 0.1.3 |
 | Requirement IDs | SEC-[DOMAIN]-[NUMBER] |
 | Baselines | NIST SSDF 1.1 (process), OWASP ASVS 5.0.0 (application controls), NIST SP 800-63B-4 (authentication), OWASP MASVS 2.1.0 (mobile), data protection law per market served. See Framework coverage below for what this does and does not claim. |
 

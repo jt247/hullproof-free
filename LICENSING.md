@@ -24,6 +24,7 @@ Statement: [LICENSE-DOCS.md](LICENSE-DOCS.md). Full legal code: [LICENSE-DOCS-CC
 | `kit/docs/` | The standard, the domain documents, the release checklist, REFERENCES.md and the templates |
 | `conventions/` | ID format, requirement template, severity rules and source rules |
 | `README.md`, `CHANGELOG.md` | Repository text |
+| `docs/` | The sample audit report |
 | `LICENSING.md`, `SECURITY.md` | These policy pages |
 
 ## Not covered by either license
@@ -44,9 +45,13 @@ Hullproof cites other people's standards and documents by ID and link. It restat
 
 Hullproof is an independent project. It is not affiliated with or endorsed by any organisation or vendor it names. Hullproof and the READY labels describe the result of a defined set of checks on one commit. You may say that a project was checked against Hullproof, with the date and the commit. You may not say a project is certified, approved or endorsed by Hullproof, and you may not use the Hullproof name as the name of your own product or service. The Apache License 2.0 does not give you rights to the Hullproof name.
 
+## Terms of Hullproof Pro in short
+
+Hullproof Pro is delivered as a download from the checkout provider. Buyers keep access to the latest version through the provider's customer portal, using the same email they bought with, and updates are announced on the Releases page of this repository. All sales are final and not refundable once the download has been delivered, subject to the checkout provider's rules and applicable law. The license seat rules and the other terms are in LICENSE-PRO.md, inside the Pro package.
+
 ## Support
 
-Ask questions and report problems with the kit as GitHub issues on https://github.com/jt247/hullproof-free/issues. Issues are public, so do not paste secrets or private project details. A security problem goes through [SECURITY.md](SECURITY.md).
+Ask questions and report problems with the kit as GitHub issues on https://github.com/jt247/hullproof-free/issues. Hullproof Pro buyers use the same route. Issues are public, so do not paste secrets, private project details or Pro files. A security problem goes through [SECURITY.md](SECURITY.md).
 
 ## What this means in practice
 

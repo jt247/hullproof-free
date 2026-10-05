@@ -267,3 +267,5 @@ Written last, by the same run, with commands the hook allows (`git rev-parse HEA
 ```
 
 For a code change audit or an API review, keep the header, the severity count table, the coverage ledger and the eight findings sections, and skip the system profile, strengths and domain scorecard. Any audit report states the gate outcome its evidence can support and names the G conditions it could not evaluate. A partial review can support NOT READY, never READY or READY WITH ACCEPTED RISK.
+
+This report covers the Hullproof Free requirements (every BLOCKER and CRITICAL). The Pro edition checks 545 further requirements (HIGH, MEDIUM and LOW) in the same run.
