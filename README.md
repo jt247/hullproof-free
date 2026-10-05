@@ -55,7 +55,7 @@ Hullproof is a standard, a workflow and a release gate. It tells your coding age
 
 ## Sample audit
 
-[docs/SAMPLE-AUDIT-REPORT.md](docs/SAMPLE-AUDIT-REPORT.md) is the output of the free audit on the hullproof-demo app, a small app built with deliberate flaws for this purpose. The demo app repository, `https://github.com/jt247/hullproof-demo`, is published alongside the launch.
+[docs/SAMPLE-AUDIT-REPORT.md](docs/SAMPLE-AUDIT-REPORT.md) is the output of the free audit on the hullproof-demo app, a small app built with deliberate flaws for this purpose. The demo app is public at [github.com/jt247/hullproof-demo](https://github.com/jt247/hullproof-demo). Run your own audit on it first, then compare your results with its answer key. It is intentionally vulnerable, so never deploy it and never use real data in it.
 
 ## What READY (FREE SCOPE) means
 
