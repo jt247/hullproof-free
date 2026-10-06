@@ -1,0 +1,52 @@
+{
+  "tool": "codex",
+  "displayName": "Codex",
+  "surfaces": [
+    "desktop",
+    "cli",
+    "vscode"
+  ],
+  "files": [
+    {
+      "src": "AGENTS.md",
+      "dest": "AGENTS.md",
+      "merge": "append"
+    },
+    {
+      "src": ".agents/skills/hullproof-audit/SKILL.md",
+      "dest": ".agents/skills/hullproof-audit/SKILL.md",
+      "merge": "never"
+    },
+    {
+      "src": ".codex/hooks.json",
+      "dest": ".codex/hooks.json",
+      "merge": "json"
+    },
+    {
+      "src": ".codex/hullproof-audit.config.toml",
+      "dest": ".codex/hullproof-audit.config.toml",
+      "merge": "never"
+    },
+    {
+      "src": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "dest": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "merge": "never",
+      "from": "kit"
+    },
+    {
+      "src": "tools/hullproof/hooks/codex-adapter.mjs",
+      "dest": "tools/hullproof/hooks/codex-adapter.mjs",
+      "merge": "never",
+      "from": "kit"
+    }
+  ],
+  "enforcement": "partial",
+  "enforcementNote": "Outside audit mode the hook blocks only secret file reads and edits to the Hullproof hook files; in audit mode, in a trusted folder with the hook reviewed, the hook blocks edits and shell commands outside a short read only list and the audit profile makes the sandbox read only, but Codex skips all of it in an untrusted folder and continues the call if the hook cannot start.",
+  "trustNote": "Trust the project folder when Codex asks, then run /hooks in the CLI once and trust the Hullproof hook. Until then Codex skips the files in .codex/.",
+  "firstRun": "mkdir -p docs/security && touch docs/security/.audit-mode, copy .codex/hullproof-audit.config.toml to $CODEX_HOME/hullproof-audit.config.toml, then run: codex --profile hullproof-audit 'Use $hullproof-audit to audit this project.'",
+  "ways": [
+    "agent",
+    "rules",
+    "prompt"
+  ]
+}

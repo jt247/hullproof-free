@@ -1,0 +1,1 @@
+{"tool":"jsontool","displayName":"Json Tool","surfaces":["vscode"],"files":[{"src":".cfg/settings.json","dest":".cfg/settings.json","merge":"json"}],"enforcement":"enforced","enforcementNote":"Hook blocks.","trustNote":"","firstRun":"audit","ways":["rules"]}

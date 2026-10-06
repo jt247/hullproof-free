@@ -1,0 +1,3 @@
+# Hullproof audit profile for Codex. This file is inactive until you copy it, see the Codex page.
+# It makes Codex read only for one run: file writes and command network access are blocked.
+sandbox_mode = "read-only"

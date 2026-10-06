@@ -1,0 +1,26 @@
+{
+  "tool": "claude-code",
+  "displayName": "Claude Code",
+  "surfaces": [
+    "desktop",
+    "cli",
+    "vscode"
+  ],
+  "files": [
+    {
+      "src": ".claude/settings.json",
+      "dest": ".claude/settings.json",
+      "merge": "json"
+    }
+  ],
+  "alsoInstalled": ".claude/ (rules, skills, agents and the read only hook) is installed by the main kit copy. This tool adds only the deny rules file.",
+  "enforcement": "partial",
+  "enforcementNote": "The deny rules in .claude/settings.json block reading secret files and editing the Hullproof hooks in every permission mode, and the read only hook on the Hullproof skills and agents blocks writes and unlisted commands once the folder is trusted.",
+  "trustNote": "Accept the workspace trust dialog first, because Claude Code holds project hooks back until you do, and claude -p runs a repository's hooks without that dialog so use it only on code you trust.",
+  "firstRun": "Type /hullproof-prelaunch in Claude Code.",
+  "ways": [
+    "agent",
+    "rules",
+    "prompt"
+  ]
+}

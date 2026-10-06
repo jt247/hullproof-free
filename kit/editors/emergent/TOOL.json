@@ -1,0 +1,22 @@
+{
+  "tool": "emergent",
+  "displayName": "Emergent",
+  "surfaces": [
+    "web"
+  ],
+  "files": [
+    {
+      "src": "PROJECT-INSTRUCTION.txt",
+      "dest": "hullproof-paste/emergent/PROJECT-INSTRUCTION.txt",
+      "merge": "never"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "Emergent does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "Switch to Plan mode, then paste the contents of prompts/HULLPROOF-AUDIT-PROMPT-SHORT.md to review your own project.",
+  "ways": [
+    "rules",
+    "prompt"
+  ]
+}

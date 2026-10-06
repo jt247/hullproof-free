@@ -1,0 +1,28 @@
+{
+  "tool": "chatgpt",
+  "displayName": "ChatGPT",
+  "surfaces": [
+    "web",
+    "desktop"
+  ],
+  "files": [
+    {
+      "src": "PROJECT-INSTRUCTIONS.txt",
+      "dest": "hullproof-paste/chatgpt/PROJECT-INSTRUCTIONS.txt",
+      "merge": "never"
+    },
+    {
+      "src": "HULLPROOF-RULES.md",
+      "dest": "hullproof-paste/chatgpt/HULLPROOF-RULES.md",
+      "merge": "never"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "ChatGPT does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "Read HULLPROOF-AUDIT-PROMPT.md in this project and run it.",
+  "ways": [
+    "rules",
+    "prompt"
+  ]
+}

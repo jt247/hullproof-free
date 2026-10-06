@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "BeforeTool": [
+      {
+        "matcher": "write_file|replace|run_shell_command",
+        "hooks": [
+          {
+            "type": "command",
+            "name": "hullproof-readonly",
+            "command": "node \"$GEMINI_PROJECT_DIR/tools/hullproof/hooks/gemini-adapter.mjs\"",
+            "timeout": 30000,
+            "description": "Blocks secret file reads and edits to the Hullproof hook files, and in audit mode blocks edits and shell commands outside a short read only list"
+          }
+        ]
+      }
+    ]
+  }
+}

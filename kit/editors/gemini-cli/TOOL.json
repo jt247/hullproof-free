@@ -1,0 +1,51 @@
+{
+  "tool": "gemini-cli",
+  "displayName": "Gemini CLI",
+  "surfaces": [
+    "cli",
+    "vscode"
+  ],
+  "files": [
+    {
+      "src": "GEMINI.md",
+      "dest": "GEMINI.md",
+      "merge": "append"
+    },
+    {
+      "src": ".gemini/skills/hullproof-audit/SKILL.md",
+      "dest": ".gemini/skills/hullproof-audit/SKILL.md",
+      "merge": "never"
+    },
+    {
+      "src": ".gemini/settings.json",
+      "dest": ".gemini/settings.json",
+      "merge": "json"
+    },
+    {
+      "src": ".gemini/hullproof-audit.settings.json",
+      "dest": ".gemini/hullproof-audit.settings.json",
+      "merge": "never"
+    },
+    {
+      "src": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "dest": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "merge": "never",
+      "from": "kit"
+    },
+    {
+      "src": "tools/hullproof/hooks/gemini-adapter.mjs",
+      "dest": "tools/hullproof/hooks/gemini-adapter.mjs",
+      "merge": "never",
+      "from": "kit"
+    }
+  ],
+  "enforcement": "partial",
+  "enforcementNote": "Outside audit mode the hook blocks only secret file reads and edits to the Hullproof hook files; in audit mode, in a trusted folder, the hook and plan mode block edits and shell commands outside a short read only list, but Gemini CLI loads none of it in an untrusted folder and continues the call if the hook exits with any code other than 2.",
+  "trustNote": "Trust the folder when Gemini CLI asks, and approve the Hullproof hook when it warns about a new project hook.",
+  "firstRun": "mkdir -p docs/security && touch docs/security/.audit-mode, then run: gemini --approval-mode=plan",
+  "ways": [
+    "agent",
+    "rules",
+    "prompt"
+  ]
+}

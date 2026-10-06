@@ -2,7 +2,7 @@
 
 A software security standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.2.0. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.3.0. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What Hullproof is
 
@@ -27,6 +27,9 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 | Hook | `kit/.claude/hooks/hullproof-readonly-bash.mjs` | Blocks shell commands outside a short read only list while the agent runs |
 | Scoped rules | `kit/.claude/rules/hullproof/` | Short rules that load only when the agent edits matching files, such as auth, API, database, or AI code |
 | Scanner rules | `kit/tools/hullproof/` | Semgrep rules with fixtures, a SQL policy helper and a Gitleaks configuration |
+| AI tool files | `kit/editors/` | One folder for each of fifteen AI tools: rules, skills, agents, enforcement settings where the tool allows them, a tool page and a `TOOL.json` |
+| Prompts | `kit/prompts/` | The single pass audit prompt (full and short) and the install by chat prompt, written for the free scope |
+| Installer | `kit/tools/hullproof/install.mjs` | One command per tool, dry run by default |
 | Templates | `kit/docs/hullproof/templates/` | Audit report, stage record, accepted risk, threat model, breach runbook, provider export and staging test templates |
 
 ## What Pro adds
@@ -42,10 +45,34 @@ Hullproof Pro is the paid edition. It holds 655 requirements and uses the same r
 | Reviewer agents | A read only pre launch auditor | The auditor plus further agents that review, hunt, check coverage and try to disprove findings |
 | Machine readable requirements | None | A file of every requirement for your own tooling |
 | CI gate | None | A CI gate example that reads the results table and blocks a release on open items |
-| Editor rules | Scoped rules for Claude Code | Rule files for Cursor, Windsurf, Codex and GitHub Copilot, and an AI agent security prompt |
+| AI tools | Rules, skills, prompts and the installer for fifteen AI tools, scoped to the free requirements | The same tools with the full requirement set, the full audit prompt with the independent verifier flow and hunt cards, and an AI agent security prompt |
 | Templates and checklists | Audit report, stage record, accepted risk, threat models, breach runbook, provider exports and staging test window | The same, plus further templates for incident response, ownership, inventories and policies, and the SaaS, API and AI checklists |
 
 To ask for access to Hullproof Pro, [join the waitlist](https://forms.gle/1Jfv7qj9h8QwXgq36). Purchase terms, licensing and support for Pro are in the Pro package.
+
+## Works with your AI tool
+
+Hullproof runs in the AI tool you already use: in its desktop app, in its command line tool or in VS Code, as an agent, as a rules file, as a pasted prompt, or installed by chat. One command puts the files for your tool in place: `node tools/hullproof/install.mjs --tool <name>` shows what it would do, and adding `--write` does it. It never overwrites a file of yours. The free audit prompt covers the free scope and ends every report with a short note on what the Pro edition adds.
+
+| Tool | How to run | Enforcement |
+|------|-----------|-------------|
+| Claude Code | `/hullproof-prelaunch` | partial |
+| Codex | `$hullproof-audit` | partial |
+| Antigravity | `/hullproof-audit` | partial |
+| Gemini CLI | Ask it to use the `hullproof-audit` skill | partial |
+| Cursor | `/hullproof-audit` | partial |
+| Windsurf and Devin | Ask the agent to run the `hullproof-audit` skill | partial |
+| GitHub Copilot | `/hullproof-audit` | partial |
+| Lovable | Install by chat, or paste the short prompt | advisory |
+| Replit | Install by chat, or paste the short prompt | advisory |
+| Bolt | Paste the short prompt in Plan mode | advisory |
+| Emergent | Paste the short prompt in Plan mode | advisory |
+| v0 | Paste the short prompt with Plan Mode ticked | advisory |
+| ChatGPT | Run the audit prompt from a Project | advisory |
+| Claude.ai | Run the audit prompt from a Project or skill | advisory |
+| Gemini app | Paste the short prompt in a Gem or skill chat | advisory |
+
+Only the labels in this table are enforced limits, and partial means some actions are blocked under stated conditions, such as a trusted folder and audit mode on. Advisory means nothing blocks anything. Everything else in the tool files is advice. Each tool has a page in `kit/editors/<tool>/README.md`, and `kit/editors/README.md` explains the labels, audit mode and install by chat.
 
 ## How Hullproof relates to bug hunting tools
 
@@ -87,18 +114,18 @@ Requirements:
 
 Steps:
 
-1. Get the kit. Clone this repository, or unzip `hullproof-free-0.2.0.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.2.0/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.2.0.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
+1. Get the kit. Clone this repository, or unzip `hullproof-free-0.3.0.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.3.0/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.3.0.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
 2. From the root of your project, copy the kit in. This command is for a project that has no Hullproof files yet. If you installed Hullproof before, follow Update below instead. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
 
    ```bash
-   cp -Rn path/to/hullproof-free-0.2.0/kit/. .
+   cp -Rn path/to/hullproof-free-0.3.0/kit/. .
    ```
 
    Then copy the license files in. This step is required, because the license texts must travel with the files you copied:
 
    ```bash
    mkdir -p docs/hullproof/licence
-   cp path/to/hullproof-free-0.2.0/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
+   cp path/to/hullproof-free-0.3.0/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
    ```
 
 3. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
@@ -113,11 +140,13 @@ Steps:
 7. Run `/hullproof-prelaunch`. It asks for the stage, the markets you serve and what it may run, then writes `docs/security/reports/PRE-LAUNCH-RESULTS-<date>.md`. Keep that folder out of any public repository, because the report lists exploitable failures.
 8. Fill in `docs/hullproof/templates/AUDIT-REPORT.md` from the results table. Without that report gate condition G-2 is not met and the verdict stays NOT READY.
 
+To run Hullproof in another AI tool, see Works with your AI tool above and `editors/README.md` (after the copy in step 2 it sits in your project root). Leave `editors/` and `prompts/` where they land, because the kit manifest lists them.
+
 ## Update
 
 Use this to move to a newer release of the free edition. Do not use `cp -Rn` for it, because `-n` keeps every file that already exists and your old files would win silently.
 
-1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.2.0/` for this release.
+1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.3.0/` for this release.
 2. From the root of your project, save a copy of the current Hullproof files, outside the project:
 
    ```bash
@@ -132,7 +161,7 @@ Use this to move to a newer release of the free edition. Do not use `cp -Rn` for
 3. Copy the new files over them. These are the only paths this command touches. Any local edit to a file in them is replaced, so merge your edits from the saved copy afterwards.
 
    ```bash
-   KIT=path/to/hullproof-free-0.2.0/kit
+   KIT=path/to/hullproof-free-0.3.0/kit
    mkdir -p docs tools .claude/skills .claude/agents .claude/hooks .claude/rules
    cp -R "$KIT/docs/hullproof" docs/
    cp -R "$KIT/tools/hullproof" tools/
@@ -140,6 +169,7 @@ Use this to move to a newer release of the free edition. Do not use `cp -Rn` for
    cp -R "$KIT"/.claude/agents/hullproof-* .claude/agents/
    cp -R "$KIT"/.claude/hooks/hullproof-* .claude/hooks/
    cp -R "$KIT/.claude/rules/hullproof" .claude/rules/
+   cp -R "$KIT/editors" "$KIT/prompts" .
    ```
 
 4. Check the result with `shasum -a 256 -c docs/hullproof/.kit-manifest`. Every line must say OK. Files that a newer release no longer ships are not deleted. They stay in your folders and are not in the manifest. Then copy the license files again as in Install step 2. Nothing else is touched.

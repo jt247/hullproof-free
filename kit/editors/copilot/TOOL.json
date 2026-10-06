@@ -1,0 +1,57 @@
+{
+  "tool": "copilot",
+  "displayName": "GitHub Copilot",
+  "surfaces": [
+    "vscode",
+    "cli",
+    "cloud"
+  ],
+  "files": [
+    {
+      "src": ".github/copilot-instructions.md",
+      "dest": ".github/copilot-instructions.md",
+      "merge": "append"
+    },
+    {
+      "src": ".github/skills/hullproof-audit/SKILL.md",
+      "dest": ".github/skills/hullproof-audit/SKILL.md",
+      "merge": "never"
+    },
+    {
+      "src": ".github/agents/hullproof-auditor.agent.md",
+      "dest": ".github/agents/hullproof-auditor.agent.md",
+      "merge": "never"
+    },
+    {
+      "src": ".github/hooks/hullproof-cli.json",
+      "dest": ".github/hooks/hullproof-cli.json",
+      "merge": "never"
+    },
+    {
+      "src": ".github/hooks/hullproof-vscode.json",
+      "dest": ".github/hooks/hullproof-vscode.json",
+      "merge": "never"
+    },
+    {
+      "src": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "dest": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "merge": "never",
+      "from": "kit"
+    },
+    {
+      "src": "tools/hullproof/hooks/copilot-adapter.mjs",
+      "dest": "tools/hullproof/hooks/copilot-adapter.mjs",
+      "merge": "never",
+      "from": "kit"
+    }
+  ],
+  "enforcement": "partial",
+  "enforcementNote": "While audit mode is on, the preToolUse hook denies file edits, unknown tools and bash commands outside a read only list, but a hook timeout lets the call through and a user can turn hooks off.",
+  "trustNote": "Trust the folder in VS Code first, because the Local agent runs hooks only in a trusted workspace with chat.useHooks on.",
+  "firstRun": "Run mkdir -p docs/security && touch docs/security/.audit-mode, then type /hullproof-audit in Copilot chat.",
+  "ways": [
+    "agent",
+    "rules",
+    "prompt"
+  ]
+}

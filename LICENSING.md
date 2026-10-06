@@ -11,7 +11,8 @@ Full text: [LICENSE](LICENSE). The code is everything that runs or configures a 
 | Path | What it is |
 |------|------------|
 | `kit/.claude/hooks/` | The read only shell hook |
-| `kit/tools/hullproof/` | Scanner rules, helper scripts, test fixtures, the gitleaks configuration and the tools README |
+| `kit/tools/hullproof/` | Scanner rules, helper scripts, the installer and hook adapters, test fixtures, the gitleaks configuration and the tools README |
+| `kit/editors/` (rule files, skills, agents, enforcement settings and each `TOOL.json`) | Configuration files that Claude Code, Codex, Cursor and the other supported tools read |
 | `kit/.claude/agents/`, `kit/.claude/skills/`, `kit/.claude/rules/` | Agent, skill and scoped rule files that configure Claude Code |
 | `kit/docs/hullproof/.kit-manifest` | The file list the auditor uses to check the kit |
 
@@ -22,6 +23,7 @@ Statement: [LICENSE-DOCS.md](LICENSE-DOCS.md). Full legal code: [LICENSE-DOCS-CC
 | Path | What it is |
 |------|------------|
 | `kit/docs/` | The standard, the domain documents, the release checklist, REFERENCES.md and the templates |
+| `kit/prompts/`, the tool pages `kit/editors/*/README.md` and `kit/editors/README.md` | The audit and install prompts, and the pages that explain each tool |
 | `conventions/` | ID format, requirement template, severity rules and source rules |
 | `README.md`, `CHANGELOG.md` | Repository text |
 | `docs/` | The sample audit report |

@@ -1,0 +1,47 @@
+{
+  "tool": "antigravity",
+  "displayName": "Antigravity",
+  "surfaces": [
+    "desktop",
+    "cli",
+    "ide"
+  ],
+  "files": [
+    {
+      "src": ".agents/rules/hullproof.md",
+      "dest": ".agents/rules/hullproof.md",
+      "merge": "never"
+    },
+    {
+      "src": ".agents/skills/hullproof-audit/SKILL.md",
+      "dest": ".agents/skills/hullproof-audit/SKILL.md",
+      "merge": "never"
+    },
+    {
+      "src": ".agents/hooks.json",
+      "dest": ".agents/hooks.json",
+      "merge": "json"
+    },
+    {
+      "src": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "dest": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "merge": "never",
+      "from": "kit"
+    },
+    {
+      "src": "tools/hullproof/hooks/antigravity-adapter.mjs",
+      "dest": "tools/hullproof/hooks/antigravity-adapter.mjs",
+      "merge": "never",
+      "from": "kit"
+    }
+  ],
+  "enforcement": "partial",
+  "enforcementNote": "Outside audit mode the hook blocks only secret file reads and edits to the Hullproof hook files; in audit mode it denies file write tools and shell commands outside a short read only list, but it does not check file reads and Google does not say what Antigravity does if the hook fails to run.",
+  "trustNote": "Open the project folder as your workspace and choose trust if Antigravity asks.",
+  "firstRun": "mkdir -p docs/security && touch docs/security/.audit-mode, then run: agy -p \"Use the hullproof-audit skill to audit this project.\"",
+  "ways": [
+    "agent",
+    "rules",
+    "prompt"
+  ]
+}

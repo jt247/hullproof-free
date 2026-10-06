@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      { "command": "node tools/hullproof/hooks/cursor-adapter.mjs", "matcher": "*", "timeout": 20, "failClosed": true }
+    ],
+    "beforeShellExecution": [
+      { "command": "node tools/hullproof/hooks/cursor-adapter.mjs", "matcher": "*", "timeout": 20, "failClosed": true }
+    ],
+    "beforeReadFile": [
+      { "command": "node tools/hullproof/hooks/cursor-adapter.mjs", "matcher": "*", "timeout": 20, "failClosed": true }
+    ]
+  }
+}

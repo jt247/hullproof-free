@@ -1,0 +1,28 @@
+{
+  "tool": "gemini-app",
+  "displayName": "Gemini app",
+  "surfaces": [
+    "web",
+    "desktop"
+  ],
+  "files": [
+    {
+      "src": "INSTRUCTIONS.txt",
+      "dest": "hullproof-paste/gemini-app/INSTRUCTIONS.txt",
+      "merge": "never"
+    },
+    {
+      "src": "skills/hullproof/SKILL.md",
+      "dest": "hullproof-paste/gemini-app/skills/hullproof/SKILL.md",
+      "merge": "never"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "Gemini does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "In a chat with the Hullproof Gem or skill on, paste the contents of prompts/HULLPROOF-AUDIT-PROMPT-SHORT.md.",
+  "ways": [
+    "rules",
+    "prompt"
+  ]
+}

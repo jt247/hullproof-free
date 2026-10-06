@@ -1,0 +1,28 @@
+{
+  "tool": "claude-ai",
+  "displayName": "Claude.ai",
+  "surfaces": [
+    "web",
+    "desktop"
+  ],
+  "files": [
+    {
+      "src": "PROJECT-INSTRUCTIONS.txt",
+      "dest": "hullproof-paste/claude-ai/PROJECT-INSTRUCTIONS.txt",
+      "merge": "never"
+    },
+    {
+      "src": "hullproof/skill.md",
+      "dest": "hullproof-paste/claude-ai/hullproof/skill.md",
+      "merge": "never"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "Claude.ai does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "Ask Claude to run the Hullproof audit, then paste the contents of prompts/HULLPROOF-AUDIT-PROMPT-SHORT.md if it asks for the prompt.",
+  "ways": [
+    "rules",
+    "prompt"
+  ]
+}

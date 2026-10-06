@@ -1,0 +1,29 @@
+{
+  "tool": "replit",
+  "displayName": "Replit",
+  "surfaces": [
+    "web",
+    "desktop"
+  ],
+  "files": [
+    {
+      "src": "replit.md",
+      "dest": "replit.md",
+      "merge": "append"
+    },
+    {
+      "src": ".agents/skills/hullproof/SKILL.md",
+      "dest": ".agents/skills/hullproof/SKILL.md",
+      "merge": "never"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "Replit does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "Turn on Plan mode, then paste the contents of prompts/HULLPROOF-AUDIT-PROMPT-SHORT.md.",
+  "ways": [
+    "rules",
+    "prompt",
+    "install-by-chat"
+  ]
+}

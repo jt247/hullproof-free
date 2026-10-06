@@ -1,0 +1,11 @@
+{
+  "general": {
+    "defaultApprovalMode": "plan"
+  },
+  "security": {
+    "disableYoloMode": true
+  },
+  "tools": {
+    "exclude": ["write_file", "replace"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "pre_read_code": [
+      { "command": "node tools/hullproof/hooks/windsurf-adapter.mjs || exit 2", "show_output": true }
+    ],
+    "pre_write_code": [
+      { "command": "node tools/hullproof/hooks/windsurf-adapter.mjs || exit 2", "show_output": true }
+    ],
+    "pre_run_command": [
+      { "command": "node tools/hullproof/hooks/windsurf-adapter.mjs || exit 2", "show_output": true }
+    ],
+    "pre_mcp_tool_use": [
+      { "command": "node tools/hullproof/hooks/windsurf-adapter.mjs || exit 2", "show_output": true }
+    ]
+  }
+}

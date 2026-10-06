@@ -1,10 +1,26 @@
 # Changelog
 
-All notable changes to Hullproof are recorded here. Versions follow semantic versioning: a major version changes or removes requirements, a minor version adds requirements or a new audit capability, and a patch fixes wording.
+All notable changes to Hullproof are recorded here. Versions follow semantic versioning: a major version changes or removes requirements, a minor version adds requirements or a new audit capability (such as running the audit in another AI tool), and a patch fixes wording.
 
 ## [Unreleased]
 
 Nothing yet.
+
+## [0.3.0] 2026-10-06
+
+The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist. This release adds tool coverage and an installer. It adds no requirements.
+
+### Added
+
+- Tool coverage. The kit now has a folder in `kit/editors/` for fifteen AI tools: Claude Code, Codex, Antigravity, Gemini CLI, Cursor, Windsurf and Devin, GitHub Copilot, Lovable, Replit, Bolt, Emergent, v0, ChatGPT, Claude.ai and the Gemini app. Each folder holds the files the tool reads, a tool page with the install, first run, limits and enforcement line, and a `TOOL.json`.
+- Installer, `tools/hullproof/install.mjs`. `node tools/hullproof/install.mjs --tool <name> --write` copies the files for one tool and prints the trust note, the enforcement label and the first thing to run. It does a dry run unless you add `--write`, never overwrites a file of yours, and writes only inside the project folder.
+- Audit prompts written for the free scope, in a full and a short version, and an install by chat prompt, in `kit/prompts/`. They run the audit in a tool with no helper agents and no hook.
+- Hook adapters in `tools/hullproof/hooks/` and an audit mode switch for Codex, Antigravity, Gemini CLI, Cursor, Windsurf and Copilot. Their hooks enforce only while `docs/security/.audit-mode` exists or `HULLPROOF_AUDIT=1` is set.
+- Every free audit report now ends with a short note on what this run covered and what the Pro edition adds. The counts come from the build.
+
+### Changed
+
+- The README has a Works with your AI tool section, and the Update steps copy `editors/` and `prompts/` too.
 
 ## [0.2.0] 2026-10-06
 

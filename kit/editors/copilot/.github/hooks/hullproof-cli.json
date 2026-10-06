@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "node tools/hullproof/hooks/copilot-adapter.mjs",
+        "powershell": "node tools/hullproof/hooks/copilot-adapter.mjs",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}

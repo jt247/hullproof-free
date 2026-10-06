@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "permissions": {
+    "allow": [],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.production)",
+      "Read(**/*.pem)",
+      "Read(**/id_rsa)",
+      "Read(**/id_ed25519)",
+      "Write(.cursor/hooks.json)",
+      "Write(.cursor/cli.json)",
+      "Write(.cursor/sandbox.json)",
+      "Write(tools/hullproof/hooks/**)",
+      "Write(.claude/hooks/**)"
+    ]
+  }
+}

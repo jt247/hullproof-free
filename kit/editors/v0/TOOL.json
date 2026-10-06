@@ -1,0 +1,22 @@
+{
+  "tool": "v0",
+  "displayName": "v0",
+  "surfaces": [
+    "web"
+  ],
+  "files": [
+    {
+      "src": "INSTRUCTION.txt",
+      "dest": "hullproof-paste/v0/INSTRUCTION.txt",
+      "merge": "never"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "v0 does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "Tick the Hullproof instruction and the Plan Mode preset, then paste the contents of prompts/HULLPROOF-AUDIT-PROMPT-SHORT.md.",
+  "ways": [
+    "rules",
+    "prompt"
+  ]
+}

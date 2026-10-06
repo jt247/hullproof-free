@@ -1,0 +1,22 @@
+{
+  "tool": "bolt",
+  "displayName": "Bolt",
+  "surfaces": [
+    "web"
+  ],
+  "files": [
+    {
+      "src": "agents.md",
+      "dest": "agents.md",
+      "merge": "append"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "Bolt does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "Click Plan in the chat box, then paste the contents of prompts/HULLPROOF-AUDIT-PROMPT-SHORT.md.",
+  "ways": [
+    "rules",
+    "prompt"
+  ]
+}

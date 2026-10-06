@@ -1,0 +1,122 @@
+{
+  "tool": "windsurf",
+  "displayName": "Windsurf (Devin Desktop)",
+  "surfaces": [
+    "desktop",
+    "cli",
+    "jetbrains"
+  ],
+  "files": [
+    {
+      "src": ".devin/rules/hullproof.md",
+      "dest": ".devin/rules/hullproof.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/rules/hullproof-auth.md",
+      "dest": ".devin/rules/hullproof-auth.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/rules/hullproof-api.md",
+      "dest": ".devin/rules/hullproof-api.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/rules/hullproof-database.md",
+      "dest": ".devin/rules/hullproof-database.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/rules/hullproof-ai.md",
+      "dest": ".devin/rules/hullproof-ai.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/rules/hullproof-infrastructure.md",
+      "dest": ".devin/rules/hullproof-infrastructure.md",
+      "merge": "never"
+    },
+    {
+      "src": ".windsurf/rules/hullproof.md",
+      "dest": ".windsurf/rules/hullproof.md",
+      "merge": "never"
+    },
+    {
+      "src": ".windsurf/rules/hullproof-auth.md",
+      "dest": ".windsurf/rules/hullproof-auth.md",
+      "merge": "never"
+    },
+    {
+      "src": ".windsurf/rules/hullproof-api.md",
+      "dest": ".windsurf/rules/hullproof-api.md",
+      "merge": "never"
+    },
+    {
+      "src": ".windsurf/rules/hullproof-database.md",
+      "dest": ".windsurf/rules/hullproof-database.md",
+      "merge": "never"
+    },
+    {
+      "src": ".windsurf/rules/hullproof-ai.md",
+      "dest": ".windsurf/rules/hullproof-ai.md",
+      "merge": "never"
+    },
+    {
+      "src": ".windsurf/rules/hullproof-infrastructure.md",
+      "dest": ".windsurf/rules/hullproof-infrastructure.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/skills/hullproof-audit/SKILL.md",
+      "dest": ".devin/skills/hullproof-audit/SKILL.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/agents/hullproof-auditor.md",
+      "dest": ".devin/agents/hullproof-auditor.md",
+      "merge": "never"
+    },
+    {
+      "src": ".devin/hooks.json",
+      "dest": ".devin/hooks.json",
+      "merge": "json"
+    },
+    {
+      "src": ".devin/hooks.v1.json",
+      "dest": ".devin/hooks.v1.json",
+      "merge": "json"
+    },
+    {
+      "src": ".devin/config.json",
+      "dest": ".devin/config.json",
+      "merge": "json"
+    },
+    {
+      "src": ".devin/hullproof-audit.config.json",
+      "dest": ".devin/hullproof-audit.config.json",
+      "merge": "never"
+    },
+    {
+      "src": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "dest": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "merge": "never",
+      "from": "kit"
+    },
+    {
+      "src": "tools/hullproof/hooks/windsurf-adapter.mjs",
+      "dest": "tools/hullproof/hooks/windsurf-adapter.mjs",
+      "merge": "never",
+      "from": "kit"
+    }
+  ],
+  "enforcement": "partial",
+  "enforcementNote": "While audit mode is on and the workspace is trusted, the hooks block file writes, MCP calls, unknown tools and shell commands outside a read only list in Cascade, Devin Local and the Devin CLI; with audit mode off they block nothing.",
+  "trustNote": "Open the folder in Devin Desktop and accept workspace trust first, because hooks do not load or run in Restricted Mode.",
+  "firstRun": "Run mkdir -p docs/security && touch docs/security/.audit-mode, then ask the agent to run the hullproof-audit skill.",
+  "ways": [
+    "agent",
+    "rules",
+    "prompt"
+  ]
+}

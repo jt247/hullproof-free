@@ -1,0 +1,26 @@
+---
+trigger: glob
+globs: **/auth/**, **/*auth*.*, **/*session*.*, **/middleware.*, **/login/**, **/signup/**
+---
+# Hullproof: authentication and authorization
+
+Advisory text for Windsurf and Devin, not enforced. Read AUTH.md in docs/hullproof/ before editing these files. Start at the Coverage map and read only the requirement you need. The stage comes from docs/security/STAGE.md. Every BLOCKER applies from LAUNCH.
+
+## Before you write code in this area
+
+1. LAUNCH. Check the caller on the server for every protected route, action and query, and deny by default (SEC-AUTHZ-002). Check ownership on every record fetched by an ID from the request (SEC-AUTHZ-003). Middleware alone is not enough when a handler can be reached another way (SEC-API-027).
+2. LAUNCH. Verify identity tokens on the server before trusting them (SEC-AUTH-002). No default, shared or seeded accounts, and no bypass path in production (SEC-AUTH-008, SEC-AUTH-010).
+3. LAUNCH. Take roles and permissions from server controlled data, never from user editable claims or request fields (SEC-AUTHZ-004, SEC-AUTHZ-005).
+4. LAUNCH, if the product has tenants. Resolve the active tenant on the server from verified membership, and let no operation cross a tenant boundary (SEC-AUTHZ-013, SEC-AUTHZ-015).
+5. LAUNCH. Use the platform auth library for sessions, tokens and password hashing (SEC-AUTH-001). Logout ends the session on the server (SEC-AUTH-017). A password reset or change ends every other session, and an email, phone, MFA or API key change asks for a fresh sign in. Offer MFA to users and require it for admin accounts (SEC-AUTHZ-021).
+6. GROWTH adds. Require MFA for users of a product that holds payments or personal data, with a recorded exception for a consumer app, automated negative authorization tests, membership re checked on tenant switching, role changes effective on the next request, impersonation marked, restricted and time limited.
+7. SCALE adds. SSO connections accept only verified domains of the owning tenant.
+
+## Refuse
+
+- Authorization that lives only in the client or only in middleware.
+- Trusting a role, tenant or user ID sent by the client.
+- Hand rolled sessions, tokens or password hashing.
+- Giving support or admin tools a key that bypasses tenant isolation (SEC-AUTHZ-031).
+
+If a control blocks you, stop and report it with the ASSUMPTION, VERIFIED or SUSPECTED labels and a severity from docs/hullproof/STANDARD.md.

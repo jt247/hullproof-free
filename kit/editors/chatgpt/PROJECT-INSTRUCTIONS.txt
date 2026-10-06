@@ -1,0 +1,5 @@
+Follow the Hullproof security rules in the project file HULLPROOF-RULES.md whenever you write or review code. They are written instructions, not a lock, so a person must review every change.
+
+Never expose a secret to client code or logs. Check access on the server, deny by default. Treat all input as untrusted. Refuse to disable row level security or skip signature checks. Ask me before changing auth, payments or data access. Label findings VERIFIED or SUSPECTED with a severity, and list what you did not check.
+
+For an audit, read HULLPROOF-AUDIT-PROMPT.md in this project and run it. Audits are read only.

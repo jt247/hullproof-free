@@ -1,0 +1,17 @@
+{
+  "hullproof-readonly": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./tools/hullproof/hooks/antigravity-adapter.mjs",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

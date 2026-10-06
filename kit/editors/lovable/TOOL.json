@@ -1,0 +1,29 @@
+{
+  "tool": "lovable",
+  "displayName": "Lovable",
+  "surfaces": [
+    "web",
+    "desktop"
+  ],
+  "files": [
+    {
+      "src": "AGENTS.md",
+      "dest": "AGENTS.md",
+      "merge": "append"
+    },
+    {
+      "src": "KNOWLEDGE.txt",
+      "dest": "hullproof-paste/lovable/KNOWLEDGE.txt",
+      "merge": "never"
+    }
+  ],
+  "enforcement": "advisory",
+  "enforcementNote": "Lovable does not enforce these rules. Nothing blocks edits or commands, so a person must review every change.",
+  "trustNote": "",
+  "firstRun": "In Plan mode, paste the contents of prompts/HULLPROOF-AUDIT-PROMPT-SHORT.md.",
+  "ways": [
+    "rules",
+    "prompt",
+    "install-by-chat"
+  ]
+}

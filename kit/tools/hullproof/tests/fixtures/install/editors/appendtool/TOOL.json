@@ -1,0 +1,1 @@
+{"tool":"appendtool","displayName":"Append Tool","surfaces":["desktop","cli"],"files":[{"src":"AGENTS.md","dest":"AGENTS.md","merge":"append"}],"enforcement":"partial","enforcementNote":"Writes are blocked.","trustNote":"","firstRun":"hullproof audit","ways":["agent","rules"]}

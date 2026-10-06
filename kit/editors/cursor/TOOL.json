@@ -1,0 +1,91 @@
+{
+  "tool": "cursor",
+  "displayName": "Cursor",
+  "surfaces": [
+    "desktop",
+    "cli"
+  ],
+  "files": [
+    {
+      "src": ".cursor/rules/hullproof.mdc",
+      "dest": ".cursor/rules/hullproof.mdc",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/rules/hullproof-auth.mdc",
+      "dest": ".cursor/rules/hullproof-auth.mdc",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/rules/hullproof-api.mdc",
+      "dest": ".cursor/rules/hullproof-api.mdc",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/rules/hullproof-database.mdc",
+      "dest": ".cursor/rules/hullproof-database.mdc",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/rules/hullproof-ai.mdc",
+      "dest": ".cursor/rules/hullproof-ai.mdc",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/rules/hullproof-infrastructure.mdc",
+      "dest": ".cursor/rules/hullproof-infrastructure.mdc",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/skills/hullproof-audit/SKILL.md",
+      "dest": ".cursor/skills/hullproof-audit/SKILL.md",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/agents/hullproof-auditor.md",
+      "dest": ".cursor/agents/hullproof-auditor.md",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/hooks.json",
+      "dest": ".cursor/hooks.json",
+      "merge": "json"
+    },
+    {
+      "src": ".cursor/cli.json",
+      "dest": ".cursor/cli.json",
+      "merge": "json"
+    },
+    {
+      "src": ".cursor/hullproof-audit/sandbox.json",
+      "dest": ".cursor/hullproof-audit/sandbox.json",
+      "merge": "never"
+    },
+    {
+      "src": ".cursor/hullproof-audit/cli.json",
+      "dest": ".cursor/hullproof-audit/cli.json",
+      "merge": "never"
+    },
+    {
+      "src": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "dest": ".claude/hooks/hullproof-readonly-bash.mjs",
+      "merge": "never",
+      "from": "kit"
+    },
+    {
+      "src": "tools/hullproof/hooks/cursor-adapter.mjs",
+      "dest": "tools/hullproof/hooks/cursor-adapter.mjs",
+      "merge": "never",
+      "from": "kit"
+    }
+  ],
+  "enforcement": "partial",
+  "enforcementNote": "While audit mode is on and the workspace is trusted, the hooks in .cursor/hooks.json block file writes, MCP calls, unknown tools and shell commands outside a read only list, and each hook fails closed; with audit mode off they block nothing.",
+  "trustNote": "Open the folder in Cursor and accept workspace trust first, because Cursor does not run project hooks in an untrusted workspace.",
+  "firstRun": "Run mkdir -p docs/security && touch docs/security/.audit-mode, then type /hullproof-audit in Cursor chat.",
+  "ways": [
+    "agent",
+    "rules",
+    "prompt"
+  ]
+}

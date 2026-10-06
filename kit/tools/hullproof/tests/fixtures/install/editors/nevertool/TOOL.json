@@ -1,0 +1,1 @@
+{"tool":"nevertool","displayName":"Never Tool","surfaces":["cli"],"files":[{"src":"rules/a.md","dest":".never/rules/a.md","merge":"never"}],"enforcement":"advisory","enforcementNote":"Nothing blocks.","trustNote":"Trust the folder first.","firstRun":"Run a Hullproof audit","ways":["rules"]}

@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | Standard | Hullproof Security Standard |
-| Version | 0.2.0 |
+| Version | 0.3.0 |
 | Requirement IDs | SEC-[DOMAIN]-[NUMBER] |
 | Baselines | NIST SSDF 1.1 (process), OWASP ASVS 5.0.0 (application controls), NIST SP 800-63B-4 (authentication), OWASP MASVS 2.1.0 (mobile), data protection law per market served. See Framework coverage below for what this does and does not claim. |
 
@@ -437,7 +437,7 @@ Every numeric value this standard sets, with where it is used and why. "Legal" i
 
 ## Versioning
 
-This standard follows semantic versioning. A major version changes or removes requirements, a minor version adds requirements or a new audit capability, and a patch fixes wording. Requirement IDs are never reused. A withdrawn or merged ID keeps its number and is listed with its reason in the withdrawn list of the machine readable controls file in Hullproof Pro, so a report that cites an old ID such as SEC-API-022 (merged into SEC-API-021) can still be read. Changes are recorded in the CHANGELOG.
+This standard follows semantic versioning. A major version changes or removes requirements, a minor version adds requirements or a new audit capability (such as running the audit in another AI tool), and a patch fixes wording. Requirement IDs are never reused. A withdrawn or merged ID keeps its number and is listed with its reason in the withdrawn list of the machine readable controls file in Hullproof Pro, so a report that cites an old ID such as SEC-API-022 (merged into SEC-API-021) can still be read. Changes are recorded in the CHANGELOG.
 
 ## References
 
