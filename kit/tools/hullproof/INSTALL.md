@@ -41,6 +41,7 @@ The installer only writes inside the project folder. It refuses paths that leave
 
 0 means it worked or the dry run found changes to make. 1 means an error. 2 means there was nothing to do.
 
+
 ## Uninstall
 
 Delete the files the dry run listed as create. For a marked block, delete the lines from `<!-- hullproof:begin -->` to `<!-- hullproof:end -->`. For a merged JSON file, restore `<file>.hullproof.bak`.

@@ -11,7 +11,7 @@
 //   semgrep --version, node --version, gitleaks version. The skills attach it with a hooks block in their frontmatter.
 // Write: the skill profile may write a plain .md file in docs/security/reports or docs/security/threat-models (a replace is allowed, because a skill archives
 //   the old file first) and nothing else. It never writes the hook, agents, skills, standards, settings, STAGE.md, .gitignore or source files, and the secret scan
-//   stays on, except that a 64 hex sha256 passes. WRITE RISK: an allowed-tools line that lists Write pre approves Write for any path, with no prompt. Only this
+//   stays on, except that a 64 hex sha256 passes. WRITE RISK: Claude Code checks file permissions against Edit rules only, and an Edit rule also governs the Write tool (a Write(...) path rule is accepted and never consulted). The skills list Edit(docs/security/reports/*.md) or Edit(docs/security/threat-models/*.md); an allowed-tools line that lists Write with no path, or an Edit rule with a wider path, pre approves Write for that wider scope with no prompt. This
 //   hook limits the path, and Claude Code treats a hook that is missing or fails to run as a non blocking error. A skill that lists Write must attach this hook
 //   to Write (matcher Bash|Read|Grep|Glob|Write) and the owner must keep the hook file and settings intact. The hook limits the path, never the content
 //   beyond the secret scan, so an instruction planted in the audited code can still make a skill write misleading text into a report.

@@ -47,9 +47,10 @@ claude -p "Run a Hullproof audit of this project" --permission-mode dontAsk --to
 
 Always pass the permission mode yourself, because the mode a `-p` session starts in can differ between sessions.
 
+
 ## Trust note
 
-Accept the workspace trust dialog in an interactive session, or the project hooks are held back. `claude -p` never shows that dialog and runs a repository's hooks without it, so only run it on code you trust. For a repository you did not write, start with `--setting-sources user`.
+Accept the workspace trust dialog in an interactive session, or the project hooks are held back. `claude -p` never shows that dialog and runs the hooks in a repository's settings and skills without it, so only run it on code you trust. It does not run the frontmatter hooks of a project subagent, so a subagent in `-p` has no hook at all. For a repository you did not write, start with `--setting-sources user`.
 
 ## What is enforced
 
@@ -58,7 +59,7 @@ Enforcement for Claude Code is partial. The deny rules in `.claude/settings.json
 ## What it cannot do
 
 1. Rules, skill text and agent instructions are advice. Claude Code describes `CLAUDE.md` as context and not enforced configuration.
-2. The hook covers the Hullproof skills and agents. An agent started with another type has no hook, and the skill tells it not to fall back to one.
+2. The hook covers the Hullproof skills. The Hullproof agents hold read only tools (Read, Grep and Glob) with no shell, so there is no shell in them to guard, and Claude Code runs their frontmatter hook only in an interactive session in a folder whose trust dialog you accepted. An agent started with another type has a full shell and no hook, and the skill tells it not to fall back to one.
 3. A deny rule for one specific shell command is not a security boundary, so Hullproof ships none. Only a bare `Bash` deny stops shell use, and it would also stop your own work.
 4. Plugins cannot carry permission rules or a `CLAUDE.md`, so this kit does not ship as a plugin.
 5. The `dontAsk` mode is available only in the CLI. The desktop app does not offer it, and the VS Code extension ignores a project `defaultMode`.
