@@ -4,7 +4,9 @@ All notable changes to Hullproof are recorded here. Versions follow semantic ver
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- The README links the Hullproof Pro checkout in place of the waitlist, and every free audit report note now ends with the same link.
 
 ## [0.3.0] 2026-10-06
 
