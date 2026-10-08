@@ -48,7 +48,7 @@ Hullproof Pro is the paid edition. It holds 655 requirements and uses the same r
 | AI tools | Rules, skills, prompts and the installer for fifteen AI tools, scoped to the free requirements | The same tools with the full requirement set, the full audit prompt with the independent verifier flow and hunt cards, and an AI agent security prompt |
 | Templates and checklists | Audit report, stage record, accepted risk, threat models, breach runbook, provider exports and staging test window | The same, plus further templates for incident response, ownership, inventories and policies, and the SaaS, API and AI checklists |
 
-[Get Hullproof Pro](https://buy.polar.sh/polar_cl_QBorXMBiEvjQ9H6PFb0LDoD371YBsL83gYWrS4dOGuh) for 16.50 USD, taxes included. It is a one time purchase delivered as a zip, and updates replace the file in your customer portal. Purchase terms, licensing and support for Pro are in the Pro package.
+[Get Hullproof Pro](https://buy.polar.sh/polar_cl_QBorXMBiEvjQ9H6PFb0LDoD371YBsL83gYWrS4dOGuh) for 16.50 USD, taxes included. The first 500 buyers pay 13.25 USD with the code FIRST500. It is a one time purchase delivered as a zip, and updates replace the file in your customer portal. Purchase terms, licensing and support for Pro are in the Pro package.
 
 ## Works with your AI tool
 
