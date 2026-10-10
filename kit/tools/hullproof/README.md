@@ -8,17 +8,20 @@ A small rule pack and helpers that back the static checks in the Hullproof requi
 |------|--------------|
 | `rules/*.yaml` | Semgrep rules, one file per topic. Every rule carries `sec_ids`, `severity_hint` and `confidence` in its metadata. |
 | `gitleaks.toml` | The gitleaks config for every Hullproof scan. Extends the default rules, adds the default stack secret shapes, allows only the public Supabase keys. |
-| `tests/*.ts`, `tests/*.tsx`, `tests/*.py` | Fixtures with `ruleid:` and `ok:` annotations for `semgrep --test`. |
+| `tests/*.ts`, `tests/*.tsx`, `tests/*.py`, `tests/*.test.yaml` | Fixtures with `ruleid:` and `ok:` annotations for `semgrep --test`. Rules for YAML files (the workflow rules) use a `.test.yaml` fixture. |
 | `tests/variants/` | Known bad code variants used to measure the catch rate (see Measured catch rates). |
 | `tests/test_*.py` | Python tests for the rule metadata, the catch rates, the gitleaks config, the helpers and `policy_set.py`. |
 | `tests/lockfiles/` | Small pnpm, npm and Yarn lockfiles for the lockfile recipe tests. |
 | `helpers/policy_set.py` | Rebuilds the final live policy, function and grant set from ordered SQL migrations and flags risks. Python 3 standard library only. |
 | `helpers/run_rules.sh` | Runs the rule pack against a repo from a private temporary folder and prints counts only. |
+| `scan.sh` | Runs Gitleaks, Semgrep and OSV Scanner, each only when installed, with this kit's own configuration and the exact forms of the Tool chain table. Writes each output with a small JSON beside it (commit, tree, tool, version, config_sha, files_scanned, files_tracked). Refuses to run when the repository's git configuration could run code. Installs nothing. OSV runs only with `--allow-network`. |
+| `helpers/peek.sh` | `peek.sh FILE:LINE` prints one line with secret shaped values masked. Use it instead of `cat` or `sed -n` on a file that may hold a secret. |
+| `helpers/owner_packet.py` | Turns the UNVERIFIED CONTROLS of a report, or the routed records of a findings record, into a filled `PROVIDER-EXPORTS.md` (grouped by provider) and `STAGING-TEST-WINDOW.md` (only the checks that name an open requirement). Writes only to the folder you name. |
 | `helpers/recipes.md` | One line grep commands, the secret scan commands, the lockfile reachability recipes, the kit integrity check and the report provenance recipes. |
 | `helpers/enumerate.md` | Tested recipes that list route handlers (Next.js app and pages router, server actions, Express routers) and answer the gate questions from the data model and the code (tenants, payments, tools, URL fetching, MCP, uploads). |
 | `helpers/agent-rules.md` | The rules on secrets, untrusted content, scanner use and archiving a report that every skill reads at the start of a run. |
 | `helpers/two-user-tests.md` | A curl scaffold for the two user and two tenant tests (SEC-AUTHZ-003, SEC-AUTHZ-013, SEC-DB-033, SEC-DATA-020). Prints status codes and sizes only. |
-| `helpers/ledger.py` | Coverage ledger: compares the in scope requirement IDs with the rows of a results table and prints the missing, duplicate and extra IDs. Python 3 standard library only. |
+| `helpers/ledger.py` | Coverage ledger: compares the in scope requirement IDs with the rows of a results table and prints the missing, duplicate and extra IDs. Also fails any `PASS (static)` row whose requirement has an authority other than repo. Python 3 standard library only. |
 | `helpers/ssrf_guard_test.py` | SSRF guard test harness: blocked address ranges and 100+ test URLs with expected verdicts computed by Python `ipaddress`. No network calls. |
 | `helpers/connector-evidence.md` | What to export per provider to see the grants of hosted coding agent connectors, and how to compare them with the inventory using counts. |
 | `helpers/injection-corpus.md` | The named injection corpus for a Pro edition requirement (garak probes) and how to use the shipped delimiter breakout set for a Pro edition requirement. |
@@ -29,6 +32,15 @@ A small rule pack and helpers that back the static checks in the Hullproof requi
 ```bash
 # Rule pack against a repo. Prints counts only. The optional second argument keeps file, line and rule ids (no source text).
 tools/hullproof/helpers/run_rules.sh /path/to/repo
+
+# All installed scanners with the Hullproof config, outputs and provenance JSON in a folder outside the repo
+sh tools/hullproof/scan.sh --out ../audit-scans
+
+# One line of a file with secret shaped values masked
+sh tools/hullproof/helpers/peek.sh src/lib/config.ts:12
+
+# Owner packet from a report (or from its findings record), written beside it unless --out is given
+python3 tools/hullproof/helpers/owner_packet.py --report docs/security/reports/SECURITY-AUDIT-REPORT.md --findings docs/security/reports/SECURITY-AUDIT-REPORT.findings.md
 
 # Secret scan with the Hullproof config, never the repo's own
 gitleaks dir . --redact --no-banner --config tools/hullproof/gitleaks.toml --ignore-gitleaks-allow
@@ -49,7 +61,7 @@ semgrep --test --config tools/hullproof/rules tools/hullproof/tests
 python3 -m unittest discover -s tools/hullproof/tests -p 'test_*.py'
 ```
 
-A person runs `run_rules.sh` and `policy_set.py`. The skills and agents never run them: the hook allows no `bash` or `python3`. The skills run only the two gitleaks commands from the Run section. `semgrep scan` and `osv-scanner scan` are run by the owner in their own terminal and saved to files, because the hook allows no scan form for them.
+A person runs `scan.sh`, `run_rules.sh`, `peek.sh`, `owner_packet.py` and `policy_set.py`. The skills and agents never run them: the hook allows no `bash` or `python3`. The skills run only the two gitleaks commands from the Run section. `semgrep scan` and `osv-scanner scan` are run by the owner in their own terminal and saved to files, because the hook allows no scan form for them.
 
 ## The read only hook
 
@@ -63,13 +75,15 @@ The skills attach the hook themselves with a `hooks` block in their frontmatter.
 
 If the skill's hook does not load, register it in the project `.claude/settings.json` for the main session, otherwise the skill reports HOOK: INACTIVE and runs without Bash. Check it with `node .claude/hooks/hullproof-readonly-bash.mjs --selftest`.
 
-What it guards beyond secret file names: `.git/config` and `.git/config.worktree` (a remote URL can hold a token) cannot be read or searched in content mode in any profile, and a count or file list is allowed. `CLAUDE.md`, `AGENTS.md`, `docs/security/notes*` and `.md` or `.txt` files in a folder named `notes` allow Grep count and files_with_matches modes and `grep -c`, `grep -l`, but not Read or content output. `.env.example`, `.env.sample` and `.env.template` (exact names) allow only `grep -o` or `grep -c` with the key name pattern `'^[A-Za-z_][A-Za-z0-9_]*=' <file>` and Grep in files_with_matches or count mode, never Read.
+What it guards beyond secret file names: `cat` is not allowed at all. `sed -n` is refused on any secret path or name class, and also on a file whose content holds a secret shaped value (Stripe, GitHub, Slack and AWS key shapes, a JWT, a private key header, a password inside a URL), because the printed line would show it. The refusal points to `helpers/peek.sh` and to Grep in count mode.
+
+Also: `.git/config` and `.git/config.worktree` (a remote URL can hold a token) cannot be read or searched in content mode in any profile, and a count or file list is allowed. `CLAUDE.md`, `AGENTS.md`, `docs/security/notes*` and `.md` or `.txt` files in a folder named `notes` allow Grep count and files_with_matches modes and `grep -c`, `grep -l`, but not Read or content output. `.env.example`, `.env.sample` and `.env.template` (exact names) allow only `grep -o` or `grep -c` with the key name pattern `'^[A-Za-z_][A-Za-z0-9_]*=' <file>` and Grep in files_with_matches or count mode, never Read.
 
 ## Hook limits
 
 What the hook cannot do:
 
-1. It checks paths and command forms, never file content. A secret pasted into a source file, a README or any note outside the protected names can still be printed by Read or by a content search. The skill and agent rules tell the model to use `-o` with a name pattern or `-c`, but nothing enforces that.
+1. It checks paths and command forms. The one content check is the secret shape test on `sed -n`. A secret pasted into a source file, a README or any note outside the protected names can still be printed by Read or by a content search. The skill and agent rules tell the model to use `-o` with a name pattern or `-c`, but nothing enforces that.
 2. A recursive search (`grep -r`, Grep content mode on a folder) over a folder that holds `CLAUDE.md` or a notes folder is not blocked, because blocking it would stop most source searches. Name exact folders.
 3. It cannot filter output. `ls`, `find`, `git ls-files` and Glob print file names as they are, so a file name that is itself a secret reaches the model. The skills tell the model to report such a name as `<kind>-shaped name` plus its folder. That is a text rule only.
 4. Reads outside the project are blocked, so agent settings at user level (`~/.claude/`) cannot be inspected by the skills or agents. The owner supplies them.
@@ -96,7 +110,7 @@ Severity hint is the severity a finding of this kind usually deserves before con
 | `hullproof-webhook-parse-before-verify` | SEC-API-101 | HIGH | MEDIUM | JSON body parsed before the signature is verified. |
 | `hullproof-webhook-empty-secret-fallback` | SEC-API-101 | CRITICAL | MEDIUM | A signing secret that falls back to an empty string or the text "undefined". An HMAC with an empty key is valid, so anyone can sign. |
 | `hullproof-secret-compare-env` | SEC-API-101 and a Pro edition requirement | HIGH | MEDIUM | A request value compared to an environment secret with a plain comparison, including the "Bearer undefined" case. |
-| `hullproof-server-action-no-auth` | SEC-AUTHZ-002, SEC-API-001 | HIGH | MEDIUM | Server action with no auth call. |
+| `hullproof-server-action-no-auth` | SEC-AUTHZ-002, SEC-API-001 | HIGH | MEDIUM | Server action with no session, auth or permission call anywhere in its body, including inside nested blocks. |
 | `hullproof-module-scope-auth-client` | A Pro edition requirement | HIGH | HIGH | Cookie bound auth client created at module scope. |
 | `hullproof-server-html-interpolation` | SEC-WEB-031 and Pro edition requirements | HIGH | LOW | Template literal with HTML and an interpolated value that is not wrapped by a listed escape function. Name based exemptions were removed: a helper that only trims is not an escape function. |
 | `hullproof-html-concat` | Pro edition requirements | HIGH | MEDIUM | HTML string joined to a value by `+`. |
@@ -128,6 +142,15 @@ Severity hint is the severity a finding of this kind usually deserves before con
 | `hullproof-cors-reflect-origin`, `hullproof-cors-origin-true` | SEC-WEB-022 | HIGH | MEDIUM, HIGH | Reflected or open CORS origin. |
 | `hullproof-token-in-browser-storage`, `hullproof-token-value-in-browser-storage` | SEC-MOBILE-002 and Pro edition requirements | HIGH | MEDIUM | Token written to browser storage. |
 | `hullproof-open-redirect` | SEC-AUTH-030 and a Pro edition requirement | MEDIUM | MEDIUM | Redirect target taken from the request. |
+| `hullproof-verify-result-unused` | SEC-API-101, SEC-AUTH-002 | CRITICAL | MEDIUM | A boolean returning signature check (`verifySignature`, `isValidSignature`, `timingSafeEqual` and similar) whose result is thrown away or stored in a variable nothing reads. |
+| `hullproof-next-public-secret-name` | SEC-SECRETS-001, SEC-SECRETS-003 | CRITICAL | MEDIUM | A `NEXT_PUBLIC_` variable named like a service role key or a secret, read from `process.env` or set in a config object. Names only. |
+| `hullproof-api-route-no-auth` | SEC-API-001, SEC-AUTHZ-002 | HIGH | LOW | A route handler (GET, POST, PUT, PATCH, DELETE) that reads from a database client and never mentions a session, user, token, signature or secret. |
+| `hullproof-log-session-token` | SEC-LOG-001 | HIGH | MEDIUM | A log call that receives a token, authorization header, cookie, password or secret by name, or a whole session or headers object. |
+| `hullproof-read-by-id-no-owner` | SEC-AUTHZ-003 | HIGH | LOW | A Supabase, Prisma or Drizzle read by id alone, with no owner, user, organisation or tenant filter in the same query. |
+| `hullproof-workflow-write-all` | A Pro edition requirement | HIGH | HIGH | A GitHub Actions workflow or job with `permissions: write-all`. |
+| `hullproof-workflow-untrusted-in-run` | SEC-SUPPLY-032 and a Pro edition requirement | HIGH | HIGH | A workflow `run` step that expands a title, body, branch name or commit message from the event into the shell script. |
+| `hullproof-hardcoded-signing-secret` | SEC-SECRETS-004 and a Pro edition requirement | CRITICAL | MEDIUM | A long literal with letters and digits assigned to a name that contains secret, key or token. Placeholders and public key names are skipped. |
+| `hullproof-zod-privileged-field` | SEC-AUTHZ-004 and a Pro edition requirement | HIGH | MEDIUM | A zod object schema that accepts `role`, `plan`, `is_admin`, `owner_id` or a similar privilege field from the caller. |
 
 Rules that need a name list read it from the rule itself, so a project edits one regex: the escape function names in `server-html-interpolation.yaml` and `html-variants.yaml`, the guard call names in the sanitizer of `ssrf-unguarded-url.yaml`, the admin client names in `tool-endpoint-admin-client.yaml`, and the auth helper names in `server-action-no-auth.yaml`.
 

@@ -1,0 +1,30 @@
+name: ci
+on: [pull_request_target]
+# ruleid: hullproof-workflow-write-all
+permissions: write-all
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # ruleid: hullproof-workflow-write-all
+    permissions: write-all
+    steps:
+      # ruleid: hullproof-workflow-untrusted-in-run
+      - run: echo "${{ github.event.pull_request.title }}"
+      # ruleid: hullproof-workflow-untrusted-in-run
+      - run: |
+          echo hello
+          curl -d "${{ github.head_ref }}" https://example.test
+      # ok: hullproof-workflow-untrusted-in-run
+      - run: echo "$TITLE"
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+      # ok: hullproof-workflow-untrusted-in-run
+      - run: echo "${{ github.sha }}"
+  lint:
+    runs-on: ubuntu-latest
+    # ok: hullproof-workflow-write-all
+    permissions:
+      contents: read
+    steps:
+      # ok: hullproof-workflow-untrusted-in-run
+      - run: npm test

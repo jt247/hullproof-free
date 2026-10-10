@@ -1,6 +1,6 @@
 # Run Hullproof in your AI tool
 
-Hullproof 0.3.0 runs in fifteen AI tools: the agent apps and command line tools, VS Code integrations, app builders and chat tools. Each tool has a folder here with its files and a page (`README.md`) that holds the install steps, the first run, what the tool can and cannot enforce, its limits and a trust note.
+Hullproof 0.3.1 runs in fifteen AI tools: the agent apps and command line tools, VS Code integrations, app builders and chat tools. Each tool has a folder here with its files and a page (`README.md`) that holds the install steps, the first run, what the tool can and cannot enforce, its limits and a trust note.
 
 Every tool gets the Hullproof hard rules and the same finding format, and the agent tools and editors also get the five area checklists. Only the packaging changes. Tools that load skills and agents get a skill. Every tool can also run the portable audit prompt in `prompts/`, where the model plays each audit role in turn.
 
@@ -50,7 +50,7 @@ The enforcement label is copied from each tool's `TOOL.json`. The three words me
 
 | Label | Meaning |
 |-------|---------|
-| enforced | The tool itself blocks the action, in the setup Hullproof ships. No tool carries this label in 0.3.0. |
+| enforced | The tool itself blocks the action, in the setup Hullproof ships. No tool carries this label in 0.3.1. |
 | partial | The tool blocks some actions, under stated conditions such as a trusted folder or audit mode on, and some paths stay open. The tool page lists both. |
 | advisory | Nothing blocks anything. The tool is asked to follow the rules and a person must review every change. |
 

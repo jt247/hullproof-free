@@ -436,6 +436,24 @@ function checkFind(a) {
 
 const SED_ADDR = String.raw`(?:\d+|\$|\/[^\/]*\/)`;
 const SED_SCRIPT = new RegExp(`^${SED_ADDR}(?:,${SED_ADDR})?p$`);
+// Value shapes the kit treats as secrets (agent rules section 4, plus a password inside a URL). A file that holds one is not printed by sed -n:
+// the line would show the value. The owner uses tools/hullproof/helpers/peek.sh, which masks it, and an agent uses Grep in count mode.
+const SECRET_VALUE_RES = [/sk_(live|test)_[A-Za-z0-9]{8,}/, /gh[pousr]_[A-Za-z0-9]{20,}/, /xox[abprs]-[A-Za-z0-9-]{10,}/, /AKIA[0-9A-Z]{12,}/, /eyJ[A-Za-z0-9_-]{20,}/,
+  /BEGIN [A-Z ]*PRIVATE KEY/, /[a-z][a-z0-9+.-]*:\/\/[^/\s:@]+:[^/\s@]{3,}@/i];
+const MAX_SHAPE_SCAN = 5_000_000;
+function secretShapeProblem(list) {
+  for (const raw of list) {
+    const abs = resolve(P.dir, raw);
+    let st;
+    try { st = statSync(abs); } catch { continue; } // a missing file prints nothing
+    if (!st.isFile()) continue;
+    if (st.size > MAX_SHAPE_SCAN) return `file "${raw}" is too large to check for secret values, so sed -n is not allowed on it`;
+    let text;
+    try { text = readFileSync(abs, 'latin1'); } catch { return `file "${raw}" could not be read to check for secret values`; }
+    if (SECRET_VALUE_RES.some((re) => re.test(text))) return `file "${raw}" holds a secret shaped value, so sed -n would print it (use Grep in count mode, or ask the owner to run tools/hullproof/helpers/peek.sh <file>:<line>, which masks it)`;
+  }
+  return null;
+}
 function checkSed(a) {
   const flags = [];
   let i = 0;
@@ -445,7 +463,7 @@ function checkSed(a) {
   if (!SED_SCRIPT.test(a[i] ?? '')) return 'sed script must be N,Mp or /pattern/p';
   const files = a.slice(i + 1);
   if (files.some(isFlag)) return 'sed flag is not allowed after the script';
-  return pathsProblem(files) ?? contentProblem(files);
+  return pathsProblem(files) ?? contentProblem(files) ?? secretShapeProblem(files);
 }
 
 const AWK_FORBIDDEN = /\bsystem\s*\(|\bgetline\b|\bENVIRON\b|\bARGV\b|\bARGC\b|fflush|[|>@`]|\/dev\/|\/inet\//;
@@ -707,6 +725,7 @@ function checkBash(command, profile) {
   const { tokens, error } = tokenize(command);
   if (error) return error;
   const [name, ...a] = tokens;
+  if (name === 'cat') return 'cat is not allowed (it prints whole files, secrets included). Use Read or Grep on a non secret file, or sed -n N,Mp on one';
   if (!PROFILES[profile].has(name)) return `command ${name} is not on the ${profile} read only allowlist`;
   switch (name) {
     case 'git': return checkGit(a, profile);
@@ -774,6 +793,10 @@ function selftest() {
     const d = join(root, key);
     for (const sub of ['src', 'links', 'docs/security/reports', 'notes', '.claude', '.aws', 'node_modules/x', '.claude/skills/example-skill', 'docs/hullproof/guides', 'docs/hullproof/schemas', 'tools/hullproof/helpers/cards']) mkdirSync(join(d, sub), { recursive: true });
     for (const f of ['src/a.ts', 'src/b.ts', 'package.json', 'README.md', 'x.json', 'a.txt', 'notes.md', 'prog.awk']) writeFileSync(join(d, f), 'x\n');
+    // Fake value shapes, built at run time so that no scanner finds a literal in this file. src/leak.ts holds them, src/clean.ts only talks about them.
+    writeFileSync(join(d, 'src/leak.ts'), `export const a = 1;\nconst k = "${'sk_' + 'live_'}0123456789abcdefABCDEF";\nexport const b = 2;\n`);
+    writeFileSync(join(d, 'src/leak-url.ts'), `const u = "${'postgres' + '://app:'}hunter22${'@db.example.com/x'}";\n`);
+    writeFileSync(join(d, 'src/clean.ts'), '// keys are read from the environment, for example sk_ prefixed names\nexport const c = 3;\nconst u = "postgres://db.example.com/x";\n');
     for (const f of ['.env', '.env.local', '.env.example', '.env.sample', '.env.template', '.mcp.json', '.claude/settings.local.json', '.claude/settings.json', '.npmrc', '.aws/credentials', 'server.pem', 'node_modules/x/credentials']) writeFileSync(join(d, f), 'S=1\n');
     for (const f of ['CLAUDE.md', 'AGENTS.md', 'docs/security/notes.md', 'notes/a.md']) writeFileSync(join(d, f), 'x\n');
     symlinkSync(join(d, '.env'), join(d, 'links/linkexample'));
@@ -892,6 +915,13 @@ function selftest() {
     ['RA', 'sed s/a/b/ src/a.ts', 0], ['RA', 'sed -i s/a/b/ a.txt', 0], ['RA', 'sed -n -i 1p a.txt', 0], ['RA', 'sed -n 1p -i a.txt', 0], ['RA', "sed -n '1w out.txt' a.txt", 0], ['RA', "sed -n '1e id' a.txt", 0],
     ['RA', "sed -n 's/a/b/w out' a.txt", 0], ['RA', 'sed -f s.sed a.txt', 0], ['RA', 'sed -e 1p a.txt', 0], ['RA', 'sed 1p a.txt', 0], ['RA', 'sed -n 1,5p .env', 0], ['RA', "sed -n '/ANTHROPIC/p' .env.local", 0],
     ['RA', 'sed -n 1p /etc/passwd', 0], ['RA', 'sed -n 1p ../x', 0], ['RA', 'sed -n 1p ~/.ssh/id_rsa', 0], ['RA', 'sed -n 1p .claude/settings.local.json', 0], ['RA', 'sed -n 1p', 1], ['RA', 'sed -nE 1p a.txt', 1],
+    // gap 12: sed -n and cat never print a secret. Name and path classes are denied, and so is a file that holds a secret shaped value.
+    ['RAS', 'sed -n 1p .mcp.json', 0], ['RAS', 'sed -n 1,3p .npmrc', 0], ['RAS', 'sed -n 1p .aws/credentials', 0], ['RAS', 'sed -n 1p server.pem', 0], ['RAS', 'sed -n 1p id_rsa', 0],
+    ['RAS', 'sed -n 1p .ssh/id_ed25519', 0], ['RAS', 'sed -n 1p infra/prod.tfvars', 0], ['RAS', 'sed -n 1p terraform.tfstate', 0], ['RAS', 'sed -n 1p .env.production', 0], ['RAS', "sed -n '/KEY/p' .env", 0],
+    ['RAS', 'sed -n 1p src/a.ts .env', 0], ['RAS', 'sed -n 1p links/linkenv', 0],
+    ['RAS', 'cat .env', 0], ['RAS', 'cat src/a.ts', 0], ['RAS', 'cat -n src/a.ts', 0], ['RAS', 'cat src/leak.ts', 0], ['RAS', 'cat server.pem', 0], ['RAS', 'cat', 0],
+    ['RAS', 'sed -n 1,5p src/leak.ts', 0], ['RAS', "sed -n '/export/p' src/leak.ts", 0], ['RAS', 'sed -n 2p src/leak.ts', 0], ['RAS', 'sed -n 1p src/a.ts src/leak.ts', 0], ['RAS', 'sed -n 1p src/leak-url.ts', 0],
+    ['RAS', 'sed -n 1,3p src/clean.ts', 1], ['RAS', 'sed -n 1,5p src/a.ts', 1], ['RAS', 'sed -n 1p package.json README.md', 1], ['RAS', 'sed -n 1p src/does-not-exist.ts', 1],
     ['RA', 'sed -n -E 1p a.txt', 1], ['RA', 'sed -n 1p -- a.txt', 0], ['RA', 'sed --in-place 1p a.txt', 0], ['RA', 'sed -s -n 1p a.txt', 0], ['RA', 'sed -n 1pq a.txt', 0], ['RA', 'sed -n "1p;2p" a.txt', 0],
     // awk
     ['RA', "awk '{print $1}' a.txt", 1], ['RA', "awk -F, '{print $2}' a.txt", 1], ['RA', 'awk -F "," \'NR>1{print $1}\' a.txt', 0], ['RA', "awk -v n=3 'NR==n' a.txt", 1], ['RA', "awk '/policy/ {c++} END {print c}' a.txt", 1],

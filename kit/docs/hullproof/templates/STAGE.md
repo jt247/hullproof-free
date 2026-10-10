@@ -10,7 +10,9 @@ Save as `docs/security/STAGE.md`. Every audit and pre launch run reads this file
 | Stage triggers the auditor found | Filled by the audit, with file and line for each trigger. Leave blank when you write the file. |
 | Does anyone besides the owner hold an admin or staff role? | Yes or no. If yes, list them in the access matrix. Yes means GROWTH. |
 | Does the product itself take money? | Yes or no. Yes means GROWTH. |
-| Does it hold data for business customers, or face enterprise buyers, questionnaires or sector rules? | Yes or no. Business customers, or a questionnaire from one business customer, means GROWTH. Selling to enterprises as a standing channel, questionnaires or audits as a standing condition of selling, or sector rules, means SCALE. |
+| Does it hold data for business customers (customers that are companies, or data about a customer's own customers or staff)? | Yes or no. Yes means GROWTH. A security questionnaire from one business customer, by itself, also means GROWTH. |
+| Are security questionnaires or independent audits a standing condition of selling (customers ask for an audit or certification before they buy), or does it sell to enterprises as a standing channel? | Yes or no. Yes means SCALE. A questionnaire from one customer does not count here. |
+| Does sector regulation apply to the product? | Yes or no, and name the regulation. Yes means SCALE. |
 | Markets served | Named countries or regions, for example NG, EU, KE, ZA, GH, UK, US states, CA |
 | Markets excluded | Any named market the product does not serve. "Global" means every named market unless it is listed here. |
 | Geography control evidence (one line per excluded market) | Required for every excluded market: the technical block that keeps that market out and where it is enforced (for example a country allowlist at signup and checkout), or a count of accounts and payments by country showing zero, with its source and date. An excluded market with no evidence line stays in force. |

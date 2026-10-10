@@ -1,0 +1,24 @@
+rules:
+  - id: hullproof-zod-privileged-field
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      A zod schema accepts a privilege or ownership field (role, plan, is_admin, owner_id or similar) from the caller.
+      If this schema parses a request body, a user can set the field on themselves or on another record. Remove the
+      field from the schema and set it on the server from the session or from a trusted lookup.
+    patterns:
+      - pattern-either:
+          - pattern: 'z.object({..., $K: $V, ...})'
+          - pattern: 'z.strictObject({..., $K: $V, ...})'
+          - pattern: 'z.looseObject({..., $K: $V, ...})'
+          - pattern: 'z.object({..., "$K": $V, ...})'
+      - metavariable-regex:
+          metavariable: $K
+          regex: (?i)^["']?(role|roles|plan|plan_?id|tier|is_?admin|is_?staff|is_?superuser|is_?owner|admin|owner_?id|org_?role|permissions?)["']?$
+    metadata:
+      sec_ids: [SEC-AUTHZ-004]
+      severity_hint: HIGH
+      confidence: MEDIUM
+      note: >-
+        Fires on any zod object that names one of these keys, including schemas used only for server side or admin only input.
+        Read the schema's caller. The key list is a convention guess, extend it with the project's own privilege fields.

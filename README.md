@@ -2,7 +2,7 @@
 
 A software security standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.3.0. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.3.1. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What Hullproof is
 
@@ -114,18 +114,18 @@ Requirements:
 
 Steps:
 
-1. Get the kit. Clone this repository, or unzip `hullproof-free-0.3.0.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.3.0/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.3.0.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
+1. Get the kit. Clone this repository, or unzip `hullproof-free-0.3.1.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.3.1/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.3.1.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
 2. From the root of your project, copy the kit in. This command is for a project that has no Hullproof files yet. If you installed Hullproof before, follow Update below instead. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
 
    ```bash
-   cp -Rn path/to/hullproof-free-0.3.0/kit/. .
+   cp -Rn path/to/hullproof-free-0.3.1/kit/. .
    ```
 
    Then copy the license files in. This step is required, because the license texts must travel with the files you copied:
 
    ```bash
    mkdir -p docs/hullproof/licence
-   cp path/to/hullproof-free-0.3.0/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
+   cp path/to/hullproof-free-0.3.1/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
    ```
 
 3. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
@@ -146,7 +146,7 @@ To run Hullproof in another AI tool, see Works with your AI tool above and `edit
 
 Use this to move to a newer release of the free edition. Do not use `cp -Rn` for it, because `-n` keeps every file that already exists and your old files would win silently.
 
-1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.3.0/` for this release.
+1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.3.1/` for this release.
 2. From the root of your project, save a copy of the current Hullproof files, outside the project:
 
    ```bash
@@ -161,7 +161,7 @@ Use this to move to a newer release of the free edition. Do not use `cp -Rn` for
 3. Copy the new files over them. These are the only paths this command touches. Any local edit to a file in them is replaced, so merge your edits from the saved copy afterwards.
 
    ```bash
-   KIT=path/to/hullproof-free-0.3.0/kit
+   KIT=path/to/hullproof-free-0.3.1/kit
    mkdir -p docs tools .claude/skills .claude/agents .claude/hooks .claude/rules
    cp -R "$KIT/docs/hullproof" docs/
    cp -R "$KIT/tools/hullproof" tools/

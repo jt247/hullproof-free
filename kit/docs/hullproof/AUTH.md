@@ -143,6 +143,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Set the expected issuer and audience in configuration. Read the library documentation to see which of `iss`, `aud` and token type it checks for you, and check the rest in code. Do not accept the project's publishable (anon) key token or a service role token as a signed in user's token.
 - Default stack: in Next.js server code use Supabase `getClaims()` (verifies the signature) or `getUser()`. Never use `getSession()` in server code to decide who the caller is, because it reads the cookie without revalidating it.
 - Proxy (formerly Middleware) checks are optimistic. The verified check must also happen in the Route Handler, Server Action or data access layer.
+- Scope: this ID judges tokens that carry a signature the server checks. A server side opaque session (a random session ID that the server looks up in a session table or store) has no signature to check, and its lifetime and expiry are judged under a Pro edition requirement. A missing session expiry is not filed under this ID.
 
 **Verify.**
 1. Send seven bad tokens to three protected endpoints and expect 401 each time: none, a changed payload, `alg: none`, expired, another signer, wrong audience, wrong issuer.
@@ -410,6 +411,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Default stack: when the request goes through the Supabase Data API with the user's JWT, RLS ownership policies (SEC-AUTHZ-010) perform this check. When server code uses a privileged client, the handler performs it (SEC-AUTHZ-007).
 - Apply the same check to signed URL creation, exports, and any background job started from a request.
 - Owned by SEC-AGENT-008 in AGENTIC-DEV-SECURITY.md for this root cause (MCP server authorization); report one finding.
+- Scope: a missing owner check on a record, where the only boundary is its single owner (one user, or one account in a product with no tenants), is filed under this ID. A read or change that reaches into another tenant, organisation or workspace is filed under SEC-AUTHZ-013.
 
 **Verify.**
 1. For each resource type, create records as user A and user B, then as user A request read, update and delete on user B's record IDs; every attempt MUST fail and change nothing (WSTG-v42-ATHZ-04 method). A denial counts only as a 401, 403 or 404 with the response of a missing record, followed by a read back with the owner credential that shows the data unchanged; a 400 or 422 is not a denial. Pair every denial with a positive control: the same request shape sent by the record owner succeeds. For one handler, remove the ownership filter in a scratch branch and confirm the test fails.
@@ -665,6 +667,7 @@ Answer each gate once, with evidence, in the Gates section of `docs/security/STA
 - Enforce the same boundary in the database with SEC-AUTHZ-014.
 - Retrieval and embedding stores follow the tenant rules in AI-SECURITY.md.
 - Owned by SEC-AUTHZ-036 for this root cause (Realtime channel authorization); report one finding. Step 5 still lists the realtime surface.
+- Scope: this ID covers reads and changes that cross from one tenant into another. A missing owner check on a single owner's record, with no second tenant involved, is filed under SEC-AUTHZ-003.
 
 **Verify.**
 1. Seed tenant X and tenant Y. As an admin of X, call every list, search, export and single record endpoint with Y's IDs and with no filter; no Y data MAY appear.

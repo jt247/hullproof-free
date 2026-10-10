@@ -1,0 +1,34 @@
+rules:
+  - id: hullproof-workflow-write-all
+    languages: [yaml]
+    severity: ERROR
+    message: >-
+      A GitHub Actions workflow or job sets permissions to write-all. Every step, including third party actions, then holds a
+      token that can write to the code, packages, issues and deployments of the repository. List the single permission each job
+      needs (for example contents: read) and nothing else.
+    pattern: 'permissions: write-all'
+    metadata:
+      sec_ids: [PRO-EDITION]
+      severity_hint: HIGH
+      confidence: HIGH
+      note: Fires on the exact value write-all, at workflow level and job level. A long list of write scopes is not found by this rule.
+  - id: hullproof-workflow-untrusted-in-run
+    languages: [yaml]
+    severity: ERROR
+    message: >-
+      A workflow run step expands text that an outside person controls (a title, body, branch name, commit message or author
+      field) directly into the shell script. The text becomes part of the command, so a crafted title runs code with the job's
+      token. Pass the value through an env variable and read it as a quoted shell variable instead.
+    patterns:
+      - pattern: |
+          run: $CMD
+      - metavariable-regex:
+          metavariable: $CMD
+          regex: (?s).*\$\{\{\s*github\.(event\.(issue\.(title|body)|pull_request\.(title|body|head\.ref|head\.label|head\.repo\.default_branch)|comment\.body|review\.body|review_comment\.body|discussion\.(title|body)|head_commit\.(message|author\.(email|name))|commits\S*|pages\S*|workflow_run\.(head_branch|head_commit\.message|head_repository\.description))|head_ref)\s*\}\}.*
+    metadata:
+      sec_ids: [SEC-SUPPLY-032]
+      severity_hint: HIGH
+      confidence: HIGH
+      note: >-
+        Only the run key is checked. The same expression under env is the safe form and is not reported. Expressions inside a
+        github-script action's script input are not covered by this rule.

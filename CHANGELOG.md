@@ -4,8 +4,30 @@ All notable changes to Hullproof are recorded here. Versions follow semantic ver
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.3.1] 2026-10-10
+
+The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist. This release is a patch. No requirement was added, removed or re rated, and no stage or severity changed. The new scripts and scanner rules serve checks the standard already asks for, such as the scanner output that gate condition G-7 needs.
+
+### Added
+
+- Scan wrapper, `tools/hullproof/scan.sh`. It runs Gitleaks, Semgrep and OSV Scanner, each only when installed, with the kit's own configuration, and writes each output with a JSON file beside it that records the commit, the tree, the tool and its version, the hash of the configuration used, the files scanned and the files tracked. OSV Scanner runs only with `--allow-network`. It refuses to run when `.git/config` holds a setting that could run code from the folder, and it writes only to the folder you name.
+- Nine Semgrep rules, each with a fixture: a signature check whose result is never read, a `NEXT_PUBLIC_` variable named like a secret, a route handler that reads data and never touches a session, a log call that receives a token or a whole session, a read by id with no owner filter, `permissions: write-all` in a workflow, event text expanded in a workflow `run` step, a long literal assigned to a secret name, and a zod schema that accepts a privilege field. The route handler rule and the read by id rule are confidence LOW and report leads only.
+- `tools/hullproof/helpers/peek.sh FILE:LINE` prints one line of a file with secret shaped values masked.
+- `tools/hullproof/helpers/owner_packet.py` reads the items a report could not settle and writes a filled `PROVIDER-EXPORTS.md`, grouped by provider, and a `STAGING-TEST-WINDOW.md`.
+- The read only hook refuses `sed -n` on a file whose content holds a secret shaped value (Stripe, GitHub, Slack and AWS key shapes, a JWT, a private key header, a password inside a URL), and `cat` gets a clear message. Nothing the hook refused before is allowed now.
+- `ledger.py` fails a `PASS (static)` row whose authority is not repo.
+- `helpers/agent-rules.md` has a fixed list of root cause labels and a section on provider side objects.
+
 ### Changed
 
+- The stage record asks three questions where it asked one: business customer data (GROWTH), questionnaires or audits as a standing condition of selling or an enterprise channel (SCALE), and sector regulation (SCALE). `/hullproof-prelaunch` and the audit prompts ask the same three. No stage moved.
+- Scope notes in `AUTH.md`: SEC-AUTHZ-003 covers a missing owner check where the only boundary is a single owner, SEC-AUTHZ-013 covers reads and changes across tenants, and SEC-AUTH-002 covers signed tokens only.
+- The pre launch auditor returns record lines only, with fixed codes for NOT APPLICABLE and NOT ASSESSED rows, and no exploit steps. It rates from the files first: when the repository files answer an item, the item is decided from the files, and NEEDS DYNAMIC TEST or UNKNOWN is kept for items a file cannot settle. `/hullproof-prelaunch` follows the same rule.
+- The audit prompts ask for record fields only.
+- The `server-action-no-auth` rule searches the whole function body, so an auth call inside a nested block counts.
+- The calibration examples in `STANDARD.md` now say they apply to severity rules 1 to 4.
 - The README links the Hullproof Pro checkout in place of the waitlist, and every free audit report note now ends with the same link.
 
 ## [0.3.0] 2026-10-06

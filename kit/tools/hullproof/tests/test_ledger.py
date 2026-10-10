@@ -38,7 +38,7 @@ PRELAUNCH = """# Pre Launch Audit
 |----|--------|----------|
 | SEC-AUTH-002 | PASS | BLOCKER |
 | SEC-API-001 | FAIL | BLOCKER |
-| SEC-DB-002 | PASS (static) | CRITICAL |
+| SEC-DB-002 | PASS | CRITICAL |
 """
 
 
@@ -99,6 +99,42 @@ class Ledger(unittest.TestCase):
                 code = ledger.main(["--ids", str(ids), "--results", str(r), "--line"])
             self.assertEqual(code, 1)
             self.assertEqual(buf.getvalue().strip(), "Ledger: in scope 3, rows 2, missing 1, duplicate 0, extra 0")
+
+    def test_pass_static_on_a_non_repo_requirement_fails_the_run(self):
+        # SEC-DB-002 has Authority: runtime in the checklist, so PASS (static) is not allowed for it.
+        res = PRELAUNCH.replace("| SEC-DB-002 | PASS |", "| SEC-DB-002 | PASS (static) |")
+        code, out = self.run_cli(PRELAUNCH, res, "--stage", "LAUNCH")
+        self.assertEqual(code, 1)
+        self.assertIn("static_not_repo (1): SEC-DB-002", out)
+        code, out = self.run_cli(PRELAUNCH, res, "--stage", "LAUNCH", "--line")
+        self.assertEqual(out.strip(), "Ledger: in scope 3, rows 3, missing 0, duplicate 0, extra 0, static_not_repo 1")
+
+    def test_pass_static_on_a_repo_requirement_is_allowed(self):
+        chk = PRELAUNCH.replace("| CONFIG REVIEW | Authority: runtime", "| CONFIG REVIEW | Authority: repo")
+        res = PRELAUNCH.replace("| SEC-DB-002 | PASS |", "| SEC-DB-002 | PASS (static) |")
+        code, out = self.run_cli(chk, res, "--stage", "LAUNCH")
+        self.assertEqual(code, 0, out)
+
+    def test_controls_file_supplies_the_authority_and_wins(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ctl = pathlib.Path(tmp, "controls.json")
+            ctl.write_text('{"controls": [{"id": "SEC-AUTH-002", "authority": "dashboard"}]}')
+            res = PRELAUNCH.replace("| SEC-AUTH-002 | PASS |", "| SEC-AUTH-002 | PASS (static) |")
+            code, out = self.run_cli(PRELAUNCH, res, "--stage", "LAUNCH", "--controls", str(ctl))
+        self.assertEqual(code, 1)
+        self.assertIn("static_not_repo (1): SEC-AUTH-002", out)
+
+    def test_rule_8_findings_are_counted_and_do_not_fail_the_run(self):
+        res = PRELAUNCH + (
+            "\n### F-01: No breach runbook\n\n| Field | Value |\n|---|---|\n| Severity | MEDIUM |\n| Class | MISSING CONTROL RECORD |\n"
+            "\n### F-02: Open route\n\n| Field | Value |\n|---|---|\n| Severity | HIGH |\n| Class | FINDING |\n"
+            "\n### F-03: Access matrix\n\n| Severity | MEDIUM |\nRated MEDIUM by rule 8.\n"
+            "\n### F-04: Record missing, practice present\n\n| Severity | HIGH |\n| Class | MISSING CONTROL RECORD |\n")
+        code, out = self.run_cli(PRELAUNCH, res, "--stage", "LAUNCH")
+        self.assertEqual(code, 0, out)
+        self.assertIn("rule_8 (2): F-01, F-03", out)
+        code, out = self.run_cli(PRELAUNCH, res, "--stage", "LAUNCH", "--line")
+        self.assertEqual(out.strip(), "Ledger: in scope 3, rows 3, missing 0, duplicate 0, extra 0, rule_8 2")
 
     def test_bad_input_exits_two(self):
         p = subprocess.run([sys.executable, str(SCRIPT), "nope.md", "--results", "nope2.md"], capture_output=True, text=True)

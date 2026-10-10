@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | Standard | Hullproof Security Standard |
-| Version | 0.3.0 |
+| Version | 0.3.1 |
 | Requirement IDs | SEC-[DOMAIN]-[NUMBER] |
 | Baselines | NIST SSDF 1.1 (process), OWASP ASVS 5.0.0 (application controls), NIST SP 800-63B-4 (authentication), OWASP MASVS 2.1.0 (mobile), data protection law per market served. See Framework coverage below for what this does and does not claim. |
 
@@ -119,12 +119,14 @@ A requirement carries a severity. A finding is a specific failure in a specific 
 8. A required record that is missing while the practice behind it is absent is MEDIUM. A required record that is missing while the practice is present and unsafe takes the requirement's severity. Example: no breach runbook and no one has ever handled a breach is MEDIUM; no access matrix while staff roles hold broad data access is the requirement's severity.
 9. Apply any impact, fail closed or small team qualifier written in the requirement itself. A qualifier states when the requirement's severity holds, and it is evidence for rule 2.
 
-Calibration examples, for rules 2 and 3:
+
+Calibration examples, for rules 1 to 4:
 
 | Case | Rating |
 |------|--------|
 | A library default fails open after a timeout, so a request passes unauthenticated when the auth service is slow or down. The attacker does not control the timeout. | Keep the requirement's severity. A precondition the attacker does not control still occurs in production (load, outage, a slow dependency), and it can be waited for. Lower only with code evidence that the failing path cannot be reached. |
 | A handler has no in handler authorization check, but a working proxy or middleware denies the request first, and code shows every route to the handler goes through it. | Lower one level with the proxy evidence written in the finding. The missing check is defense in depth, but it becomes the requirement's severity again as soon as any route reaches the handler without the proxy. For a BLOCKER requirement the floor in rule 6 applies, and the lowering needs its table row and an independent reviewer. |
+
 
 ### Finding classes
 
