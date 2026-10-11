@@ -54,20 +54,48 @@ Hullproof Pro is the paid edition. It holds 662 requirements and uses the same r
 
 ## The Hullproof Engine
 
-The Hullproof Engine is a separate public repository, [github.com/jt247/hullproof-engine](https://github.com/jt247/hullproof-engine), under the Apache License 2.0. It runs the deterministic part of an audit on a repository, and it needs only this free kit to do it. It does not need the Pro edition.
+The Hullproof Engine is a separate public repository, [github.com/jt247/hullproof-engine](https://github.com/jt247/hullproof-engine), under the Apache License 2.0. It is also inside the release zip of this edition, in the `engine/` folder, so one download holds everything. It runs the deterministic part of an audit on a repository, and it needs only this free kit to do it. It does not need the Pro edition.
 
 What it does today:
 
 1. It discovers the stack of any repository, any language and any cloud, and records the file and line that proved each item. What it cannot name stays listed as unknown.
-2. It runs the scanners you have installed, including Gitleaks and Semgrep, and maps each result to a Hullproof requirement ID.
-3. It runs executable checks that read the repository files.
-4. It writes a report and a gate result. The report lists findings by severity with the fix in plain words, and lists every requirement that nothing settled as NOT ASSESSED. The gate ends NOT READY until the evidence only an owner can supply is in.
+2. It maps the code: every entry point it can find (routes, webhooks, server actions, jobs, mobile screens and deep links) with the file and line of each and what protects it. It reads Node and TypeScript (Next.js, Express and the like, NestJS, tRPC), Python (Flask, FastAPI, Django), Go, Ruby on Rails, PHP and Laravel, and Expo. For a language it cannot read, the report says the map is incomplete.
+3. It runs the scanners you have installed, including Gitleaks and Semgrep, and maps each result to a Hullproof requirement ID.
+4. It runs executable checks that read the repository files and the code map.
+5. It writes a report and a gate result. The report lists findings by severity with the fix in plain words, and lists every requirement that nothing settled as NOT ASSESSED. The gate ends NOT READY until the evidence only an owner can supply is in.
 
 No model runs inside the engine. The same commit and the same tool versions give the same bytes in the output files.
 
+How to run it from the zip. You need Node 22.18 or later and nothing else to install. From the root of your project:
+
+```bash
+ENGINE=path/to/hullproof-free-0.4.0/engine
+KIT=path/to/hullproof-free-0.4.0/kit
+
+node $ENGINE/src/cli.ts discover .
+node $ENGINE/src/cli.ts map .
+node $ENGINE/src/cli.ts scan . --kit $KIT --edition free --rule-pack $KIT/tools/hullproof/rules
+node $ENGINE/src/cli.ts report .
+node $ENGINE/src/cli.ts gate .
+```
+
+`engine/README.md` explains each command, the files it writes to `.hullproof/` and the options. Names of sign in helpers that the engine does not know can be listed in `.hullproof/kit.local.json`, and `engine/README.md` shows how.
+
 How it uses this kit. The engine reads `kit/docs/hullproof/security-controls.json` for the requirement IDs and severities, runs the gate from `kit/tools/hullproof/ci/hullproof-gate.mjs`, and checks its findings record with `validate-findings.mjs`. Point it at the kit with `--kit path/to/kit` or the `HULLPROOF_KIT` setting. Its findings records use findings schema 1.1.0, which adds a `machine_evidence` block that names the tool, the rule id, the tool version and the configuration hash.
 
-Limits. Its coverage is partial. A requirement that nothing settled stays NOT ASSESSED and is never reported as a pass. Its taint rules are leads until they are measured, and a lead never fails a requirement. OSV Scanner sends package names to osv.dev, so it runs only when you pass `--allow-network`. Some scanners must be installed by you. With this kit it covers the free requirements only, and its scan record names the edition that ran.
+Limits. Its coverage is partial. A requirement that nothing settled stays NOT ASSESSED and is never reported as a pass. Its taint rules and the checks that read the code map are leads until they are measured, and a lead never fails a requirement. OSV Scanner sends package names to osv.dev, so it runs only when you pass `--allow-network`. Some scanners must be installed by you. With this kit it covers the free requirements only, and its scan record names the edition that ran.
+
+## What is in the release zip
+
+One file to download. It unzips into one folder, `hullproof-free-0.4.0/`, with these parts:
+
+| Path | What it is | How you use it |
+|------|------------|----------------|
+| `kit/` | The kit you copy into a project: the standard, the agent and skill files, the installer for fifteen AI tools, the scanner rules and the release gate | Copy it in (Install below), or run `node tools/hullproof/install.mjs --tool <name> --write` for a tool other than Claude Code |
+| `pack/hullproof-free-pack-0.4.0.zip` | The upload pack for chat tools and app builders: the standard, the audit prompts and the tool rules in one zip | Upload this zip to ChatGPT, Claude.ai, Lovable, Replit, Bolt or a similar tool, paste `INSTALL-BY-CHAT.md` from it, and ask for the audit. It was a separate download before; it is inside this zip now |
+| `engine/` | The Hullproof Engine, the open edition | Run it with Node, see The Hullproof Engine above |
+| `conventions/`, `docs/` | How requirements are written, and a sample audit report | Read them |
+| `README.md`, `CHANGELOG.md`, `LICENSING.md`, `NOTICE.md`, `SECURITY.md` and the license files | Terms, credits and history | Keep the license files with anything you copy |
 
 ## Works with your AI tool
 

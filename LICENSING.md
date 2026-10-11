@@ -17,6 +17,8 @@ Full text: [LICENSE](LICENSE). The code is everything that runs or configures a 
 | `kit/editors/` (rule files, skills, agents, enforcement settings and each `TOOL.json`) | Configuration files that Claude Code, Codex, Cursor and the other supported tools read |
 | `kit/.claude/agents/`, `kit/.claude/skills/`, `kit/.claude/rules/` | Agent, skill and scoped rule files that configure Claude Code |
 | `kit/docs/hullproof/.kit-manifest` | The file list the auditor uses to check the kit |
+| `engine/` (release zip only) | The Hullproof Engine, the open edition, with the same terms as the public engine repository: the Apache License 2.0, text in `engine/LICENSE`. It holds no Pro file |
+| `pack/` (release zip only) | The upload pack. It holds the kit prompts, tool pages and documentation under the licenses of those files in the tables here |
 
 ## Documentation: CC BY-SA 4.0
 

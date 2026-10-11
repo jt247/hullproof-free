@@ -18,6 +18,8 @@ The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 
 - Findings schema 1.1.0. A fail record may carry a `machine_evidence` block that names the tool, the rule id, the tool version and the hash of the configuration used. A SUSPECTED finding with machine evidence may leave out `boundary` and `trace`, and a VERIFIED finding still needs both. Version 1.0.0 files stay valid.
 - The `deterministic_only` reason for an incomplete findings record. It marks a run in which no model ran, so no verifier ran, by design.
 - The Hullproof Engine, a separate public repository at https://github.com/jt247/hullproof-engine. It discovers any stack and cloud, runs the scanners you have installed, runs executable checks, and writes a deterministic report and gate result. It runs on this free kit alone. See the README.
+- The engine is now inside the release zip, in `engine/`, and the upload pack is inside it too, in `pack/`. The zip is the one file to download for this edition. The pack was a separate download (`hullproof-free-pack-0.4.0.zip`) in the first 0.4.0 build; the same file now sits in `pack/` and is no longer released on its own.
+- The engine's code map (Phase 2) is part of 0.4.0 as an addition. It was finished after the first 0.4.0 upload of the engine, and the engine version stays 0.4.0, so an engine zip downloaded earlier on 2026-10-11 does not have it. The code map lists every entry point it can find with what protects it, for Node and TypeScript, Python, Go, Ruby on Rails, PHP and Laravel, and Expo, and it adds checks that read the map. Those checks are leads until they are measured. Names of sign in helpers the engine does not know can be listed in `.hullproof/kit.local.json`.
 
 ### Changed
 
