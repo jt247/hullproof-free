@@ -6,6 +6,37 @@ All notable changes to Hullproof are recorded here. Versions follow semantic ver
 
 Nothing yet.
 
+## [0.4.0] 2026-10-11
+
+The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist. Why this is a minor release: the standard gained new requirements in the Pro edition, and the free kit gains the release gate and the record validators. None of the new requirements is a BLOCKER or a CRITICAL, so the free requirements are the same as in 0.3.1.
+
+### Added
+
+- The release gate (`tools/hullproof/ci/hullproof-gate.mjs`), the two record validators (`validate-findings.mjs` and `validate-surface-ledger.mjs`), their shared module (`hullproof-records-common.mjs`) and the CI README, now in the free kit under the Apache License 2.0.
+- The two record schemas, `docs/hullproof/findings.schema.json` and `docs/hullproof/surface-ledger.schema.json`, under the Apache License 2.0.
+- A free controls file, `docs/hullproof/security-controls.json`, that holds the 110 free requirements as data for the gate, the validators and other tools. It is under CC BY-SA 4.0, the same licence as the documentation it repeats.
+- Findings schema 1.1.0. A fail record may carry a `machine_evidence` block that names the tool, the rule id, the tool version and the hash of the configuration used. A SUSPECTED finding with machine evidence may leave out `boundary` and `trace`, and a VERIFIED finding still needs both. Version 1.0.0 files stay valid.
+- The `deterministic_only` reason for an incomplete findings record. It marks a run in which no model ran, so no verifier ran, by design.
+- The Hullproof Engine, a separate public repository at https://github.com/jt247/hullproof-engine. It discovers any stack and cloud, runs the scanners you have installed, runs executable checks, and writes a deterministic report and gate result. It runs on this free kit alone. See the README.
+
+### Changed
+
+- The authority line in `STANDARD.md`. A repository check may record FAIL on a dashboard or runtime requirement for the part a file settles, for example no header configuration anywhere in the repository. It never records PASS for such a requirement. After the fix the requirement returns to its NOT ASSESSED sub state until the live evidence is supplied.
+- SEC-SUPPLY-002 now says that a dependency with a known advisory fails the requirement, rated by the advisory level and reachability under Dependency advisories, and not at the severity of the requirement.
+- `LICENSING.md` lists the gate, the validators and the schemas as code under the Apache License 2.0, and the free controls file as documentation under CC BY-SA 4.0.
+- The README has a section on the Hullproof Engine and lists the gate and the controls file among the contents of the free edition.
+
+### Not changed
+
+- No free requirement was added, removed or re rated, and no stage or severity changed.
+- The gate arithmetic, the finding classes and the enforcement labels are the same. Every tool is partial or advisory, and none is labelled enforced.
+- The audit runs no code from the audited repository.
+
+### Limits of this release
+
+- The engine's coverage is partial, its taint rules are leads until they are measured, OSV Scanner runs only when you allow network access, and some scanners must be installed by you.
+- Claude Code unattended runs can be stopped by the model provider's safeguards partway through. Nothing in your project changes when that happens. Run the same command again on the same commit.
+
 ## [0.3.1] 2026-10-10
 
 The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist. This release is a patch. No requirement was added, removed or re rated, and no stage or severity changed. The new scripts and scanner rules serve checks the standard already asks for, such as the scanner output that gate condition G-7 needs.

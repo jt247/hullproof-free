@@ -38,6 +38,7 @@ One yes or no per gate. A No marks the gate's IDs NOT APPLICABLE in every audit 
 | GATE-MCP | Does the product expose an MCP server that outside clients or agents can call? | Yes or no | Commit, patterns and counts |
 | GATE-MOBILE | Is a mobile build shipped, in a store, or handed to testers in this release? | Yes or no | Commit, patterns and counts |
 | GATE-CONTAINERS | Does the project build container images? | Yes or no | Commit, patterns and counts |
+| GATE-CLOUD | Does the project run resources in an AWS account, an Azure subscription or a Google Cloud project that the team controls, created by code or in the console? | Yes or no | Commit, patterns and counts, or the owner's dated written answer |
 | GATE-TENANTS | Can one deployment hold data for more than one tenant, organisation, workspace, team or other group of customers? | Yes or no | Commit, patterns and counts |
 | GATE-AUTHSERVER | Does the product issue OAuth or OpenID Connect authorization codes or tokens to other applications (public API clients, partner apps, its own MCP server)? | Yes or no | Commit, patterns and counts, or the owner's dated written answer |
 | GATE-URLFETCH | Does any server code request a URL, host, path or file that a user, a stored record, an imported file or a model chose? | Yes or no | Commit, patterns and counts, or the owner's dated written answer |

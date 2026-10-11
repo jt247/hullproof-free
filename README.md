@@ -2,7 +2,7 @@
 
 A software security standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.3.1. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.4.0. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
 
 ## What Hullproof is
 
@@ -26,6 +26,8 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 | Agent | `kit/.claude/agents/hullproof-pre-launch-auditor.md` | Checks the items in parallel, read only |
 | Hook | `kit/.claude/hooks/hullproof-readonly-bash.mjs` | Blocks shell commands outside a short read only list while the agent runs |
 | Scoped rules | `kit/.claude/rules/hullproof/` | Short rules that load only when the agent edits matching files, such as auth, API, database, or AI code |
+| Release gate and record validators | `kit/tools/hullproof/ci/` | The gate that applies the Production Security Gate to a results table, and the validators for the findings record (schema 1.1.0) and the surface ledger, under Apache License 2.0 |
+| Free controls file | `kit/docs/hullproof/security-controls.json` | Every free requirement as data for the gate, the validators and the Hullproof Engine, under CC BY-SA 4.0 |
 | Scanner rules | `kit/tools/hullproof/` | Semgrep rules with fixtures, a SQL policy helper and a Gitleaks configuration |
 | AI tool files | `kit/editors/` | One folder for each of fifteen AI tools: rules, skills, agents, enforcement settings where the tool allows them, a tool page and a `TOOL.json` |
 | Prompts | `kit/prompts/` | The single pass audit prompt (full and short) and the install by chat prompt, written for the free scope |
@@ -34,21 +36,38 @@ Every requirement has an ID such as `SEC-AUTH-002`, a severity, a way to check i
 
 ## What Pro adds
 
-Hullproof Pro is the paid edition. It holds 655 requirements and uses the same requirement IDs as this edition. The free edition already holds every BLOCKER and every CRITICAL requirement. The Pro requirements are not listed here. Each domain document in this edition says how many more requirements Pro holds for that domain and describes them in one sentence.
+Hullproof Pro is the paid edition. It holds 662 requirements and uses the same requirement IDs as this edition. The free edition already holds every BLOCKER and every CRITICAL requirement. The Pro requirements are not listed here. Each domain document in this edition says how many more requirements Pro holds for that domain and describes them in one sentence.
 
 | Area | Free edition | Hullproof Pro |
 |------|--------------|---------------|
-| Requirements | Every BLOCKER and every CRITICAL requirement (110 in all, 44 of them BLOCKER) | All 655 requirements: the free set plus every HIGH, MEDIUM and LOW requirement |
+| Requirements | Every BLOCKER and every CRITICAL requirement (110 in all, 44 of them BLOCKER) | All 662 requirements: the free set plus every HIGH, MEDIUM and LOW requirement |
 | Release audit | `/hullproof-prelaunch` runs the release checklist and writes a results file | A full security audit that writes the audit report with evidence, and a verdict that includes HIGH findings |
 | API review | The API requirements that are BLOCKER or CRITICAL | A review of your endpoints against the whole API standard |
 | Threat model | A threat model template you fill in yourself | A threat model built with you from your repository |
 | Reviewer agents | A read only pre launch auditor | The auditor plus further agents that review, hunt, check coverage and try to disprove findings |
-| Machine readable requirements | None | A file of every requirement for your own tooling |
-| CI gate | None | A CI gate example that reads the results table and blocks a release on open items |
+| Machine readable requirements | A file of the free requirements | A file of every requirement for your own tooling |
+| CI gate | The gate and the record validators | The same, plus the gate tests, fixtures and an example workflow |
 | AI tools | Rules, skills, prompts and the installer for fifteen AI tools, scoped to the free requirements | The same tools with the full requirement set, the full audit prompt with the independent verifier flow and hunt cards, and an AI agent security prompt |
 | Templates and checklists | Audit report, stage record, accepted risk, threat models, breach runbook, provider exports and staging test window | The same, plus further templates for incident response, ownership, inventories and policies, and the SaaS, API and AI checklists |
 
 [Get Hullproof Pro](https://buy.polar.sh/polar_cl_QBorXMBiEvjQ9H6PFb0LDoD371YBsL83gYWrS4dOGuh) for 16.50 USD, taxes included. The first 500 buyers get 25 percent off with the code FIRST500. It is a one time purchase delivered as a zip, and updates replace the file in your customer portal. Purchase terms, licensing and support for Pro are in the Pro package.
+
+## The Hullproof Engine
+
+The Hullproof Engine is a separate public repository, [github.com/jt247/hullproof-engine](https://github.com/jt247/hullproof-engine), under the Apache License 2.0. It runs the deterministic part of an audit on a repository, and it needs only this free kit to do it. It does not need the Pro edition.
+
+What it does today:
+
+1. It discovers the stack of any repository, any language and any cloud, and records the file and line that proved each item. What it cannot name stays listed as unknown.
+2. It runs the scanners you have installed, including Gitleaks and Semgrep, and maps each result to a Hullproof requirement ID.
+3. It runs executable checks that read the repository files.
+4. It writes a report and a gate result. The report lists findings by severity with the fix in plain words, and lists every requirement that nothing settled as NOT ASSESSED. The gate ends NOT READY until the evidence only an owner can supply is in.
+
+No model runs inside the engine. The same commit and the same tool versions give the same bytes in the output files.
+
+How it uses this kit. The engine reads `kit/docs/hullproof/security-controls.json` for the requirement IDs and severities, runs the gate from `kit/tools/hullproof/ci/hullproof-gate.mjs`, and checks its findings record with `validate-findings.mjs`. Point it at the kit with `--kit path/to/kit` or the `HULLPROOF_KIT` setting. Its findings records use findings schema 1.1.0, which adds a `machine_evidence` block that names the tool, the rule id, the tool version and the configuration hash.
+
+Limits. Its coverage is partial. A requirement that nothing settled stays NOT ASSESSED and is never reported as a pass. Its taint rules are leads until they are measured, and a lead never fails a requirement. OSV Scanner sends package names to osv.dev, so it runs only when you pass `--allow-network`. Some scanners must be installed by you. With this kit it covers the free requirements only, and its scan record names the edition that ran.
 
 ## Works with your AI tool
 
@@ -114,18 +133,18 @@ Requirements:
 
 Steps:
 
-1. Get the kit. Clone this repository, or unzip `hullproof-free-0.3.1.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.3.1/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.3.1.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
+1. Get the kit. Clone this repository, or unzip `hullproof-free-0.4.0.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.4.0/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.4.0.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
 2. From the root of your project, copy the kit in. This command is for a project that has no Hullproof files yet. If you installed Hullproof before, follow Update below instead. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
 
    ```bash
-   cp -Rn path/to/hullproof-free-0.3.1/kit/. .
+   cp -Rn path/to/hullproof-free-0.4.0/kit/. .
    ```
 
    Then copy the license files in. This step is required, because the license texts must travel with the files you copied:
 
    ```bash
    mkdir -p docs/hullproof/licence
-   cp path/to/hullproof-free-0.3.1/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
+   cp path/to/hullproof-free-0.4.0/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
    ```
 
 3. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
@@ -146,7 +165,7 @@ To run Hullproof in another AI tool, see Works with your AI tool above and `edit
 
 Use this to move to a newer release of the free edition. Do not use `cp -Rn` for it, because `-n` keeps every file that already exists and your old files would win silently.
 
-1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.3.1/` for this release.
+1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.4.0/` for this release.
 2. From the root of your project, save a copy of the current Hullproof files, outside the project:
 
    ```bash
@@ -161,7 +180,7 @@ Use this to move to a newer release of the free edition. Do not use `cp -Rn` for
 3. Copy the new files over them. These are the only paths this command touches. Any local edit to a file in them is replaced, so merge your edits from the saved copy afterwards.
 
    ```bash
-   KIT=path/to/hullproof-free-0.3.1/kit
+   KIT=path/to/hullproof-free-0.4.0/kit
    mkdir -p docs tools .claude/skills .claude/agents .claude/hooks .claude/rules
    cp -R "$KIT/docs/hullproof" docs/
    cp -R "$KIT/tools/hullproof" tools/

@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | Standard | Hullproof Security Standard |
-| Version | 0.3.1 |
+| Version | 0.4.0 |
 | Requirement IDs | SEC-[DOMAIN]-[NUMBER] |
 | Baselines | NIST SSDF 1.1 (process), OWASP ASVS 5.0.0 (application controls), NIST SP 800-63B-4 (authentication), OWASP MASVS 2.1.0 (mobile), data protection law per market served. See Framework coverage below for what this does and does not claim. |
 
@@ -237,13 +237,13 @@ The exit condition for each stage is defined in [HULLPROOF.md](HULLPROOF.md). Th
 | [AI-SECURITY.md](AI-SECURITY.md) | AI features in the product | 18 | 67 |
 | [AGENTIC-DEV-SECURITY.md](AGENTIC-DEV-SECURITY.md) | AI assisted development and MCP | 5 | 32 |
 | [DEPENDENCIES.md](DEPENDENCIES.md) | Dependencies, supply chain, CI/CD, source control | 5 | 39 |
-| [INFRASTRUCTURE-SECURITY.md](INFRASTRUCTURE-SECURITY.md) | Infrastructure, cloud IAM, containers, recovery, deployment | 2 | 42 |
+| [INFRASTRUCTURE-SECURITY.md](INFRASTRUCTURE-SECURITY.md) | Infrastructure, cloud IAM, containers, recovery, deployment | 2 | 49 |
 | [OBSERVABILITY.md](OBSERVABILITY.md) | Logging, monitoring, alerting, error handling | 3 | 29 |
 | [INCIDENT-RESPONSE.md](INCIDENT-RESPONSE.md) | Incident response and breach notification | 1 | 16 |
 | [MOBILE-SECURITY.md](MOBILE-SECURITY.md) | Mobile applications | 2 | 26 |
-| **Total** | | **110** | **655** |
+| **Total** | | **110** | **662** |
 
-The free edition holds every BLOCKER and every CRITICAL requirement (110 in all), the Production Security Gate, the audit report, threat model, stage, accepted risk, breach runbook, provider export and staging test templates, the scoped agent rules and the `/hullproof-prelaunch` skill. Hullproof Pro holds the other 545 requirements, the audit workflows, the machine readable controls file, the editor rules, the checklists, and the full audit, API review and threat model skills with their agents. The rows above show how many requirements each domain holds in each edition.
+The free edition holds every BLOCKER and every CRITICAL requirement (110 in all), the Production Security Gate, the audit report, threat model, stage, accepted risk, breach runbook, provider export and staging test templates, the scoped agent rules and the `/hullproof-prelaunch` skill. Hullproof Pro holds the other 552 requirements, the audit workflows, the machine readable controls file, the editor rules, the checklists, and the full audit, API review and threat model skills with their agents. The rows above show how many requirements each domain holds in each edition.
 
 Supporting documents: [PRE-LAUNCH-AUDIT.md](PRE-LAUNCH-AUDIT.md) (release checklist), [templates/](templates/) (report, record and test templates), [REFERENCES.md](REFERENCES.md) (sources).
 
@@ -353,6 +353,8 @@ A static run reads code and configuration only. It cannot end READY while any BL
 
 **What a release needs.** Most BLOCKER and CRITICAL requirements have dashboard or runtime authority, so a coding agent alone cannot reach READY. For each release the owner supplies dated provider exports (`templates/PROVIDER-EXPORTS.md`), a staging test session (`templates/STAGING-TEST-WINDOW.md`), a production build scanned for secrets, and signed statements where a requirement asks for one. The Authority tag on each item of `PRE-LAUNCH-AUDIT.md` shows what settles it, and the machine readable controls file in Hullproof Pro shows it for every requirement. A requirement with dashboard or runtime authority can never be PASS (static), whatever its severity.
 
+**A file can fail what it cannot pass.** A check that reads the repository may record FAIL on a dashboard or runtime requirement for the part a file settles, for example no security header configuration anywhere in the repository, no limit on model calls, or no route that deletes an account. It never records PASS for such a requirement. Once the file is fixed, the requirement goes back to its NOT ASSESSED sub state (usually NEEDS DYNAMIC TEST) until the live evidence is supplied.
+
 ### Evidence freshness (Hullproof policy)
 
 The 30 day limit below is Hullproof policy with no external source. It exists so that a screenshot taken months ago, or against another database, cannot settle a requirement today.
@@ -439,7 +441,7 @@ Every numeric value this standard sets, with where it is used and why. "Legal" i
 
 ## Versioning
 
-This standard follows semantic versioning. A major version changes or removes requirements, a minor version adds requirements or a new audit capability (such as running the audit in another AI tool), and a patch fixes wording. Requirement IDs are never reused. A withdrawn or merged ID keeps its number and is listed with its reason in the withdrawn list of the machine readable controls file in Hullproof Pro, so a report that cites an old ID such as SEC-API-022 (merged into SEC-API-021) can still be read. Changes are recorded in the CHANGELOG.
+This standard follows semantic versioning. A major version changes or removes requirements, a minor version adds requirements or a new audit capability (such as running the audit in another AI tool), and a patch fixes wording. Version 0.4.0 is a minor version because it adds requirements: seven cloud resource requirements, together with findings schema 1.1.0 for machine evidence from scanners. Requirement IDs are never reused. A withdrawn or merged ID keeps its number and is listed with its reason in the withdrawn list of the machine readable controls file in Hullproof Pro, so a report that cites an old ID such as SEC-API-022 (merged into SEC-API-021) can still be read. Changes are recorded in the CHANGELOG.
 
 ## References
 

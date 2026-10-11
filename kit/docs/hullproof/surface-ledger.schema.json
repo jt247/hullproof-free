@@ -1,0 +1,408 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hullproof.invalid/surface-ledger.schema.json",
+  "title": "Hullproof surface ledger",
+  "description": "The JSON object inside the hullproof-surface-ledger block of a <report>.surface-ledger.md file. This schema states field names, types and limits only. It cannot state the rules that connect fields (status rules, sort order and uniqueness, recipe counts, inventory and unit matching, unit paths, blobs, the findings cross check). validate-surface-ledger.mjs checks those.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "ledger": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "tree_clean": {
+          "type": "boolean"
+        },
+        "stage": {
+          "enum": [
+            "LAUNCH",
+            "GROWTH",
+            "SCALE"
+          ]
+        },
+        "profile": {
+          "enum": [
+            "quick",
+            "standard",
+            "deep"
+          ]
+        },
+        "scope": {
+          "enum": [
+            "full",
+            "partial"
+          ]
+        },
+        "scope_note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "run_status": {
+          "enum": [
+            "complete",
+            "incomplete"
+          ]
+        },
+        "incomplete_reason": {
+          "enum": [
+            "budget_exhausted",
+            "agent_failure",
+            "owner_stopped"
+          ]
+        }
+      },
+      "required": [
+        "commit",
+        "tree",
+        "tree_clean",
+        "stage",
+        "profile",
+        "scope",
+        "run_status"
+      ]
+    },
+    "recipes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,40}$",
+            "maxLength": 41
+          },
+          "how": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "how",
+          "count"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 100
+    },
+    "inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "route",
+              "action",
+              "webhook",
+              "job",
+              "page",
+              "table",
+              "function",
+              "bucket",
+              "workflow",
+              "tool",
+              "manifest",
+              "config",
+              "other"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "repository relative path, no leading slash, no .. segment, no backslash, colon or ~"
+          },
+          "symbol": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "recipe": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,40}$",
+            "maxLength": 41
+          },
+          "members": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "kind",
+          "path",
+          "symbol",
+          "recipe"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 2000
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "route",
+              "action",
+              "webhook",
+              "job",
+              "page",
+              "table",
+              "function",
+              "bucket",
+              "workflow",
+              "tool",
+              "manifest",
+              "config",
+              "other"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "repository relative path, no leading slash, no .. segment, no backslash, colon or ~"
+          },
+          "symbol": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "card": {
+            "type": "string",
+            "pattern": "^HC-[A-Z]+$",
+            "maxLength": 40
+          },
+          "status": {
+            "enum": [
+              "covered",
+              "found",
+              "routed",
+              "deferred",
+              "out_of_scope",
+              "not_applicable"
+            ]
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "agent": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,30}$"
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "repository relative path, no leading slash, no .. segment, no backslash, colon or ~"
+            },
+            "minItems": 1,
+            "maxItems": 40
+          },
+          "blobs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "maxProperties": 40
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "agent": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]{0,30}$"
+                },
+                "paths": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300,
+                    "description": "repository relative path, no leading slash, no .. segment, no backslash, colon or ~"
+                  },
+                  "minItems": 1,
+                  "maxItems": 12
+                },
+                "invariant": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "method": {
+                  "enum": [
+                    "static",
+                    "scanner",
+                    "owner_evidence"
+                  ]
+                },
+                "sec_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^SEC-[A-Z]+-[0-9]{3}$"
+                  },
+                  "minItems": 0,
+                  "maxItems": 8
+                },
+                "result": {
+                  "enum": [
+                    "holds",
+                    "fails",
+                    "unsettled"
+                  ]
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "file": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 300,
+                            "description": "repository relative path, no leading slash, no .. segment, no backslash, colon or ~"
+                          },
+                          "line": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 10000000
+                          },
+                          "note": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 300
+                          }
+                        },
+                        "required": [
+                          "file",
+                          "line",
+                          "note"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "file": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 300,
+                            "description": "repository relative path, no leading slash, no .. segment, no backslash, colon or ~"
+                          },
+                          "hash": {
+                            "type": "string",
+                            "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+                          },
+                          "hash_kind": {
+                            "enum": [
+                              "git_blob",
+                              "sha256"
+                            ]
+                          },
+                          "date": {
+                            "type": "string",
+                            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                          },
+                          "note": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 300
+                          }
+                        },
+                        "required": [
+                          "file",
+                          "hash",
+                          "hash_kind",
+                          "date",
+                          "note"
+                        ]
+                      }
+                    ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 6
+                }
+              },
+              "required": [
+                "agent",
+                "paths",
+                "invariant",
+                "method",
+                "sec_ids",
+                "result",
+                "evidence"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 12
+          },
+          "finding_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(SEC-[A-Z]+-[0-9]{3}|GAP|OBS):(-|[^\\s:]+):[a-z0-9]+(-[a-z0-9]+){0,15}$"
+            },
+            "minItems": 1,
+            "maxItems": 12
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "kind",
+          "path",
+          "symbol",
+          "card",
+          "status"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 600
+    }
+  },
+  "required": [
+    "schema_version",
+    "ledger",
+    "recipes",
+    "inventory",
+    "units"
+  ]
+}

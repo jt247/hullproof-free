@@ -43,7 +43,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | TLS versions and certificates on external endpoints (ASVS V12.1, V12.2) | INFRASTRUCTURE-SECURITY.md | None | SEC-DATA-011 |
 | Mobile app traffic over HTTPS | MOBILE-SECURITY.md | None | None in this document |
 | Certificate pinning decision for the mobile app | MOBILE-SECURITY.md | None | None in this document |
-| Private buckets for user data (ASVS V5.3) | None | None | SEC-DATA-019 |
+| Private buckets for user data (ASVS V5.3) | None | Public bucket with user files | SEC-DATA-019 |
 | Object access limited to the owning user or tenant | AUTH.md | None | SEC-DATA-020 |
 | Storage keys generated on the server (ASVS V5.3) | BACKEND-SECURITY.md | None | None in this document |
 | Upload handling (ASVS V5.2) | BACKEND-SECURITY.md | None | None in this document |

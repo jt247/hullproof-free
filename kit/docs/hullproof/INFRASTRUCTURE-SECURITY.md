@@ -3,16 +3,16 @@
 | Field | Value |
 |-------|-------|
 | Domain codes | SEC-CLOUD |
-| Topics covered | Infrastructure, Disaster Recovery, Containers, Cloud IAM, Production Deployment |
+| Topics covered | Infrastructure, Disaster Recovery, Cloud IAM, Cloud Resources, Containers, Production Deployment |
 | Part of | Hullproof Security Standard, see STANDARD.md |
 
-This document covers the hosting layer under the application: environment separation and platform settings, recovery targets and drills, container images, the human and machine identities that control the platforms, and how a change reaches production and gets reverted. At LAUNCH it targets managed platforms (Vercel, Supabase, Render, Expo); self managed hosts and container runtime hardening start at SCALE. TLS on endpoints is in DATA-PROTECTION.md, database network restrictions and backups are in DATABASE-SECURITY.md, secret storage and rotation are in SECRETS.md, coding agent credentials are in AGENTIC-DEV-SECURITY.md, debug and test routes in production builds are in BACKEND-SECURITY.md, and CI, repository and dependency controls are in DEPENDENCIES.md.
+This document covers the hosting layer under the application: environment separation and platform settings, recovery targets and drills, container images, the human and machine identities that control the platforms, and how a change reaches production and gets reverted. At LAUNCH it targets managed platforms (Vercel, Supabase, Render, Expo); self managed hosts and container runtime hardening start at SCALE. Projects that run their own resources on AWS, Azure or Google Cloud also follow the Cloud resources section, which covers public storage, open ports, wildcard permissions, encryption at rest, audit trails, database endpoints and secrets in infrastructure code. TLS on endpoints is in DATA-PROTECTION.md, database network restrictions and backups are in DATABASE-SECURITY.md, secret storage and rotation are in SECRETS.md, coding agent credentials are in AGENTIC-DEV-SECURITY.md, debug and test routes in production builds are in BACKEND-SECURITY.md, and CI, repository and dependency controls are in DEPENDENCIES.md.
 
 > Research based engineering guidance, not legal advice.
 
 <!-- hullproof:index:start -->
 
-> **Free edition.** This document contains 2 of the 42 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 40. Pro covers cloud and platform hygiene, including environments, containers, access roles, domains, recovery targets and rollback.
+> **Free edition.** This document contains 2 of the 49 requirements in this domain: every BLOCKER and every CRITICAL requirement in it. Hullproof Pro holds the other 47. Pro covers cloud and platform hygiene, including environments, containers, access roles, domains, recovery targets and rollback.
 
 ## Requirement index
 

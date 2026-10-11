@@ -36,7 +36,7 @@ Each requirement in this document is listed in exactly one row. A row with no re
 | Area | Also see | Primary for | Requirements in this document |
 |------|----------|-------------|-------------------------------|
 | Secrets never in client code, bundles or public environment prefixes | MOBILE-SECURITY.md, AI-SECURITY.md | None | SEC-SECRETS-003 (more in Pro edition) |
-| Secrets in git history | DEPENDENCIES.md | None | SEC-SECRETS-004 |
+| Secrets in git history | DEPENDENCIES.md | Secret value in a committed infrastructure file | SEC-SECRETS-004 |
 | Secrets in logs and error trackers | OBSERVABILITY.md, MOBILE-SECURITY.md, AI-SECURITY.md | None | None in this document |
 | Rotation on exposure with a deadline | AGENTIC-DEV-SECURITY.md, INCIDENT-RESPONSE.md | None | SEC-SECRETS-010 (more in Pro edition) |
 | CI and deploy secrets | DEPENDENCIES.md, INFRASTRUCTURE-SECURITY.md, MOBILE-SECURITY.md | None | None in this document |

@@ -1,4 +1,4 @@
-# Hullproof security audit prompt (Free, version 0.3.1)
+# Hullproof security audit prompt (Free, version 0.4.0)
 
 Give this whole file to your AI tool, or save it where your tool keeps its instructions, then say "run the Hullproof audit". It is written for tools that cannot run separate helper agents, cannot enforce a read only limit and cannot promise shell access. You play every role yourself, one after the other, and you finish each role before you start the next.
 
@@ -209,7 +209,7 @@ Before you write the report, check your text for secret values and for any quote
 
 In Limits, state that this was a portable run: whether the read only limit and the scans were available, and which areas were not read.
 
-End every report with this paragraph, printed word for word as the last paragraph of the report and of your reply, after a blank line: This run covered the 110 Hullproof Free requirements (every BLOCKER and CRITICAL) in 15 areas. The Pro edition checks 545 further requirements (HIGH, MEDIUM and LOW) across 16 areas, with the most added in accounts and sessions, privacy duties, AI features, APIs, cloud setup and governance. Pro also adds an independent verifier for each finding, hunt cards that look for what a checklist misses, and a CI gate. More about Pro: https://buy.polar.sh/polar_cl_QBorXMBiEvjQ9H6PFb0LDoD371YBsL83gYWrS4dOGuh
+End every report with this paragraph, printed word for word as the last paragraph of the report and of your reply, after a blank line: This run covered the 110 Hullproof Free requirements (every BLOCKER and CRITICAL) in 15 areas. The Pro edition checks 552 further requirements (HIGH, MEDIUM and LOW) across 16 areas, with the most added in accounts and sessions, privacy duties, AI features, APIs, cloud setup and governance. Pro also adds an independent verifier for each finding, hunt cards that look for what a checklist misses, and a CI gate. More about Pro: https://buy.polar.sh/polar_cl_QBorXMBiEvjQ9H6PFb0LDoD371YBsL83gYWrS4dOGuh
 
 ## Final reply
 

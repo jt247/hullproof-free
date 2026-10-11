@@ -12,6 +12,8 @@ Full text: [LICENSE](LICENSE). The code is everything that runs or configures a 
 |------|------------|
 | `kit/.claude/hooks/` | The read only shell hook |
 | `kit/tools/hullproof/` | Scanner rules, helper scripts, the installer and hook adapters, test fixtures, the gitleaks configuration and the tools README |
+| `kit/tools/hullproof/ci/` | The release gate (`hullproof-gate.mjs`), the record validators (`validate-findings.mjs` and `validate-surface-ledger.mjs`), their shared module (`hullproof-records-common.mjs`) and their README |
+| `kit/docs/hullproof/findings.schema.json`, `kit/docs/hullproof/surface-ledger.schema.json` | The schemas of the two audit record files, written by the validators |
 | `kit/editors/` (rule files, skills, agents, enforcement settings and each `TOOL.json`) | Configuration files that Claude Code, Codex, Cursor and the other supported tools read |
 | `kit/.claude/agents/`, `kit/.claude/skills/`, `kit/.claude/rules/` | Agent, skill and scoped rule files that configure Claude Code |
 | `kit/docs/hullproof/.kit-manifest` | The file list the auditor uses to check the kit |
@@ -22,7 +24,8 @@ Statement: [LICENSE-DOCS.md](LICENSE-DOCS.md). Full legal code: [LICENSE-DOCS-CC
 
 | Path | What it is |
 |------|------------|
-| `kit/docs/` | The standard, the domain documents, the release checklist, REFERENCES.md and the templates |
+| `kit/docs/` except the two schema files in the code table | The standard, the domain documents, the release checklist, REFERENCES.md and the templates |
+| `kit/docs/hullproof/security-controls.json` | The free controls file: every free requirement as data that the gate, the validators and other tools read. It repeats requirement text from the documentation, so it carries the documentation's licence |
 | `kit/prompts/`, the tool pages `kit/editors/*/README.md` and `kit/editors/README.md` | The audit and install prompts, and the pages that explain each tool |
 | `conventions/` | ID format, requirement template, severity rules and source rules |
 | `README.md`, `CHANGELOG.md` | Repository text |
@@ -39,7 +42,7 @@ Statement: [LICENSE-DOCS.md](LICENSE-DOCS.md). Full legal code: [LICENSE-DOCS-CC
 
 The paid edition is a separate package under its own commercial license (LICENSE-PRO.md, inside that package). It is not included in this repository or in the free edition download, and these two licenses do not cover its Pro only files.
 
-Some files exist in both editions, with a fuller version in Pro. The text of such a file that appears in this edition is available to everyone under the licenses above, whatever else the Pro copy holds. Text that appears only in the Pro copy is not covered by these licenses. Files carry no license header, so the tables on this page are the record: a path under `kit/.claude/`, `kit/tools/` or `kit/docs/hullproof/.kit-manifest` is code, and a path under `kit/docs/`, `conventions/` or a root document is documentation.
+Some files exist in both editions, with a fuller version in Pro. The text of such a file that appears in this edition is available to everyone under the licenses above, whatever else the Pro copy holds. Text that appears only in the Pro copy is not covered by these licenses. Files carry no license header, so the tables on this page are the record: a path under `kit/.claude/`, `kit/tools/`, `kit/docs/hullproof/.kit-manifest` or one of the three JSON files in the code table is code, and any other path under `kit/docs/`, `conventions/` or a root document is documentation.
 
 ## Sources and names
 
