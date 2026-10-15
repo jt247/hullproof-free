@@ -18,5 +18,11 @@
   "ways": [
     "rules",
     "prompt"
-  ]
+  ],
+  "engine": {
+    "canRun": false,
+    "mcp": {
+      "supported": false
+    }
+  }
 }

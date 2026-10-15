@@ -1,0 +1,1 @@
+{"tool":"mcpjson","displayName":"Mcp Json","surfaces":["cli"],"files":[{"src":"rules.md","dest":"mcpjson-rules.md","merge":"never"}],"enforcement":"advisory","enforcementNote":"No.","trustNote":"","firstRun":"audit","ways":["rules"],"engine":{"canRun":true,"mcp":{"supported":true,"src":"mcp/mcp.json","dest":".mcpjson/mcp.json","merge":"json"}}}

@@ -10,7 +10,7 @@ import unittest
 HERE = pathlib.Path(__file__).resolve().parent
 EDITORS = HERE.parents[2] / "editors"
 TOOLS = ["lovable", "replit", "bolt", "emergent", "v0", "chatgpt", "claude-ai", "gemini-app"]
-KEYS = {"tool", "displayName", "surfaces", "files", "enforcement", "enforcementNote", "trustNote", "firstRun", "ways"}
+KEYS = {"tool", "displayName", "surfaces", "files", "enforcement", "enforcementNote", "trustNote", "firstRun", "ways", "engine"}
 WAYS = {"agent", "rules", "prompt", "install-by-chat"}
 FORBIDDEN_WORDS = ["unverified", "unconfirmed"]
 PRO_ID = re.compile(r"\bSEC-[A-Z]+-\d+")

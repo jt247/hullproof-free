@@ -1,0 +1,3 @@
+[mcp_servers.hullproof]
+command = "hullproof"
+args = ["mcp"]

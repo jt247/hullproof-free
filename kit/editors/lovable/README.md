@@ -24,3 +24,9 @@ Lovable creates its own private repo when you link GitHub and cannot import one 
 ## What this does not do
 
 Hullproof cannot stop Lovable from editing code in Build mode, cannot run commands for you and cannot scan the live site. Plan mode is Lovable's own mode and Hullproof adds no lock to it. Connector actions can still run in Chat mode with your approval. A long chat can dilute the rules, so start a fresh chat for an audit.
+
+## Engine mode
+
+Lovable cannot run the Hullproof engine, so the audit here is prompt based. It checks only what the model can read in the chat or the project. Hullproof ships no MCP settings for this tool.
+
+To use engine results anyway, run `hullproof ci` from the root of your repository on your own machine or in CI. It uses no model, and it writes `report.md` and three other files into `.hullproof/ci/`. Then paste `.hullproof/ci/report.md` into the chat before you run the audit, and say: "This is the output of the Hullproof engine. Treat each finding in it as correct unless the code you can see shows otherwise, then run the audit and add what the engine cannot see." The report lists failures that someone could exploit, so paste it only into a chat that you alone can read. The engine is in the `engine/` folder of your package, or at https://github.com/jt247/hullproof-engine.

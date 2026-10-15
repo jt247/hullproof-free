@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hullproof": {
+      "command": "hullproof",
+      "args": ["mcp"]
+    }
+  }
+}

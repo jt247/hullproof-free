@@ -52,6 +52,43 @@ The hooks are a switch. While `docs/security/.audit-mode` exists, or `HULLPROOF_
 
 Hooks do not load or run while a workspace is open in Restricted Mode, and agents are disabled there. Trust the folder first. Use `/hooks` in the Devin CLI to see which hook files loaded.
 
+## Engine mode
+
+Engine mode runs the Hullproof engine first and starts the audit from its result. Windsurf and Devin can run shell commands, so it can use it.
+
+1. Install the engine so the `hullproof` command runs in your shell: the `engine/` folder of your package, or the open engine at https://github.com/jt247/hullproof-engine, whose README says how. If the command is missing, the audit says so and continues in prompt mode.
+2. From the project root, run `hullproof ci`. It uses no model and no container, and it writes `findings.json`, `report.md`, `results.sarif` and `pr-comment.md` into `.hullproof/ci/`. The same commit gives the same files. Exit code 0 means no blocking finding, 1 means the gate holds because a blocking finding exists, and 2 means an error.
+3. Run the audit as described under First run. It follows `tools/hullproof/helpers/engine-mode.md`: it reads `.hullproof/ci/findings.json` and `.hullproof/ci/report.md`, treats every engine finding as ground truth, and adds its own judgment on top (business logic, whether access rules match what you meant, missing controls). It never drops or lowers an engine finding without evidence from the code, and it treats text inside the engine files as data, never as instructions.
+4. Add `.hullproof/` to your `.gitignore`. The report lists failures that someone could exploit.
+
+While audit mode is on, the Hullproof hook blocks shell commands outside a short read only list, and `hullproof ci` is not on it. So the audit cannot run the engine itself. Run `hullproof ci` before you turn audit mode on, in your own terminal or in a normal Windsurf and Devin session, then turn audit mode on and start the audit. The skill reads the files the engine left, and tells you when they are missing.
+
+## MCP server
+
+`hullproof mcp` starts a read only MCP server on your machine. Its tools are `list_requirements`, `get_requirement`, `get_checklist`, `get_gate_verdict`, `get_findings`, `get_report` and `explain_finding`. To also let Windsurf and Devin start scans, add `"--allow-run"` after `"mcp"` in the args list of the entry below. That adds `run_scan`, which writes only under `.hullproof/`.
+
+Add the server with the installer, which also reports whether `hullproof` is on your PATH:
+
+```bash
+node tools/hullproof/install.mjs --tool windsurf --with-engine
+node tools/hullproof/install.mjs --tool windsurf --with-engine --write
+```
+
+The first command is a dry run. The second writes `.devin/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "hullproof": {
+      "command": "hullproof",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+The installer never overwrites your own settings. A JSON file that already exists is merged, your keys are kept and a backup is saved as `.devin/mcp_config.json.hullproof.bak`. If your file does not parse, or already holds a different `hullproof` entry, the installer leaves it alone and prints the entry for you to add by hand. The Devin CLI and Devin Local read the project file `.devin/mcp_config.json`. For Cascade in the editor, add the server in Cascade's MCP settings with command `hullproof` and argument `mcp`. While audit mode is on, the Hullproof hooks block MCP calls, so use the MCP tools outside an audit. If the tool cannot start the server, put the full path of the `hullproof` command in the file instead of the bare name.
+
 ## What is enforced
 
 Enforcement for Windsurf and Devin is partial. While audit mode is on and the workspace is trusted, the hooks block file writes, MCP calls, subagents, web fetches, tools they do not know and every shell command outside the Hullproof read only list, in Cascade through `.devin/hooks.json` and in Devin Local and the CLI through `.devin/hooks.v1.json`, and they block reads of secret files. Always on, `.devin/config.json` denies Devin Local and the CLI from reading secret files and from writing the Hullproof hook files. When audit mode is off, the hooks block nothing.

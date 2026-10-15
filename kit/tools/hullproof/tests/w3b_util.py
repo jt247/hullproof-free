@@ -95,7 +95,10 @@ def check_tool_json(tc, tool, surfaces_allowed, expect_files=None):
             tc.assertEqual(f["merge"], "json", f["src"])
     tc.assertEqual(len(srcs), len(set(srcs)))
     on_disk = {str(p.relative_to(folder)) for p in files_under(folder) if p.name not in SKIP_NAMES}
-    tc.assertEqual(set(srcs), on_disk if expect_files is None else set(expect_files))
+    # The MCP settings file is shipped by the installer's --with-engine flag, so it is on disk but not in "files".
+    mcp = (data.get("engine") or {}).get("mcp") or {}
+    mcp_src = {mcp["src"]} if mcp.get("supported") else set()
+    tc.assertEqual(set(srcs) | mcp_src, on_disk if expect_files is None else set(expect_files) | mcp_src)
     tc.assertEqual(len(kit_files), len(set(kit_files)))
     if kit_files:
         tc.assertIn(".claude/hooks/hullproof-readonly-bash.mjs", kit_files)

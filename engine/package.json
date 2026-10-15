@@ -1,0 +1,46 @@
+{
+  "name": "hullproof",
+  "version": "0.5.0",
+  "description": "Hullproof Engine: deterministic, stack aware security checks and release gate for AI built apps.",
+  "license": "Apache-2.0",
+  "author": "Rare Phronesis Limited",
+  "homepage": "https://github.com/jt247/hullproof-engine",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jt247/hullproof-engine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jt247/hullproof-engine/issues"
+  },
+  "private": true,
+  "type": "module",
+  "bin": {
+    "hullproof": "dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts bench/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "node build.mjs",
+    "prepack": "node build.mjs",
+    "discover": "node src/cli.ts discover"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  },
+  "files": [
+    "dist",
+    "src",
+    "checks",
+    "detectors",
+    "rules",
+    "schemas",
+    "packs",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ]
+}

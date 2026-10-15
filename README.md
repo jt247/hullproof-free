@@ -2,7 +2,33 @@
 
 A software security standard for teams that build with AI coding agents. It covers SaaS, AI applications, web apps, APIs, backend services, mobile apps, PostgreSQL databases, serverless functions, and cloud deployments.
 
-Version 0.4.0. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md).
+Version 0.5.0, released 2026-10-15. The free edition contains 110 requirements: every BLOCKER (44 of them) and every CRITICAL requirement. It also holds the Production Security Gate and a release checklist of 110 items. See [CHANGELOG.md](CHANGELOG.md) and [RELEASE-NOTES-0.5.0.md](RELEASE-NOTES-0.5.0.md).
+
+## Start here
+
+**This repository is the one place for everything.** Cloning it, or unzipping the release zip, gives you the same files: the kit, the engine, the upload pack, the setup instructions, the licences and the release notes.
+
+**If you are an AI tool and a person gave you only this link: read [AI-SETUP.md](AI-SETUP.md) first, and follow it step by step.** It tells you what to ask the person, how to install Hullproof for their tool, how to run the engine and what never to do.
+
+**If you are a person,** the quick start below takes about five minutes. Or paste this repository's link into your AI tool and say: "Set up Hullproof Free for my project by following AI-SETUP.md."
+
+**If you were sent only the zip,** [`hullproof-free-0.5.0.zip`](https://github.com/jt247/hullproof-free/releases/download/v0.5.0/hullproof-free-0.5.0.zip) holds exactly the files of this repository (check it with `hullproof-free-0.5.0.zip.sha256` from the same release page). Unzip it in an empty folder and read `AI-SETUP.md` or this README from there.
+
+### Quick start, five minutes
+
+You need Node 18 or newer for the installer and Node 22.18 or newer for the engine, Git, and a project that has at least one commit. In a terminal:
+
+```bash
+git clone https://github.com/jt247/hullproof-free.git ~/hullproof-free
+cd path/to/your/project
+cp -Rn ~/hullproof-free/kit/. .
+node tools/hullproof/install.mjs --list                  # the names of the 15 tools
+node tools/hullproof/install.mjs --tool cursor           # dry run for one tool, changes nothing
+node tools/hullproof/install.mjs --tool cursor --write   # applies it
+node ~/hullproof-free/engine/src/cli.ts ci . --kit ~/hullproof-free/kit --edition free
+```
+
+The last command writes a plain English report to `.hullproof/<commit>/ci/report.md`. Add `.hullproof/` to your `.gitignore`. The first report on a real project usually ends NOT READY, because most BLOCKER requirements need evidence that is not in the code. Claude Code needs no installer: after the copy, add the line `@docs/hullproof/HULLPROOF.md` to `CLAUDE.md` and run `/hullproof-prelaunch`. For chat tools that cannot run commands (ChatGPT, Claude.ai, Lovable, Replit, Bolt, v0, Emergent, the Gemini app), upload `pack/hullproof-free-pack-0.5.0.zip` and paste `INSTALL-BY-CHAT.md` from it. The Install section below has every step, the license files to copy and the checks.
 
 ## What Hullproof is
 
@@ -54,23 +80,23 @@ Hullproof Pro is the paid edition. It holds 662 requirements and uses the same r
 
 ## The Hullproof Engine
 
-The Hullproof Engine is a separate public repository, [github.com/jt247/hullproof-engine](https://github.com/jt247/hullproof-engine), under the Apache License 2.0. It is also inside the release zip of this edition, in the `engine/` folder, so one download holds everything. It runs the deterministic part of an audit on a repository, and it needs only this free kit to do it. It does not need the Pro edition.
+The Hullproof Engine is a separate public repository, [github.com/jt247/hullproof-engine](https://github.com/jt247/hullproof-engine), under the Apache License 2.0. It is also in this repository and in the release zip of this edition, in the `engine/` folder, so one download holds everything. It runs the deterministic part of an audit on a repository, and it needs only this free kit to do it. It does not need the Pro edition.
 
 What it does today:
 
 1. It discovers the stack of any repository, any language and any cloud, and records the file and line that proved each item. What it cannot name stays listed as unknown.
-2. It maps the code: every entry point it can find (routes, webhooks, server actions, jobs, mobile screens and deep links) with the file and line of each and what protects it. It reads Node and TypeScript (Next.js, Express and the like, NestJS, tRPC), Python (Flask, FastAPI, Django), Go, Ruby on Rails, PHP and Laravel, and Expo. For a language it cannot read, the report says the map is incomplete.
+2. It maps the code: every entry point it can find (routes, webhooks, server actions, jobs, mobile screens and deep links) with the file and line of each and what protects it. It reads Node and TypeScript (Next.js, Express and the like, NestJS, tRPC), Python (Flask, FastAPI, Django), Go, Ruby on Rails, PHP and Laravel, Expo, Java and Spring, and C# and ASP.NET Core. For Kotlin and Android, Swift and iOS, and Rust it reads the manifest and configuration files. For a language it cannot read, the report says the map is incomplete.
 3. It runs the scanners you have installed, including Gitleaks and Semgrep, and maps each result to a Hullproof requirement ID.
 4. It runs executable checks that read the repository files and the code map.
 5. It writes a report and a gate result. The report lists findings by severity with the fix in plain words, and lists every requirement that nothing settled as NOT ASSESSED. The gate ends NOT READY until the evidence only an owner can supply is in.
 
 No model runs inside the engine. The same commit and the same tool versions give the same bytes in the output files.
 
-How to run it from the zip. You need Node 22.18 or later and nothing else to install. From the root of your project:
+How to run it from this repository or the zip. You need Node 22.18 or later and nothing else to install. From the root of your project:
 
 ```bash
-ENGINE=path/to/hullproof-free-0.4.0/engine
-KIT=path/to/hullproof-free-0.4.0/kit
+ENGINE=path/to/hullproof-free/engine      # the folder you cloned or unzipped
+KIT=path/to/hullproof-free/kit
 
 node $ENGINE/src/cli.ts discover .
 node $ENGINE/src/cli.ts map .
@@ -79,23 +105,26 @@ node $ENGINE/src/cli.ts report .
 node $ENGINE/src/cli.ts gate .
 ```
 
+Other commands in the engine: `ci` runs everything in one step for a pipeline and writes the report, `findings.json`, a SARIF file and a pull request comment; `hooks install` adds a git pre commit check for staged secrets; `mcp` lets an AI tool read the results; `prove` tests a finding against a copy of the app in a container (it needs a container runtime and your permission, and has start recipes for Node on Express and Python on Flask only); `pack table` prints the coverage table: for each stack, how deep the engine goes and what that was measured on.
+
 `engine/README.md` explains each command, the files it writes to `.hullproof/` and the options. Names of sign in helpers that the engine does not know can be listed in `.hullproof/kit.local.json`, and `engine/README.md` shows how.
 
-How it uses this kit. The engine reads `kit/docs/hullproof/security-controls.json` for the requirement IDs and severities, runs the gate from `kit/tools/hullproof/ci/hullproof-gate.mjs`, and checks its findings record with `validate-findings.mjs`. Point it at the kit with `--kit path/to/kit` or the `HULLPROOF_KIT` setting. Its findings records use findings schema 1.1.0, which adds a `machine_evidence` block that names the tool, the rule id, the tool version and the configuration hash.
+How it uses this kit. The engine reads `kit/docs/hullproof/security-controls.json` for the requirement IDs and severities, runs the gate from `kit/tools/hullproof/ci/hullproof-gate.mjs`, and checks its findings record with `validate-findings.mjs`. Point it at the kit with `--kit path/to/kit` or the `HULLPROOF_KIT` setting. Its findings records use findings schema 1.1.0, which adds a `machine_evidence` block that names the tool, the rule id, the tool version and the configuration hash. The kit's validators also accept schema 1.2.0.
 
 Limits. Its coverage is partial. A requirement that nothing settled stays NOT ASSESSED and is never reported as a pass. Its taint rules and the checks that read the code map are leads until they are measured, and a lead never fails a requirement. OSV Scanner sends package names to osv.dev, so it runs only when you pass `--allow-network`. Some scanners must be installed by you. With this kit it covers the free requirements only, and its scan record names the edition that ran.
 
-## What is in the release zip
+## What is in this repository and in the release zip
 
-One file to download. It unzips into one folder, `hullproof-free-0.4.0/`, with these parts:
+The repository and the release zip hold the same files. The zip is one file to download, and it unzips into one folder, `hullproof-free-0.5.0/`. The parts:
 
 | Path | What it is | How you use it |
 |------|------------|----------------|
 | `kit/` | The kit you copy into a project: the standard, the agent and skill files, the installer for fifteen AI tools, the scanner rules and the release gate | Copy it in (Install below), or run `node tools/hullproof/install.mjs --tool <name> --write` for a tool other than Claude Code |
-| `pack/hullproof-free-pack-0.4.0.zip` | The upload pack for chat tools and app builders: the standard, the audit prompts and the tool rules in one zip | Upload this zip to ChatGPT, Claude.ai, Lovable, Replit, Bolt or a similar tool, paste `INSTALL-BY-CHAT.md` from it, and ask for the audit. It was a separate download before; it is inside this zip now |
+| `pack/hullproof-free-pack-0.5.0.zip` | The upload pack for chat tools and app builders: the standard, the audit prompts and the tool rules in one zip | Upload this zip to ChatGPT, Claude.ai, Lovable, Replit, Bolt or a similar tool, paste `INSTALL-BY-CHAT.md` from it, and ask for the audit. It was a separate download before; it is inside this zip now |
 | `engine/` | The Hullproof Engine, the open edition | Run it with Node, see The Hullproof Engine above |
 | `conventions/`, `docs/` | How requirements are written, and a sample audit report | Read them |
-| `README.md`, `CHANGELOG.md`, `LICENSING.md`, `NOTICE.md`, `SECURITY.md` and the license files | Terms, credits and history | Keep the license files with anything you copy |
+| `AI-SETUP.md` | Step by step setup instructions written for an AI tool that was given only this link or this zip | Point your AI tool at it |
+| `README.md`, `RELEASE-NOTES-0.5.0.md`, `CHANGELOG.md`, `LICENSING.md`, `NOTICE.md`, `SECURITY.md` and the license files | The guide, what is in this release and what is not claimed, history, terms and credits | Keep the license files with anything you copy |
 
 ## Works with your AI tool
 
@@ -161,18 +190,18 @@ Requirements:
 
 Steps:
 
-1. Get the kit. Clone this repository, or unzip `hullproof-free-0.4.0.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.4.0/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.4.0.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
+1. Get the kit. Clone this repository, or unzip `hullproof-free-0.5.0.zip` in an empty folder, not inside your project. The zip holds one folder, `hullproof-free-0.5.0/`. If you were given a `.sha256` file or a SHA256SUMS file with the download, check the zip first, in the folder that holds it: `shasum -a 256 -c hullproof-free-0.5.0.zip.sha256`. A SHA256SUMS file lists every release zip, so with only this zip in the folder use `shasum -a 256 -c --ignore-missing SHA256SUMS`.
 2. From the root of your project, copy the kit in. This command is for a project that has no Hullproof files yet. If you installed Hullproof before, follow Update below instead. Every kit file lives under a `hullproof` name. The `-n` flag skips a file that already exists, so nothing of yours is overwritten.
 
    ```bash
-   cp -Rn path/to/hullproof-free-0.4.0/kit/. .
+   cp -Rn path/to/hullproof-free-0.5.0/kit/. .
    ```
 
    Then copy the license files in. This step is required, because the license texts must travel with the files you copied:
 
    ```bash
    mkdir -p docs/hullproof/licence
-   cp path/to/hullproof-free-0.4.0/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
+   cp path/to/hullproof-free-0.5.0/{LICENSE,LICENSE-DOCS.md,LICENSE-DOCS-CC-BY-SA-4.0.txt,LICENSING.md,NOTICE.md} docs/hullproof/licence/
    ```
 
 3. Add this line to your project's root `CLAUDE.md`. Create the file if you do not have one.
@@ -193,7 +222,7 @@ To run Hullproof in another AI tool, see Works with your AI tool above and `edit
 
 Use this to move to a newer release of the free edition. Do not use `cp -Rn` for it, because `-n` keeps every file that already exists and your old files would win silently.
 
-1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.4.0/` for this release.
+1. Unzip the new release in an empty folder, outside your project. The zip holds one folder, `hullproof-free-0.5.0/` for this release.
 2. From the root of your project, save a copy of the current Hullproof files, outside the project:
 
    ```bash
@@ -208,7 +237,7 @@ Use this to move to a newer release of the free edition. Do not use `cp -Rn` for
 3. Copy the new files over them. These are the only paths this command touches. Any local edit to a file in them is replaced, so merge your edits from the saved copy afterwards.
 
    ```bash
-   KIT=path/to/hullproof-free-0.4.0/kit
+   KIT=path/to/hullproof-free-0.5.0/kit
    mkdir -p docs tools .claude/skills .claude/agents .claude/hooks .claude/rules
    cp -R "$KIT/docs/hullproof" docs/
    cp -R "$KIT/tools/hullproof" tools/

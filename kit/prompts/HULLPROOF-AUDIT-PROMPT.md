@@ -1,4 +1,4 @@
-# Hullproof security audit prompt (Free, version 0.4.0)
+# Hullproof security audit prompt (Free, version 0.5.0)
 
 Give this whole file to your AI tool, or save it where your tool keeps its instructions, then say "run the Hullproof audit". It is written for tools that cannot run separate helper agents, cannot enforce a read only limit and cannot promise shell access. You play every role yourself, one after the other, and you finish each role before you start the next.
 

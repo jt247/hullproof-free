@@ -48,5 +48,14 @@
     "agent",
     "rules",
     "prompt"
-  ]
+  ],
+  "engine": {
+    "canRun": true,
+    "mcp": {
+      "supported": true,
+      "src": "mcp/config.toml",
+      "dest": ".codex/config.toml",
+      "merge": "toml"
+    }
+  }
 }

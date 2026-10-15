@@ -72,7 +72,7 @@ class Packaging(unittest.TestCase):
 
     def test_nothing_is_copied_from_the_existing_kit(self):
         names = {p.name for p in u.files_under(FOLDER)}
-        self.assertEqual(names, {"README.md", "TOOL.json", "settings.json"})
+        self.assertEqual(names, {"README.md", "TOOL.json", "settings.json", "mcp.json"})
 
     def test_text_rules(self):
         u.check_text(self, FOLDER)

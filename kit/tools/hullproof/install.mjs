@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hullproof installer. Zero dependencies, Node 18+.
-// Usage: node tools/hullproof/install.mjs --tool <name> [--write] [--project <dir>] [--list] [--all]
+// Usage: node tools/hullproof/install.mjs --tool <name> [--write] [--with-engine] [--project <dir>] [--list] [--all]
 // Exit codes: 0 ok, 1 error, 2 nothing to do.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,12 +9,16 @@ import { fileURLToPath } from 'node:url';
 const BEGIN = '<!-- hullproof:begin -->';
 const END = '<!-- hullproof:end -->';
 const MODES = new Set(['never', 'append', 'json']);
+const MCP_MERGES = new Set(['json', 'toml']);
+const TOML_BEGIN = '# hullproof:begin';
+const TOML_END = '# hullproof:end';
+const ENGINE_HELP = 'https://github.com/jt247/hullproof-engine';
 const LABELS = { enforced: 'ENFORCED', partial: 'PARTIAL', advisory: 'ADVISORY' };
 
 class Fail extends Error {}
 
 function parseArgs(argv) {
-  const o = { write: false, list: false, all: false, tool: null, project: null, kit: null };
+  const o = { write: false, list: false, all: false, withEngine: false, tool: null, project: null, kit: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const val = () => {
@@ -24,6 +28,7 @@ function parseArgs(argv) {
     if (a === '--write') o.write = true;
     else if (a === '--list') o.list = true;
     else if (a === '--all') o.all = true;
+    else if (a === '--with-engine') o.withEngine = true;
     else if (a === '--tool') o.tool = val();
     else if (a === '--project') o.project = val();
     else if (a === '--kit') o.kit = val(); // addition: lets tests point at fixtures
@@ -33,11 +38,13 @@ function parseArgs(argv) {
   return o;
 }
 
-const HELP = `Usage: node tools/hullproof/install.mjs --tool <name> [--write] [--project <dir>]
-       node tools/hullproof/install.mjs --all [--write] [--project <dir>]
+const HELP = `Usage: node tools/hullproof/install.mjs --tool <name> [--write] [--with-engine] [--project <dir>]
+       node tools/hullproof/install.mjs --all [--write] [--with-engine] [--project <dir>]
        node tools/hullproof/install.mjs --list
 
-Default is a dry run. Add --write to apply. --project defaults to the current folder.`;
+Default is a dry run. Add --write to apply. --project defaults to the current folder.
+--with-engine also writes the MCP settings that start the Hullproof engine (hullproof mcp) for the tool,
+and reports whether the hullproof command is on your PATH. Without it nothing about the engine changes.`;
 
 function findKitRoot(start) {
   let dir = start;
@@ -91,6 +98,21 @@ function validateTool(d) {
   if (typeof d.firstRun !== 'string' || !d.firstRun) p.push('"firstRun" must be a string');
   if (d.surfaces !== undefined && !Array.isArray(d.surfaces)) p.push('"surfaces" must be an array');
   if (d.ways !== undefined && !Array.isArray(d.ways)) p.push('"ways" must be an array');
+  if (d.engine !== undefined) p.push(...validateEngine(d.engine));
+  return p;
+}
+
+function validateEngine(e) {
+  const p = [];
+  if (!isObj(e)) return ['"engine" must be an object'];
+  if (typeof e.canRun !== 'boolean') p.push('engine.canRun must be true or false');
+  const m = e.mcp;
+  if (!isObj(m) || typeof m.supported !== 'boolean') return [...p, 'engine.mcp.supported must be true or false'];
+  if (m.supported) {
+    if (typeof m.src !== 'string' || !m.src) p.push('engine.mcp.src must be a string');
+    if (typeof m.dest !== 'string' || !m.dest) p.push('engine.mcp.dest must be a string');
+    if (!MCP_MERGES.has(m.merge)) p.push('engine.mcp.merge must be json or toml');
+  }
   return p;
 }
 
@@ -165,7 +187,7 @@ function deepMerge(base, add, notes, trail = '') {
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-function planFile(tool, f, projectReal, kit) {
+function planFile(tool, f, projectReal, kit, soft = false) {
   // "from":"kit" reads the source relative to the kit root, for files that live outside the tool folder (hook scripts).
   const base = f.from === 'kit' ? kit : tool.dir;
   const src = path.resolve(base, f.src);
@@ -205,10 +227,14 @@ function planFile(tool, f, projectReal, kit) {
       let cur;
       try { cur = JSON.parse(fs.readFileSync(dest, 'utf8').replace(/^﻿/, '')); }
       catch (err) {
+        if (soft) return printItem(rel, dest, `left untouched because it does not parse as JSON (${err.message})`, JSON.stringify(add, null, 2));
         throw new Fail(`Refused to merge into ${rel} because it does not parse as JSON (${err.message}). Fix or move that file, then run again.`);
       }
       const notes = [];
       const merged = deepMerge(cur, add, notes);
+      if (soft && (!isObj(cur) || !covers(merged, add))) {
+        return printItem(rel, dest, 'left untouched because it already holds a different value for the same setting', JSON.stringify(add, null, 2));
+      }
       if (eq(merged, cur)) Object.assign(item, { kind: 'same', msg: 'already installed' });
       else Object.assign(item, {
         kind: 'merge', backup: true,
@@ -219,6 +245,80 @@ function planFile(tool, f, projectReal, kit) {
     }
   }
   return item;
+}
+
+// True when everything in add is present in base with the same value (arrays: every item of add is in base).
+function covers(base, add) {
+  if (Array.isArray(add)) return Array.isArray(base) && add.every((v) => base.some((b) => eq(b, v)));
+  if (isObj(add)) return isObj(base) && Object.entries(add).every(([k, v]) => k in base && covers(base[k], v));
+  return eq(base, add);
+}
+
+// An item that changes nothing and tells the reader what to add by hand.
+function printItem(rel, dest, why, snippet) {
+  return { rel, dest, kind: 'print', msg: `${why}. Add this by hand:`, write: null, backup: false, snippet };
+}
+
+// MCP settings in TOML (Codex config.toml). No TOML parser here, so the only edits are a marked block we own,
+// or nothing: if the file already defines the server another way, print the snippet instead.
+function planToml(tool, f, projectReal, kit) {
+  const src = path.resolve(tool.dir, f.src);
+  if (!within(tool.dir, src)) throw new Fail(`${tool.name}: source "${f.src}" is outside the tool folder.`);
+  if (!fs.existsSync(src) || !fs.statSync(src).isFile()) throw new Fail(`${tool.name}: source file "${f.src}" is missing from the kit.`);
+  const dest = safeDest(projectReal, f.dest);
+  const rel = f.dest.replace(/\\/g, '/');
+  const text = fs.readFileSync(src, 'utf8').replace(/^﻿/, '').trim();
+  const block = `${TOML_BEGIN}\n${text}\n${TOML_END}`;
+  const item = { rel, dest, kind: 'skip', msg: '', write: null, backup: false };
+  if (!fs.existsSync(dest)) return Object.assign(item, { kind: 'create', msg: 'create with a marked block', write: block + '\n' });
+  const cur = fs.readFileSync(dest, 'utf8');
+  const b = cur.indexOf(TOML_BEGIN);
+  const e = b === -1 ? -1 : cur.indexOf(TOML_END, b + 1);
+  if (b !== -1 && e !== -1) {
+    const next = cur.slice(0, b) + block + cur.slice(e + TOML_END.length);
+    if (next === cur) return Object.assign(item, { kind: 'same', msg: 'already installed' });
+    return Object.assign(item, { kind: 'replace', msg: 'replace the marked Hullproof block, text outside it is untouched', write: next });
+  }
+  if (/^\s*mcp_servers\s*=/m.test(cur) || /mcp_servers\s*\.\s*["']?hullproof/.test(cur)) {
+    return printItem(rel, dest, 'left untouched because it already defines MCP servers in a way this installer does not edit', text);
+  }
+  const next = cur.replace(/\s*$/, '') + (cur.trim() ? '\n\n' : '') + block + '\n';
+  return Object.assign(item, { kind: 'append', msg: 'append a marked Hullproof block, existing text is untouched', write: next });
+}
+
+// items are the tool's own planned files. When one of them is the same JSON file as the MCP settings (Gemini CLI keeps its hook settings and
+// its MCP servers in .gemini/settings.json), the MCP settings are merged into that planned content, so one write holds both and nothing is lost.
+function planEngine(tool, projectReal, kit, items) {
+  const m = tool.data.engine && tool.data.engine.mcp;
+  if (!m || !m.supported) return [];
+  const f = { src: m.src, dest: m.dest, merge: m.merge };
+  const same = m.merge === 'json' && items.find((i) => i.dest === safeDest(projectReal, m.dest) && i.write !== null);
+  if (same) {
+    let add;
+    try { add = JSON.parse(fs.readFileSync(path.resolve(tool.dir, m.src), 'utf8').replace(/^﻿/, '')); }
+    catch (err) { throw new Fail(`${tool.name}: kit file "${m.src}" is not valid JSON: ${err.message}`); }
+    same.write = JSON.stringify(deepMerge(JSON.parse(same.write), add, []), null, 2) + '\n';
+    same.msg += ', and the MCP settings are merged into the same file';
+    return [{ rel: same.rel, dest: same.dest, kind: 'merge', msg: 'merged into the file above', write: null, backup: false }];
+  }
+  return [m.merge === 'toml' ? planToml(tool, f, projectReal, kit) : planFile(tool, f, projectReal, kit, true)];
+}
+
+// Looks for an executable called name in PATH without running anything.
+export function findOnPath(name, env = process.env) {
+  const dirs = (env.PATH || '').split(path.delimiter).filter(Boolean);
+  const exts = process.platform === 'win32' ? (env.PATHEXT || '.EXE;.CMD;.BAT').split(';') : [''];
+  for (const d of dirs) {
+    for (const x of exts) {
+      const p = path.join(d, name + x);
+      try {
+        if (!fs.statSync(p).isFile()) continue;
+        fs.accessSync(p, fs.constants.X_OK);
+        return p;
+      } catch { /* not here */ }
+    }
+  }
+  return null;
 }
 
 function apply(item) {
@@ -233,6 +333,35 @@ function planTool(tool, projectReal, kit) {
   return tool.data.files.map((f) => planFile(tool, f, projectReal, kit));
 }
 
+function printEngineStatus(projectReal, env, out) {
+  const found = findOnPath('hullproof', env);
+  if (!found) {
+    out(`\nEngine: the hullproof command was not found on your PATH. Install the engine first (the engine folder of your package, or ${ENGINE_HELP}, whose README says how). The MCP settings below start that command, so they work only once it is installed.`);
+    return;
+  }
+  let real = found;
+  try { real = fs.realpathSync(found); } catch { /* keep the PATH entry */ }
+  out(`\nEngine: the hullproof command is on your PATH at ${found}.`);
+  if (within(projectReal, real)) out('Note: that command is inside this project. Hullproof audits do not run an engine that comes from the audited project, so install the engine outside the project.');
+}
+
+function printEngineItems(d, items, out) {
+  const e = d.engine;
+  if (!e || !e.canRun) {
+    out('  Engine mode: this tool cannot run the engine, so its audit is prompt based. Run hullproof ci on your own machine or in CI, then paste .hullproof/ci/report.md into the chat.');
+    return;
+  }
+  out('  Engine mode: this tool can run the engine. Run hullproof ci from the project root before the audit. Steps: tools/hullproof/helpers/engine-mode.md.');
+  if (!e.mcp || !e.mcp.supported) {
+    out('  MCP: add the server to your tool\'s MCP settings with command hullproof and argument mcp.');
+    return;
+  }
+  for (const i of items) {
+    out(`  ${i.rel} (MCP settings): ${i.msg}`);
+    if (i.snippet) out(i.snippet.split('\n').map((l) => `      ${l}`).join('\n'));
+  }
+}
+
 function printList(tools, out) {
   for (const t of tools) {
     const d = t.data || {};
@@ -244,7 +373,7 @@ function printList(tools, out) {
   }
 }
 
-export function main(argv, out = console.log, err = console.error) {
+export function main(argv, out = console.log, err = console.error, env = process.env) {
   try {
     const o = parseArgs(argv);
     if (o.help || (!o.list && !o.all && !o.tool)) { out(HELP); return o.help ? 0 : 1; }
@@ -260,14 +389,21 @@ export function main(argv, out = console.log, err = console.error) {
     const chosen = o.all ? tools : [findTool(tools, o.tool)];
 
     // Plan everything first so a refusal changes nothing.
-    const plans = chosen.map((t) => ({ t, items: planTool(t, projectReal, kit) }));
-    const doing = plans.flatMap((p) => p.items).filter((i) => i.write !== null);
+    const plans = chosen.map((t) => {
+      const items = planTool(t, projectReal, kit);
+      return { t, items, engine: o.withEngine ? planEngine(t, projectReal, kit, items) : [] };
+    });
+    // Two tools can write the same file with the same content (Claude Code and Copilot share .mcp.json): count and write that once.
+    const seen = new Set();
+    const doing = plans.flatMap((p) => [...p.items, ...p.engine]).filter((i) => i.write !== null && !seen.has(i.dest + '\0' + i.write) && seen.add(i.dest + '\0' + i.write));
 
     out(o.write ? `Installing into ${projectReal}` : `Dry run for ${projectReal} (nothing is written)`);
-    for (const { t, items } of plans) {
+    if (o.withEngine) printEngineStatus(projectReal, env, out);
+    for (const { t, items, engine } of plans) {
       const d = t.data;
       out(`\n${d.displayName || t.name}`);
       for (const i of items) out(`  ${i.rel}: ${i.msg}`);
+      if (o.withEngine) printEngineItems(d, engine, out);
       if (d.trustNote) out(`\nTrust note: ${d.trustNote}`);
       out(`\nEnforcement: ${LABELS[d.enforcement]}`);
       out(d.enforcementNote);

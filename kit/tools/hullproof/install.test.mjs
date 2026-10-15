@@ -214,3 +214,143 @@ test('runs when the script is reached through a symbolic link', (t) => {
   assert.match(r.stdout, /Done\./);
   assert.equal(read(p, '.never/rules/a.md'), '# never rule\nbody\n');
 });
+
+// ---- --with-engine ----
+const MCP_JSON = { mcpServers: { hullproof: { command: 'hullproof', args: ['mcp'] } } };
+function runEngine(args, project, pathValue = '') {
+  const a = [script, '--kit', kit, ...args];
+  if (project) a.push('--project', project);
+  const r = spawnSync(process.execPath, a, { encoding: 'utf8', env: { ...process.env, PATH: pathValue } });
+  return { code: r.status, out: r.stdout + r.stderr };
+}
+
+test('without --with-engine no MCP file is planned or written', () => {
+  const p = tmp();
+  const r = run(['--tool', 'mcpjson', '--write'], p);
+  assert.equal(r.code, 0);
+  assert.ok(!fs.existsSync(path.join(p, '.mcpjson')));
+  assert.doesNotMatch(r.out, /MCP settings|Engine/);
+});
+
+test('with --with-engine a dry run lists the MCP file and writes nothing', () => {
+  const p = tmp();
+  const r = runEngine(['--tool', 'mcpjson', '--with-engine'], p);
+  assert.equal(r.code, 0);
+  assert.match(r.out, /\.mcpjson\/mcp\.json \(MCP settings\): create/);
+  assert.match(r.out, /was not found on your PATH/);
+  assert.deepEqual(fs.readdirSync(p), []);
+});
+
+test('with --with-engine write creates the JSON file, rerun exits 2', () => {
+  const p = tmp();
+  assert.equal(runEngine(['--tool', 'mcpjson', '--with-engine', '--write'], p).code, 0);
+  assert.deepEqual(JSON.parse(read(p, '.mcpjson/mcp.json')), MCP_JSON);
+  const r = runEngine(['--tool', 'mcpjson', '--with-engine', '--write'], p);
+  assert.equal(r.code, 2);
+  assert.match(r.out, /already installed/);
+});
+
+test('an existing JSON MCP file is merged with a backup and the user server is kept', () => {
+  const p = tmp();
+  fs.mkdirSync(path.join(p, '.mcpjson'));
+  fs.writeFileSync(path.join(p, '.mcpjson/mcp.json'), JSON.stringify({ mcpServers: { mine: { command: 'x' } } }));
+  assert.equal(runEngine(['--tool', 'mcpjson', '--with-engine', '--write'], p).code, 0);
+  const got = JSON.parse(read(p, '.mcpjson/mcp.json'));
+  assert.deepEqual(got.mcpServers.mine, { command: 'x' });
+  assert.deepEqual(got.mcpServers.hullproof, MCP_JSON.mcpServers.hullproof);
+  assert.ok(fs.existsSync(path.join(p, '.mcpjson/mcp.json.hullproof.bak')));
+});
+
+test('a JSON MCP file that does not parse is left alone and the snippet is printed', () => {
+  const p = tmp();
+  fs.mkdirSync(path.join(p, '.mcpjson'));
+  fs.writeFileSync(path.join(p, '.mcpjson/mcp.json'), '{ // comment\n}');
+  const r = runEngine(['--tool', 'mcpjson', '--with-engine', '--write'], p);
+  assert.equal(r.code, 0);
+  assert.match(r.out, /does not parse as JSON/);
+  assert.match(r.out, /"command": "hullproof"/);
+  assert.equal(read(p, '.mcpjson/mcp.json'), '{ // comment\n}');
+});
+
+test('a different existing hullproof server is never overwritten, the snippet is printed', () => {
+  const p = tmp();
+  fs.mkdirSync(path.join(p, '.mcpjson'));
+  const mine = { mcpServers: { hullproof: { command: 'npx', args: ['other'] } } };
+  fs.writeFileSync(path.join(p, '.mcpjson/mcp.json'), JSON.stringify(mine));
+  const r = runEngine(['--tool', 'mcpjson', '--with-engine', '--write'], p);
+  assert.match(r.out, /different value/);
+  assert.deepEqual(JSON.parse(read(p, '.mcpjson/mcp.json')), mine);
+  assert.ok(!fs.existsSync(path.join(p, '.mcpjson/mcp.json.hullproof.bak')));
+});
+
+test('TOML MCP settings are created, appended after user text, replaced in place, and never duplicated', () => {
+  const p = tmp();
+  fs.mkdirSync(path.join(p, '.mcptoml'));
+  fs.writeFileSync(path.join(p, '.mcptoml/config.toml'), 'model = "x"\n\n[mcp_servers.mine]\ncommand = "y"\n');
+  assert.equal(runEngine(['--tool', 'mcptoml', '--with-engine', '--write'], p).code, 0);
+  const s = read(p, '.mcptoml/config.toml');
+  assert.ok(s.startsWith('model = "x"\n\n[mcp_servers.mine]\ncommand = "y"\n\n# hullproof:begin\n'));
+  assert.equal(s.split('# hullproof:begin').length - 1, 1);
+  assert.equal(runEngine(['--tool', 'mcptoml', '--with-engine', '--write'], p).code, 2);
+  assert.equal(read(p, '.mcptoml/config.toml'), s);
+});
+
+test('a TOML file that already defines the hullproof server is left alone and the snippet is printed', () => {
+  const p = tmp();
+  fs.mkdirSync(path.join(p, '.mcptoml'));
+  const mine = '[mcp_servers.hullproof]\ncommand = "npx"\n';
+  fs.writeFileSync(path.join(p, '.mcptoml/config.toml'), mine);
+  const r = runEngine(['--tool', 'mcptoml', '--with-engine', '--write'], p);
+  assert.match(r.out, /already defines MCP servers/);
+  assert.match(r.out, /command = "hullproof"/);
+  assert.equal(read(p, '.mcptoml/config.toml'), mine);
+});
+
+test('a tool that cannot run the engine says so and writes no MCP file', () => {
+  const p = tmp();
+  const r = runEngine(['--tool', 'chattool', '--with-engine', '--write'], p);
+  assert.equal(r.code, 0);
+  assert.match(r.out, /cannot run the engine, so its audit is prompt based/);
+  assert.match(r.out, /paste \.hullproof\/ci\/report\.md/);
+  assert.deepEqual(fs.readdirSync(p).sort(), ['chattool-rules.md']);
+});
+
+test('the PATH report names the hullproof command when it is found, and warns when it is inside the project', () => {
+  const bin = tmp();
+  fs.writeFileSync(path.join(bin, 'hullproof'), '#!/bin/sh\n', { mode: 0o755 });
+  const r = runEngine(['--tool', 'mcpjson', '--with-engine'], tmp(), bin);
+  assert.match(r.out, /on your PATH at/);
+  const inside = tmp();
+  fs.mkdirSync(path.join(inside, 'bin'));
+  fs.writeFileSync(path.join(inside, 'bin/hullproof'), '#!/bin/sh\n', { mode: 0o755 });
+  const w = runEngine(['--tool', 'mcpjson', '--with-engine'], inside, path.join(inside, 'bin'));
+  assert.match(w.out, /inside this project/);
+});
+
+test('a bad engine block in TOOL.json is reported', () => {
+  const k = tmp();
+  fs.cpSync(kit, k, { recursive: true });
+  const f = path.join(k, 'editors/mcpjson/TOOL.json');
+  const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+  d.engine.mcp.merge = 'yaml';
+  fs.writeFileSync(f, JSON.stringify(d));
+  const r = spawnSync(process.execPath, [script, '--kit', k, '--tool', 'mcpjson', '--project', tmp()], { encoding: 'utf8' });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout + r.stderr, /engine\.mcp\.merge must be json or toml/);
+});
+
+test('MCP settings that share a file with the tool settings are merged into one write, nothing is lost', () => {
+  const p = tmp();
+  const r = runEngine(['--tool', 'sharedmcp', '--with-engine', '--write'], p);
+  assert.equal(r.code, 0);
+  const got = JSON.parse(read(p, '.shared/settings.json'));
+  assert.deepEqual(got.hooks, { x: [1] });
+  assert.deepEqual(got.mcpServers, MCP_JSON.mcpServers);
+  assert.equal(runEngine(['--tool', 'sharedmcp', '--with-engine', '--write'], p).code, 2);
+});
+
+test('the count of files written is reported once per file', () => {
+  const p = tmp();
+  const r = runEngine(['--tool', 'mcpjson', '--with-engine', '--write'], p);
+  assert.match(r.out, /Done\. 2 files written/);
+});

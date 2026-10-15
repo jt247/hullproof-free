@@ -1,0 +1,1 @@
+{"tool":"sharedmcp","displayName":"Shared Mcp","surfaces":["cli"],"files":[{"src":".cfg/settings.json","dest":".shared/settings.json","merge":"json"}],"enforcement":"advisory","enforcementNote":"No.","trustNote":"","firstRun":"audit","ways":["rules"],"engine":{"canRun":true,"mcp":{"supported":true,"src":"mcp/settings.json","dest":".shared/settings.json","merge":"json"}}}

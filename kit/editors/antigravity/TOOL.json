@@ -43,5 +43,14 @@
     "agent",
     "rules",
     "prompt"
-  ]
+  ],
+  "engine": {
+    "canRun": true,
+    "mcp": {
+      "supported": true,
+      "src": "mcp/mcp_config.json",
+      "dest": ".agents/mcp_config.json",
+      "merge": "json"
+    }
+  }
 }

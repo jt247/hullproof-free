@@ -1,6 +1,6 @@
 # Run Hullproof in your AI tool
 
-Hullproof 0.4.0 runs in fifteen AI tools: the agent apps and command line tools, VS Code integrations, app builders and chat tools. Each tool has a folder here with its files and a page (`README.md`) that holds the install steps, the first run, what the tool can and cannot enforce, its limits and a trust note.
+Hullproof 0.5.0 runs in fifteen AI tools: the agent apps and command line tools, VS Code integrations, app builders and chat tools. Each tool has a folder here with its files and a page (`README.md`) that holds the install steps, the first run, what the tool can and cannot enforce, its limits and a trust note.
 
 Every tool gets the Hullproof hard rules and the same finding format, and the agent tools and editors also get the five area checklists. Only the packaging changes. Tools that load skills and agents get a skill. Every tool can also run the portable audit prompt in `prompts/`, where the model plays each audit role in turn.
 
@@ -50,7 +50,7 @@ The enforcement label is copied from each tool's `TOOL.json`. The three words me
 
 | Label | Meaning |
 |-------|---------|
-| enforced | The tool itself blocks the action, in the setup Hullproof ships. No tool carries this label in 0.4.0. |
+| enforced | The tool itself blocks the action, in the setup Hullproof ships. No tool carries this label in 0.5.0. |
 | partial | The tool blocks some actions, under stated conditions such as a trusted folder or audit mode on, and some paths stay open. The tool page lists both. |
 | advisory | Nothing blocks anything. The tool is asked to follow the rules and a person must review every change. |
 
@@ -72,6 +72,41 @@ While audit mode is on, some tools cannot save the report file. They print the r
 Claude Code is the exception to the switch: its hook is attached only to the Hullproof skills and agents, so it holds only during those runs. A few deny rules stay on all the time, because they are safe all the time: reading secret files and editing the Hullproof hook files (Claude Code, the Cursor CLI and Devin).
 
 Every enforcement setup needs the folder to be trusted first, because the tools hold project hooks back until you accept trust. Each tool page says how.
+
+## Engine mode and MCP
+
+The Hullproof engine is a command line program. `hullproof ci`, run from the project root, uses no model and no container. It writes `findings.json`, `report.md`, `results.sarif` and `pr-comment.md` into `.hullproof/ci/`, and its exit code is 0 for no blocking finding, 1 when the gate holds and 2 for an error. `hullproof mcp` starts a read only MCP server (stdio) that serves the same results to a tool.
+
+Tools that can run shell commands start the audit from the engine result: they read `.hullproof/ci/findings.json` and `.hullproof/ci/report.md`, treat every engine finding as ground truth and add their own judgment on top. The steps are in `tools/hullproof/helpers/engine-mode.md`, and each of these tool pages has an Engine mode section. Tools that cannot run commands stay prompt based and say so on their page: run `hullproof ci` on your own machine or in CI and paste `report.md` into the chat.
+
+Add `--with-engine` to the install command to also write the MCP settings for the tool, and to see whether the `hullproof` command is on your PATH:
+
+```bash
+node tools/hullproof/install.mjs --tool cursor --with-engine
+node tools/hullproof/install.mjs --tool cursor --with-engine --write
+```
+
+Without the flag nothing about the engine is installed. The installer never overwrites your own settings: a JSON file is merged with a backup, and a file it cannot merge safely is left alone and the entry is printed for you to add by hand. Install the engine first, because the MCP settings start the `hullproof` command.
+
+| Tool | Runs the engine | MCP settings file written by `--with-engine` |
+|------|-----------------|-----------------------------------------------|
+| Claude Code | Yes | `.mcp.json` |
+| Codex | Yes | `.codex/config.toml` |
+| Antigravity | Yes | `.agents/mcp_config.json` |
+| Gemini CLI | Yes | `.gemini/settings.json` |
+| Cursor | Yes | `.cursor/mcp.json` |
+| Windsurf (Devin Desktop) | Yes | `.devin/mcp_config.json` |
+| GitHub Copilot | Yes | `.mcp.json` |
+| Lovable | No, prompt based | none |
+| Replit | No, prompt based | none |
+| Bolt | No, prompt based | none |
+| Emergent | No, prompt based | none |
+| v0 | No, prompt based | none |
+| ChatGPT | No, prompt based | none |
+| Claude.ai | No, prompt based | none |
+| Gemini app | No, prompt based | none |
+
+While audit mode is on, the read only hooks of the audit block `hullproof ci`, because it writes files. Run it first, before you turn audit mode on.
 
 ## Install by chat
 

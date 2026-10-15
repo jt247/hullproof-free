@@ -1,0 +1,1 @@
+{"tool":"chattool","displayName":"Chat Tool","surfaces":["web"],"files":[{"src":"rules.md","dest":"chattool-rules.md","merge":"never"}],"enforcement":"advisory","enforcementNote":"No.","trustNote":"","firstRun":"audit","ways":["rules"],"engine":{"canRun":false,"mcp":{"supported":false}}}

@@ -6,6 +6,32 @@ All notable changes to Hullproof are recorded here. Versions follow semantic ver
 
 Nothing yet.
 
+## [0.5.0] 2026-10-15
+
+The free edition still holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist. No requirement was added, removed or re rated. Release notes: [RELEASE-NOTES-0.5.0.md](RELEASE-NOTES-0.5.0.md).
+
+Why this is a minor release. 0.5.0 adds audit capabilities and changes how the free edition is packaged, and under the version rule above a minor version adds a new audit capability.
+
+### Added
+
+- This repository now holds everything the release zip holds: the kit, the Hullproof Engine in `engine/`, the upload pack in `pack/`, and the licences. Cloning the repository or unzipping `hullproof-free-0.5.0.zip` gives the same files.
+- `AI-SETUP.md`, step by step setup instructions written for an AI tool that was given only the repository link or only the zip.
+- `RELEASE-NOTES-0.5.0.md`.
+- In the engine: `hullproof ci` (one command for a pipeline, with a findings file, a report, a SARIF file and a pull request comment), a git pre commit check for staged secrets, an MCP server so an AI tool can read the results, and `hullproof prove`, a test of a finding against a copy of the app inside a container. Start recipes exist for Node on Express and Python on Flask.
+- In the engine: stack packs. Each of thirteen stacks has a stated level of depth, from L0 to L4, that the engine checks against recorded measurements. The README of the engine and `hullproof pack table` print the table.
+- In the engine: a code map for Java and Spring and for C# and ASP.NET Core, and configuration readers for Kotlin and Android, Swift and iOS, and Rust.
+- Findings schema 1.2.0 in the kit's validator and schema file: `evidence_kind` on `machine_evidence`, `runs` and `runs_proven` for a test shown in a sandbox, and the incomplete reason `engine_hunt`. Versions 1.0.0 and 1.1.0 stay valid.
+- Engine mode on the fifteen tool pages, and the installer flag `--with-engine`, which writes the MCP settings for the tools that take them.
+
+### Changed
+
+- A secret hit that is an example value (a placeholder, a published example key, or a shapeless match in documentation, fixture data, an example env file, a lockfile, vendored or generated code or a migration) is reported as an example value and does not hold the gate. A rule with a vendor shape, and every secret in source, config and test source files, still holds.
+- `STANDARD.md` and the controls file say version 0.5.0.
+
+### Fixed
+
+- Thirteen code map extractor bugs found by running the engine on ten real open source applications.
+
 ## [0.4.0] 2026-10-11
 
 The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 cited sources and a 110 item pre launch checklist. Why this is a minor release: the standard gained new requirements in the Pro edition, and the free kit gains the release gate and the record validators. None of the new requirements is a BLOCKER or a CRITICAL, so the free requirements are the same as in 0.3.1.

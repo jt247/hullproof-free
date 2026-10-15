@@ -1,4 +1,4 @@
-# Hullproof audit prompt, short (Free 0.4.0)
+# Hullproof audit prompt, short (Free 0.5.0)
 
 Audit this project against the Hullproof standard in `docs/hullproof/`. If `docs/hullproof/STANDARD.md` is missing, stop and ask the user to install the pack first. You have no helper agents, so play each role yourself, in order, and finish one before the next: setup, profile, review, short verification, rating, report. Read requirement text at run time and never from memory.
 

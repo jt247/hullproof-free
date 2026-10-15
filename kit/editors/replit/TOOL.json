@@ -25,5 +25,11 @@
     "rules",
     "prompt",
     "install-by-chat"
-  ]
+  ],
+  "engine": {
+    "canRun": false,
+    "mcp": {
+      "supported": false
+    }
+  }
 }

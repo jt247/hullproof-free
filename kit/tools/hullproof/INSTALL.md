@@ -37,6 +37,17 @@ Some tools also need the read only hook script and a small adapter that sit outs
 
 The installer only writes inside the project folder. It refuses paths that leave it and symbolic links that point outside it. If any file is refused, nothing is written for any file.
 
+## Engine mode: --with-engine
+
+Add `--with-engine` to also write the MCP settings that start the Hullproof engine (`hullproof mcp`) for the tool, in the file and format that tool uses. It also reports whether the `hullproof` command is on your PATH, and tells you to install the engine first when it is not. Without the flag nothing about the engine changes.
+
+```bash
+node tools/hullproof/install.mjs --tool claude-code --with-engine
+node tools/hullproof/install.mjs --tool claude-code --with-engine --write
+```
+
+The MCP file follows the same rules as the other files. A JSON file that exists is merged and a backup is saved. A file that does not parse, or that already holds a different `hullproof` entry, is left alone and the entry is printed for you to add by hand. For Codex the settings are TOML, so the installer adds a marked block (`# hullproof:begin` to `# hullproof:end`) at the end of `.codex/config.toml`, replaces only that block on a rerun, and prints the table instead when the file already defines the server another way. A tool that cannot run the engine gets no MCP file, and the installer says that its audit is prompt based.
+
 ## Exit codes
 
 0 means it worked or the dry run found changes to make. 1 means an error. 2 means there was nothing to do.

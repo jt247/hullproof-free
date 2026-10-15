@@ -21,3 +21,9 @@ Bolt does not pick up agents.md on its own. It has to be attached in chat, and t
 ## What this does not do
 
 Hullproof cannot stop Bolt from editing files in Build Mode, cannot run commands for you and cannot scan the live site. Plan Mode is Bolt's own mode and Hullproof adds no lock to it. Use Lock file in Code view to protect files you do not want touched. Bolt has its own project security audit in the Publish menu on paid plans.
+
+## Engine mode
+
+Bolt cannot run the Hullproof engine, so the audit here is prompt based. It checks only what the model can read in the chat or the project. Hullproof ships no MCP settings for this tool.
+
+To use engine results anyway, run `hullproof ci` from the root of your repository on your own machine or in CI. It uses no model, and it writes `report.md` and three other files into `.hullproof/ci/`. Then paste `.hullproof/ci/report.md` into the chat before you run the audit, and say: "This is the output of the Hullproof engine. Treat each finding in it as correct unless the code you can see shows otherwise, then run the audit and add what the engine cannot see." The report lists failures that someone could exploit, so paste it only into a chat that you alone can read. The engine is in the `engine/` folder of your package, or at https://github.com/jt247/hullproof-engine.
