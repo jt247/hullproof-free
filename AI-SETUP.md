@@ -39,7 +39,7 @@ git clone https://github.com/jt247/hullproof-free.git "$HOME/hullproof-free"
 
 Set a shell variable for it in every command you run: `HP="$HOME/hullproof-free"` (use the real path). Check that these exist: `$HP/kit`, `$HP/engine`, `$HP/pack`, `$HP/README.md`. If the person gave you the zip instead, unzip `hullproof-free-0.5.0.zip` in an empty folder and use the `hullproof-free-0.5.0` folder inside it as `HP`. It holds the same files.
 
-If you cannot run commands (you are a chat tool), tell the person to use the pack: see "If you cannot run commands" below.
+If you cannot run commands (you are a chat tool), tell the person to use the pack: see the last part of step 5.
 
 ## Step 3. Ask the person
 
