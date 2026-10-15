@@ -55,7 +55,7 @@ export function runScanner(a: Adapter, opts: ScanOptions): ScanOutput {
       version, tracked, rulesDir: o.rulesDir!, scratch,
       run: (argv) => exec(argv, o.repo, env0),
     };
-    try { res = a.execute(o, env); }
+    try { res = a.execute(o, env); if (res && o.skipFiles?.size) res = { ...res, hits: res.hits.filter((h) => !o.skipFiles!.has(h.file)) }; }
     catch (e) { status = 'failed'; reason = `${a.tool} did not finish: ${(e as Error).message}`; }
     finally { rmSync(scratch, { recursive: true, force: true }); }
   }

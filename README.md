@@ -28,7 +28,7 @@ node tools/hullproof/install.mjs --tool cursor --write   # applies it
 node ~/hullproof-free/engine/src/cli.ts ci . --kit ~/hullproof-free/kit --edition free
 ```
 
-The last command writes a plain English report to `.hullproof/<commit>/ci/report.md`. Add `.hullproof/` to your `.gitignore`. The first report on a real project usually ends NOT READY, because most BLOCKER requirements need evidence that is not in the code. Claude Code needs no installer: after the copy, add the line `@docs/hullproof/HULLPROOF.md` to `CLAUDE.md` and run `/hullproof-prelaunch`. For chat tools that cannot run commands (ChatGPT, Claude.ai, Lovable, Replit, Bolt, v0, Emergent, the Gemini app), upload `pack/hullproof-free-pack-0.5.0.zip` and paste `INSTALL-BY-CHAT.md` from it. The Install section below has every step, the license files to copy and the checks.
+The last command writes a plain English report to `.hullproof/ci/report.md`. Add `.hullproof/` to your `.gitignore`. The first report on a real project usually ends NOT READY, because most BLOCKER requirements need evidence that is not in the code. Claude Code needs no installer: after the copy, add the line `@docs/hullproof/HULLPROOF.md` to `CLAUDE.md` and run `/hullproof-prelaunch`. For chat tools that cannot run commands (ChatGPT, Claude.ai, Lovable, Replit, Bolt, v0, Emergent, the Gemini app), upload `pack/hullproof-free-pack-0.5.0.zip` and paste `INSTALL-BY-CHAT.md` from it. The Install section below has every step, the license files to copy and the checks.
 
 ## What Hullproof is
 

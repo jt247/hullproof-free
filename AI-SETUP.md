@@ -83,11 +83,11 @@ node tools/hullproof/install.mjs --list
 node tools/hullproof/install.mjs --tool <name>
 ```
 
-The names are `codex`, `antigravity`, `gemini-cli`, `cursor`, `windsurf`, `copilot` (for Devin use `windsurf`; the output says which files it writes). Show the dry run to the person: each line says create, append, replace, merge or skip, then a trust note and the enforcement label. When they say yes, run the same command with `--write`. Tell them the trust note and the label, and the command to run in their tool, which the installer prints last. The installer only writes inside the project, never overwrites a plain file, and saves a `.hullproof.bak` copy before it merges a JSON file.
+The names are `codex`, `antigravity`, `gemini-cli`, `cursor`, `windsurf` (this is Windsurf and Devin, it writes into `.devin/`) and `copilot`. Show the dry run to the person: each line says create, append, replace, merge or skip, then a trust note and the enforcement label. When they say yes, run the same command with `--write`. Tell them the trust note, the label, and the line after "First run:" that the installer prints last: it is the exact first thing they run in their tool. The installer only writes inside the project, never overwrites a plain file, and saves a `.hullproof.bak` copy before it merges a JSON file.
 
 ### Lovable, Replit, Bolt, Emergent, v0, ChatGPT, Claude.ai, Gemini app
 
-These tools cannot run commands in the project. Use the pack. The person uploads `$HP/pack/hullproof-free-pack-0.5.0.zip` to their tool without unzipping it, then pastes the text of `INSTALL-BY-CHAT.md` (inside the pack zip, and also at `$HP/kit/prompts/INSTALL-BY-CHAT.md`) and sends it. The tool then places the files and lists what it placed. Prompts in these tools are requests, not controls: nothing stops the tool from writing a file unless it has a read only mode. Say so.
+These tools cannot run commands in the project, so for them use the pack. (If the project is on disk, the installer also supports these names and writes a rules file such as `agents.md`; run it as above if the person wants that too.) The person uploads `$HP/pack/hullproof-free-pack-0.5.0.zip` to their tool without unzipping it, then pastes the text of `INSTALL-BY-CHAT.md` (inside the pack zip, and also at `$HP/kit/prompts/INSTALL-BY-CHAT.md`) and sends it. The tool then places the files and lists what it placed. Prompts in these tools are requests, not controls: nothing stops the tool from writing a file unless it has a read only mode. Say so.
 
 ## Step 6. Run the engine
 
@@ -97,9 +97,9 @@ The engine needs Node 22.18 or newer. From the project folder:
 node "$HP/engine/src/cli.ts" ci . --kit "$HP/kit" --edition free
 ```
 
-It reads the project, runs the scanners it finds, runs its checks and the release gate, and writes four files under `.hullproof/<commit>/ci/`: `report.md` (the plain English report), `findings.json`, `results.sarif` and `pr-comment.md`. The exit code is 0 when no finding at or above the default level (blocker) fails, 1 when one does, and 2 when the input was refused (for example, the project is not a git repository, or has no commit). Read `report.md` and summarise it for the person: how many findings by severity, the three most important, what could not run and why, and the sentence that requirements nothing settled are listed as NOT ASSESSED and are never reported as a pass.
+It reads the project, runs the scanners it finds, runs its checks and the release gate, and writes four files under `.hullproof/ci/` (the full scan for the commit is in `.hullproof/<commit>/`): `report.md` (the plain English report), `findings.json`, `results.sarif` and `pr-comment.md`. The exit code is 0 when no finding at or above the default level (blocker) fails, 1 when one does, and 2 when the input was refused (for example, the project is not a git repository, or has no commit). Read `report.md` and summarise it for the person: how many findings by severity, the three most important, what could not run and why, and the sentence that requirements nothing settled are listed as NOT ASSESSED and are never reported as a pass.
 
-If you only want the stack and the map of entry points, run `node "$HP/engine/src/cli.ts" discover .` and `node "$HP/engine/src/cli.ts" map .`. They only read files.
+If you also want the table of how deep the engine goes for each stack, run `node "$HP/engine/src/cli.ts" pack table`. If you only want the stack and the map of entry points, run `node "$HP/engine/src/cli.ts" discover .` and `node "$HP/engine/src/cli.ts" map .`. They only read files.
 
 ## Step 7. Run the audit in the person's tool
 

@@ -60,7 +60,7 @@ What each command does:
 
 A scan of files alone ends NOT READY on every project. Most BLOCKER and CRITICAL requirements are settled by evidence that is not in the code, such as a provider dashboard export or a test against the running app. The gate section below says how that evidence is supplied.
 
-You can also copy the kit into your project, the way the Free kit's own install does (`cp -Rn path/to/hullproof-free/kit/. .`). The engine then finds it without `--kit`. It also scans the kit's own files as part of your project, which adds findings from the kit's test samples, so keeping the kit in a separate folder gives a cleaner report.
+You can also copy the kit into your project, the way the Free kit's own install does (`cp -Rn path/to/hullproof-free/kit/. .`). The engine then finds it without `--kit`. Kit files in your project that are still byte for byte what the kit's manifest says are left out of the scan, because they hold planted test samples; the list is taken from the kit given with `--kit` (or `HULLPROOF_KIT`), never from a manifest inside the scanned project, and a file you changed is scanned. The scan log says how many files were left out. If the engine finds the kit only inside the project itself, it leaves nothing out, and keeping the kit in a separate folder gives a cleaner report.
 
 ## How the engine finds the kit
 
