@@ -99,7 +99,7 @@ node "$HP/engine/src/cli.ts" ci . --kit "$HP/kit" --edition free
 
 It reads the project, runs the scanners it finds, runs its checks and the release gate, and writes four files under `.hullproof/ci/` (the full scan for the commit is in `.hullproof/<commit>/`): `report.md` (the plain English report), `findings.json`, `results.sarif` and `pr-comment.md`. The exit code is 0 when no finding at or above the default level (blocker) fails, 1 when one does, and 2 when the input was refused (for example, the project is not a git repository, or has no commit). Read `report.md` and summarise it for the person: how many findings by severity, the three most important, what could not run and why, and the sentence that requirements nothing settled are listed as NOT ASSESSED and are never reported as a pass.
 
-If you also want the table of how deep the engine goes for each stack, run `node "$HP/engine/src/cli.ts" pack table`. If you only want the stack and the map of entry points, run `node "$HP/engine/src/cli.ts" discover .` and `node "$HP/engine/src/cli.ts" map .`. They only read files.
+If you also want the table of how deep the engine goes for each stack, run `node "$HP/engine/src/cli.ts" pack table`. The engine is also on npm under the name `hullproof`. If the person prefers that, or the engine folder is missing, `npx hullproof ci . --kit "$HP/kit" --edition free` does the same thing (it needs Node 22.18 or newer, and the kit is still passed with `--kit`). If `npx hullproof` says the package is not found, use the command above. If you only want the stack and the map of entry points, run `node "$HP/engine/src/cli.ts" discover .` and `node "$HP/engine/src/cli.ts" map .`. They only read files.
 
 ## Step 7. Run the audit in the person's tool
 

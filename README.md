@@ -28,7 +28,7 @@ node tools/hullproof/install.mjs --tool cursor --write   # applies it
 node ~/hullproof-free/engine/src/cli.ts ci . --kit ~/hullproof-free/kit --edition free
 ```
 
-The last command writes a plain English report to `.hullproof/ci/report.md`. Add `.hullproof/` to your `.gitignore`. The first report on a real project usually ends NOT READY, because most BLOCKER requirements need evidence that is not in the code. Claude Code needs no installer: after the copy, add the line `@docs/hullproof/HULLPROOF.md` to `CLAUDE.md` and run `/hullproof-prelaunch`. For chat tools that cannot run commands (ChatGPT, Claude.ai, Lovable, Replit, Bolt, v0, Emergent, the Gemini app), upload `pack/hullproof-free-pack-0.5.0.zip` and paste `INSTALL-BY-CHAT.md` from it. The Install section below has every step, the license files to copy and the checks.
+The last command writes a plain English report to `.hullproof/ci/report.md`. Add `.hullproof/` to your `.gitignore`. The first report on a real project usually ends NOT READY, because most BLOCKER requirements need evidence that is not in the code. Claude Code needs no installer: after the copy, add the line `@docs/hullproof/HULLPROOF.md` to `CLAUDE.md` and run `/hullproof-prelaunch`. For chat tools that cannot run commands (ChatGPT, Claude.ai, Lovable, Replit, Bolt, v0, Emergent, the Gemini app), upload `pack/hullproof-free-pack-0.5.0.zip` and paste `INSTALL-BY-CHAT.md` from it. If you prefer npm to the zip route for the engine, `npx hullproof ci . --kit ~/hullproof-free/kit --edition free` does the same as the last command (the package is named `hullproof`, it needs Node 22.18 or newer, and you still pass the kit with `--kit`). The Install section below has every step, the license files to copy and the checks.
 
 ## What Hullproof is
 
@@ -107,7 +107,7 @@ node $ENGINE/src/cli.ts gate .
 
 Other commands in the engine: `ci` runs everything in one step for a pipeline and writes the report, `findings.json`, a SARIF file and a pull request comment; `hooks install` adds a git pre commit check for staged secrets; `mcp` lets an AI tool read the results; `prove` tests a finding against a copy of the app in a container (it needs a container runtime and your permission, and has start recipes for Node on Express and Python on Flask only); `pack table` prints the coverage table: for each stack, how deep the engine goes and what that was measured on.
 
-`engine/README.md` explains each command, the files it writes to `.hullproof/` and the options. Names of sign in helpers that the engine does not know can be listed in `.hullproof/kit.local.json`, and `engine/README.md` shows how.
+From npm: `npm install --global hullproof` or `npx hullproof <command>` give the same commands as `node $ENGINE/src/cli.ts <command>`. `engine/README.md` explains each command, the files it writes to `.hullproof/` and the options. Names of sign in helpers that the engine does not know can be listed in `.hullproof/kit.local.json`, and `engine/README.md` shows how.
 
 How it uses this kit. The engine reads `kit/docs/hullproof/security-controls.json` for the requirement IDs and severities, runs the gate from `kit/tools/hullproof/ci/hullproof-gate.mjs`, and checks its findings record with `validate-findings.mjs`. Point it at the kit with `--kit path/to/kit` or the `HULLPROOF_KIT` setting. Its findings records use findings schema 1.1.0, which adds a `machine_evidence` block that names the tool, the rule id, the tool version and the configuration hash. The kit's validators also accept schema 1.2.0.
 
