@@ -127,6 +127,6 @@ Report in plain words:
 
 1. `README.md` is the longer guide for people: what the free edition holds, the safety model, how to read the results, and how to update.
 2. `kit/` is the kit you copied. `engine/` is the Hullproof Engine (see `engine/README.md`). `pack/` is the upload pack for chat tools.
-3. `RELEASE-NOTES-0.5.0.md` and `CHANGELOG.md` say what is in this release and what is not claimed.
+3. `RELEASE-NOTES-0.5.0.md` and `CHANGELOG.md` say what is in this release.
 4. `LICENSING.md` says which licence covers which path: Apache License 2.0 for code, CC BY-SA 4.0 for documentation. Keep the licence files with anything you copy.
 5. Hullproof Pro adds the other requirements (662 in all), the full audit and more agents. It is a paid edition. See the README.

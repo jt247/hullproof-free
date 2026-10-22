@@ -62,7 +62,7 @@ The free edition holds 110 requirements (every BLOCKER and every CRITICAL), 154 
 
 ### Limits of this release
 
-- The engine's coverage is partial, its taint rules are leads until they are measured, OSV Scanner runs only when you allow network access, and some scanners must be installed by you.
+- The engine's coverage is partial, its taint rules report leads, OSV Scanner runs only when you allow network access, and some scanners must be installed by you.
 - Claude Code unattended runs can be stopped by the model provider's safeguards partway through. Nothing in your project changes when that happens. Run the same command again on the same commit.
 
 ## [0.3.1] 2026-10-10

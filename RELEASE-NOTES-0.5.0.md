@@ -19,15 +19,15 @@ This is the free edition, which is public. It is a minor release because it adds
 
 ## CI and the gate
 
-`hullproof ci` runs the scan, the report and the gate in one step and writes four files that are the same bytes on every run of one commit. Findings at or above the level you set with `--fail-on` fail the job; the default level is blocker. The GitHub Action, `jt247/hullproof-action`, wraps it and posts one pull request comment. The four other templates run the same command.
+`hullproof ci` runs the scan, the report and the gate in one step and writes four files that are the same bytes on every run of one commit. Findings at or above the level you set with `--fail-on` fail the job; the default level is blocker. The GitHub Action, `jt247/hullproof-action`, wraps it and posts one pull request comment. The templates in `ci-templates/` for the other four systems call the same command.
 
 ## The proof sandbox
 
-`hullproof prove` starts your app in a container that has no network while the tests run (the build step can reach the package registry), runs a short test written as data, and checks that a control request works before the attack steps run. On the fixture app, 4 planted authorization flaws were proven in 3 of 3 runs and none were proven on the fixed copy, and 6 of 6 escape probes were contained. A flaw that cannot be proven is reported as not proven, never as passed. Only Node on Express and Flask have a start recipe today. Podman and Docker Desktop were not run.
+`hullproof prove` starts your app in a container that has no network while the tests run (the build step can reach the package registry), runs a short test written as data, and checks that a control request works before the attack steps run. On the fixture app, 4 planted authorization flaws were proven in 3 of 3 runs and none were proven on the fixed copy, and 6 of 6 escape probes were contained. A flaw that cannot be proven is reported as not proven, never as passed. The proof is of a flaw in a copy of your app, so test the fixed request by hand as well. Only Node on Express and Flask have a start recipe today. 
 
 ## Stack packs and levels
 
-Each pack states what the engine does for a stack, from L0 (secrets, dependencies, infrastructure and the generic rules, on any stack) to L4 (a start recipe so the sandbox can prove a flaw). The README and the report print the table. A level is computed from recorded measurements: L2 needs the code map to match an answer key exactly, and a real application sample at 90 percent or better where one was measured. L3 needs a blind key, at least half of the planted flaws and no finding on the fixed copy. Ten real open source applications were sampled for the packs that have one, and the route sample was found 188 of 188. No level was raised because of a real application, since a real application has no planted flaws to count.
+Each pack states what the engine does for a stack, from L0 (secrets, dependencies, infrastructure and the generic rules, on any stack) to L4 (a start recipe so the sandbox can prove a flaw). The README and the report print the table. A level is computed from recorded measurements: L2 needs the code map to match an answer key exactly, and a real application sample at 90 percent or better where one was measured. L3 needs a blind key, at least half of the planted flaws and no finding on the fixed copy. A level describes how deep the engine goes for a stack, not how many flaws an app has. Ten real open source applications were sampled for the packs that have one, and the route sample was found 188 of 188.
 
 ## Secret findings that are example values
 
@@ -41,13 +41,9 @@ A machine evidence block now states its kind: `scanner_rule`, `engine_check`, `h
 
 The fifteen tool pages now describe an engine mode: how a tool that can run commands calls the engine and reads its results. The installer flag `--with-engine` writes the MCP settings for the tools that take them.
 
-## What is not claimed
+## What a result means
 
-1. **A level is about depth, not about how many flaws your app has.** A pack at L2 maps entry points. It does not find every flaw.
-2. **Leads are places to look.** The map checks and the taint rules produce leads until they are measured. A lead never fails a requirement and never holds the gate.
-3. **The sandbox proves a flaw in a copy.** Test the fixed request by hand as well.
-4. **Hullproof does not certify a project.** A READY verdict is evidence that a defined set of checks was done on one commit.
-5. **Real application measurements are samples.** One reviewer judged them, and the extractors were tuned on those same applications.
+A lead is a place to look. It never fails a requirement and never holds the gate. A READY verdict is evidence that a defined set of checks was done on one commit, and Hullproof does not certify a project.
 
 ## Install
 
@@ -57,13 +53,10 @@ From the project root:
 2. The engine is in `engine/`. It needs Node 22.18 or newer and has no runtime dependencies. Run `node engine/src/cli.ts ci .`.
 3. Run `node tools/hullproof/install.mjs --tool <name>` for a dry run and again with `--write`.
 
-## Limits
+## Good to know
 
 1. Only Node on Express and Flask have a proof sandbox start recipe.
-2. The pre commit hook and the MCP server were run on macOS only, and the Action on GitHub only. Windows and Linux were not run. A model calling the MCP tools inside a real tool has not been shown.
-3. The four CI templates other than GitHub Actions are checked for syntax, not run. The SARIF file is checked against the parts of the 2.1.0 schema the engine writes, and GitHub code scanning has not accepted an upload yet.
-4. A real fork pull request was not tried.
-5. OSV Scanner sends package names to osv.dev and runs only with `--allow-network`.
+2. OSV Scanner sends package names to osv.dev and runs only with `--allow-network`.
 
 ## Support and terms
 

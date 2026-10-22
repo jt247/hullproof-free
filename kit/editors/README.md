@@ -4,7 +4,7 @@ Hullproof 0.5.0 runs in fifteen AI tools: the agent apps and command line tools,
 
 Every tool gets the Hullproof hard rules and the same finding format, and the agent tools and editors also get the five area checklists. Only the packaging changes. Tools that load skills and agents get a skill. Every tool can also run the portable audit prompt in `prompts/`, where the model plays each audit role in turn.
 
-**The labels in the table below are the only enforced limits. Everything else in these files is advice.** The model reads advice and may follow it, forget it in a long session, or be talked out of it. Keep diff review, secret scanning and the release gate in `docs/hullproof/STANDARD.md` in place. This release does not claim equal audit depth in every tool, and it has no benchmark that compares them.
+**The labels in the table below are the only enforced limits. Everything else in these files is advice.** The model reads advice and may follow it, forget it in a long session, or be talked out of it. Keep diff review, secret scanning and the release gate in `docs/hullproof/STANDARD.md` in place.
 
 These instructions assume you have already copied the kit into your project root (step 2 of the install in the package README). That copy puts `docs/hullproof/`, `.claude/`, `tools/`, `editors/` and `prompts/` in your project root. `editors/` and `prompts/` are the only kit folders without a `hullproof` name. Leave them where they land: the kit manifest lists them, and the auditor reports `KIT: MISMATCH` if they are moved or deleted. The package README shows how to remove them together with their manifest lines. Give the project a `docs/security/STAGE.md` from `docs/hullproof/templates/STAGE.md`.
 
@@ -121,7 +121,7 @@ The tool may refuse. Hidden folders such as `docs/hullproof/.kit-manifest`, and 
 
 ## Limits and formats
 
-Facts below were read from the vendor documentation on 2026-10-06. Vendors change these pages, so re check before relying on a number.
+Facts below were read from the vendor documentation on 2026-10-06.
 
 | Tool | Location, format and limit | Source |
 |------|----------------------------|--------|

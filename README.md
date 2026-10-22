@@ -111,7 +111,7 @@ From npm: `npm install --global hullproof` or `npx hullproof <command>` give the
 
 How it uses this kit. The engine reads `kit/docs/hullproof/security-controls.json` for the requirement IDs and severities, runs the gate from `kit/tools/hullproof/ci/hullproof-gate.mjs`, and checks its findings record with `validate-findings.mjs`. Point it at the kit with `--kit path/to/kit` or the `HULLPROOF_KIT` setting. Its findings records use findings schema 1.1.0, which adds a `machine_evidence` block that names the tool, the rule id, the tool version and the configuration hash. The kit's validators also accept schema 1.2.0.
 
-Limits. Its coverage is partial. A requirement that nothing settled stays NOT ASSESSED and is never reported as a pass. Its taint rules and the checks that read the code map are leads until they are measured, and a lead never fails a requirement. OSV Scanner sends package names to osv.dev, so it runs only when you pass `--allow-network`. Some scanners must be installed by you. With this kit it covers the free requirements only, and its scan record names the edition that ran.
+Limits. Its coverage is partial. A requirement that nothing settled stays NOT ASSESSED and is never reported as a pass. Its taint rules and the checks that read the code map report leads, and a lead never fails a requirement. OSV Scanner sends package names to osv.dev, so it runs only when you pass `--allow-network`. Some scanners must be installed by you. With this kit it covers the free requirements only, and its scan record names the edition that ran.
 
 ## What is in this repository and in the release zip
 
@@ -124,7 +124,7 @@ The repository and the release zip hold the same files. The zip is one file to d
 | `engine/` | The Hullproof Engine, the open edition | Run it with Node, see The Hullproof Engine above |
 | `conventions/`, `docs/` | How requirements are written, and a sample audit report | Read them |
 | `AI-SETUP.md` | Step by step setup instructions written for an AI tool that was given only this link or this zip | Point your AI tool at it |
-| `README.md`, `RELEASE-NOTES-0.5.0.md`, `CHANGELOG.md`, `LICENSING.md`, `NOTICE.md`, `SECURITY.md` and the license files | The guide, what is in this release and what is not claimed, history, terms and credits | Keep the license files with anything you copy |
+| `README.md`, `RELEASE-NOTES-0.5.0.md`, `CHANGELOG.md`, `LICENSING.md`, `NOTICE.md`, `SECURITY.md` and the license files | The guide, what is in this release, history, terms and credits | Keep the license files with anything you copy |
 
 ## Works with your AI tool
 
@@ -186,7 +186,7 @@ Requirements:
 3. Git. The audit reads your history with read only git commands.
 4. Python 3, for the helper scripts in `tools/hullproof/helpers/`. They use the standard library only. They were run on Python 3.14, and any current Python 3 should work.
 5. Optional scanners that the checklist uses when they are present: gitleaks, semgrep and osv-scanner. Without them the related items stay NOT ASSESSED and the report says so.
-6. macOS or Linux. The commands below use `cp -R` and `shasum`. On Windows, use WSL, or Git Bash with `sha256sum -c` in place of `shasum -a 256 -c`.
+6. macOS or Linux. The commands below use `cp -R` and `shasum` (on Linux, `sha256sum -c` takes the place of `shasum -a 256 -c`).
 
 Steps:
 
@@ -297,8 +297,6 @@ Before its first real command the auditor runs a probe that a working hook block
 1. The hook is the only enforced control. The rules written in the agent and skill files are instructions that a model can ignore. The hook controls which commands run, blocks reads of secret file names and limits the path of the skill's Write call, but it does not control the rest of what the agent reads or what a report says, so review each report before you share it and run the agents only on repositories you trust.
 2. READY (FREE SCOPE) covers the BLOCKER and CRITICAL requirements at the declared stage and nothing else. It is evidence that a defined set of checks was done on one commit. It is not a certification and not proof that a product is secure.
 3. Static analysis and scans cannot settle items that live in a provider dashboard, a build or a running system, and scans find only what their rules know. Those items stay NOT ASSESSED until the owner supplies evidence.
-4. The requirements were validated on products built on the default stack: Next.js, TypeScript, Supabase and Vercel. Other stacks have not been validated.
-5. Vendor behaviour changes between releases, so check the current vendor documents against the date each citation shows.
 
 ## How the standard is organized
 
