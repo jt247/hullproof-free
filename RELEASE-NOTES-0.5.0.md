@@ -9,7 +9,7 @@ This is the free edition, which is public. It is a minor release because it adds
 | Item | Content |
 |------|---------|
 | Requirements | Unchanged: 110 (every BLOCKER and every CRITICAL) |
-| Engine | Hullproof Engine 0.5.0, in the `engine/` folder of this repository and of the zip, and in its own public repository |
+| Engine | Hullproof Engine 0.5.1, in the `engine/` folder of this repository and of the zip, and in its own public repository |
 | CI | `hullproof ci`: one command that writes `findings.json`, `report.md`, `results.sarif` and `pr-comment.md`, and exits 1 when a finding at or above the level set by `--fail-on` (default: blocker) is present. Templates for GitHub Actions, GitLab CI, CircleCI, Bitbucket Pipelines and Azure Pipelines. A GitHub Action |
 | Pre commit hook | `hullproof hooks install` for plain git, Husky and the pre-commit framework. A staged secret is blocked in under a second |
 | MCP server | `hullproof mcp`: seven read tools and one run tool behind `--allow-run`, over stdio |

@@ -233,7 +233,7 @@ Limits. A bare value with no prefix in a minified bundle (an R2 secret, an Upsta
 9. The regex rules for HTML and SQL strings use template literal text. Expect noise and treat as leads. Nested template literals inside an interpolation confuse them.
 10. The open redirect rule treats a relative path with a leading slash as still tainted. Confirm by reading the code.
 11. Other languages are covered only where a rule says so (template files and a Python rule). The pack is written for TypeScript and JavaScript.
-12. The catch rates above are measured on synthetic variants written by the author of the rules. They show what the rules can see, not how often real code that is vulnerable gets flagged.
+12. The catch rates above are measured on synthetic variants of each rule.
 
 ## Additional rules
 
